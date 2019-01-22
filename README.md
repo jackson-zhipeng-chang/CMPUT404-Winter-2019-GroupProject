@@ -1,6 +1,6 @@
 # CMPUT404-Winter-2019-GroupProject
 
-TA: <br /><br />
+### TA: <br /><br />
 
 ### Team members: <br />
 Zhipeng Chang (zchang@ualberta.ca) <br />
