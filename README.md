@@ -2,7 +2,7 @@
 
 TA: <br /><br />
 
-Team members: <br />
+### Team members: <br />
 Zhipeng Chang (zchang@ualberta.ca) <br />
 Taijie Yang (taijie@ualberta.ca)<br />
 Farhad Makiabady (makiabad@ualberta.ca) <br />
