@@ -25,5 +25,12 @@ from rest_framework_swagger.views import get_swagger_view
 
 urlpatterns = [
     path('api-docs/', get_swagger_view(title='CMPUT 404 Team 4 API docs'), name='apiDocs'),
-    path('posts/<uuid:post_id>/', views.PostHandler, name='post')
+    path('posts/<uuid:post_id>/', views.PostHandler, name='post'),
+    path('comments/<uuid:post_id>/', views.CommentHandler, name='comment'),
+    path('friendrequest/', views.FriendRequestHandler, name='friendrequest'),
+    path('friends/<int:user_id>', views.FriendQueryHandler, name='friendquery'),
+    path('author/posts/', views.PostToUserHandler, name='posttouser'),
+    path('author/<int:user_id>/posts', views.PostToUserIDHandler, name='posttouserid'),
+    path('author/<int: userid>', views.AuthorProfileHandler, name='authorprofile'),
+    path('author/<int:user_id1>/friends/<int:user_id2>', views.Friend2FriendHandler, name='friend2friend'),
 ]

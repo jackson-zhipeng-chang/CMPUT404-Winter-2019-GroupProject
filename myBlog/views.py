@@ -15,7 +15,19 @@ from .serializers import PostSerializer
 @login_required(login_url="home")
 @api_view(['GET','POST', 'PUT', 'DELETE'])
 def PostHandler(request, post_id):
-    print("uafhofho;d")
+    post = get_object_or_404(Post, pk=post_id)
+    if request.method == 'GET':
+    	return Response(PostSerializer(post).data)
+    elif request.method == 'POST':
+    	return Response({"message": "POST method", "data": post})    
+    elif request.method == 'PUT':
+        return Response({"message": "PUT method", "data": request.data})
+    elif request.method == 'DELETE':
+        return Response({"message": "DELETE Method", "data": request.data})
+
+@login_required(login_url="home")
+@api_view(['GET','POST', 'PUT', 'DELETE'])
+def CommentHandler(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
     if request.method == 'GET':
     	return Response(PostSerializer(post).data)
@@ -27,3 +39,43 @@ def PostHandler(request, post_id):
         return Response({"message": "DELETE Method", "data": request.data})
 
 
+
+@login_required(login_url="home")
+@api_view(['POST'])
+def FriendRequestHandler(request):
+    if request.method == 'POST':
+    	return Response({"message": "POST method", "data": post})    
+
+
+@login_required(login_url="home")
+@api_view(['GET'])
+def PostToUserHandler(request):
+    if request.method == 'GET':
+    	return Response({"message": "GET method", "data": post})    
+
+
+@login_required(login_url="home")
+@api_view(['GET'])
+def PostToUserIDHandler(request, user_id):
+    if request.method == 'GET':
+    	return Response({"message": "GET method", "data": post})    
+
+
+@login_required(login_url="home")
+@api_view(['POST'])
+def FriendQueryHandler(request, user_id):
+    if request.method == 'POST':
+    	return Response({"message": "POST method", "data": post})    
+
+@login_required(login_url="home")
+@api_view(['GET'])
+def Friend2FriendHandler(request, user_id1, user_id2):
+    if request.method == 'GET':
+    	return Response({"message": "GET method", "data": post})    
+
+
+@login_required(login_url="home")
+@api_view(['GET'])
+def AuthorProfileHandler(request, user_id):
+    if request.method == 'GET':
+    	return Response({"message": "GET method", "data": post})    
