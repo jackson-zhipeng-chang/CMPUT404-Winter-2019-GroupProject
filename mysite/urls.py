@@ -25,7 +25,7 @@ schema_view = get_swagger_view(title='CMPUT 404 Team 4 API docs')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('swagger-docs/', schema_view),
+    path('api-docs/', schema_view),
     path('accounts/', include('django.contrib.auth.urls')),
     path('', TemplateView.as_view(template_name='home.html'), name='home'),
 
