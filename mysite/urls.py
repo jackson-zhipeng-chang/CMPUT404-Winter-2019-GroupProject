@@ -16,16 +16,18 @@ Including another URLconf
 
 # Reference: https://wsvincent.com/django-user-authentication-tutorial-login-and-logout/
 # Reference: http://books.agiliq.com/projects/django-api-polls-tutorial/en/latest/swagger.html
-
+# Reference: https://simpleisbetterthancomplex.com/tutorial/2017/02/18/how-to-create-user-sign-up-view.html
 from django.contrib import admin
 from django.urls import path, include
 from django.views.generic.base import TemplateView 
 from rest_framework_swagger.views import get_swagger_view
+from myBlog import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('myBlog/', include('myBlog.urls'), name='myBlog'),
     path('accounts/', include('django.contrib.auth.urls')),
+    path('signup/', views.signup, name="signup"),
     path('', TemplateView.as_view(template_name='home.html'), name='home'),
 
 ]
