@@ -19,13 +19,12 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
-from django.views.generic.base import TemplateView 
+from . import views
 from rest_framework_swagger.views import get_swagger_view
 
+
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('myBlog/', include('myBlog.urls'), name='myBlog'),
-    path('accounts/', include('django.contrib.auth.urls')),
-    path('', TemplateView.as_view(template_name='home.html'), name='home'),
+    path('api-docs/', get_swagger_view(title='CMPUT 404 Team 4 API docs'), name='apiDocs'),
+    path('posts/', views.Post, name='post'),
 
 ]

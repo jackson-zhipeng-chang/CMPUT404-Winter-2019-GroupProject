@@ -1,3 +1,19 @@
 from django.db import models
+import uuid
 
-# Create your models here.
+
+# When create a new model, run migration as follow:
+# python3 manage.py makemigrations
+# python3 manage.py migrate
+
+class Post(models.Model):
+# https://stackoverflow.com/questions/18676156/how-to-properly-use-the-choices-field-option-in-django
+    postType = (
+        ('text/markdown', 'text/markdown'),
+        ('text/plain', 'text/plain'),
+    )
+    post_title = models.CharField(max_length=400)
+    post_type = models.CharField(max_length=32, choices=postType)
+
+    def __str__(self):
+    	return self.post_title
