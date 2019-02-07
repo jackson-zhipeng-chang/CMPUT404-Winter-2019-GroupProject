@@ -12,6 +12,7 @@ class Post(models.Model):
         ('text/markdown', 'text/markdown'),
         ('text/plain', 'text/plain'),
     )
+    post_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     post_title = models.CharField(max_length=400)
     post_type = models.CharField(max_length=32, choices=postType)
 

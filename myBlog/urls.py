@@ -25,6 +25,5 @@ from rest_framework_swagger.views import get_swagger_view
 
 urlpatterns = [
     path('api-docs/', get_swagger_view(title='CMPUT 404 Team 4 API docs'), name='apiDocs'),
-    path('posts/', views.Post, name='post'),
-
+    path('posts/<uuid:post_id>/', views.PostHandler, name='post')
 ]
