@@ -10,19 +10,19 @@ from .serializers import PostSerializer
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import redirect
+from django.contrib.auth.models import User
 
 
 
 # Code from: Reference: https://simpleisbetterthancomplex.com/tutorial/2017/02/18/how-to-create-user-sign-up-view.html
+# https://docs.djangoproject.com/en/2.1/topics/auth/default/
 def signup(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
         if form.is_valid():
-            form.save()
             username = form.cleaned_data.get('username')
             raw_password = form.cleaned_data.get('password1')
-            user = authenticate(username=username, password=raw_password)
-            login(request, user)
+            user = User.objects.create_user(username=username,password=raw_password, is_active=False)
             return redirect('home')
     else:
         form = UserCreationForm()
@@ -31,7 +31,6 @@ def signup(request):
 
 
 # https://www.django-rest-framework.org/api-guide/views/
-# https://stackoverflow.com/questions/45205039/post-to-django-rest-framework
 
 @login_required(login_url="home")
 @api_view(['GET','POST', 'PUT', 'DELETE'])
