@@ -13,9 +13,20 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
+# Reference: https://wsvincent.com/django-user-authentication-tutorial-login-and-logout/
+# Reference: http://books.agiliq.com/projects/django-api-polls-tutorial/en/latest/swagger.html
+
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
+from django.views.generic.base import TemplateView 
+from rest_framework_swagger.views import get_swagger_view
+schema_view = get_swagger_view(title='CMPUT 404 Team 4 API docs')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('swagger-docs/', schema_view),
+    path('accounts/', include('django.contrib.auth.urls')),
+    path('', TemplateView.as_view(template_name='home.html'), name='home'),
+
 ]
