@@ -65,25 +65,26 @@ def FriendRequestHandler(request):
     if request.method == 'POST':
     	return Response({"message": "POST method", "data": post})    
 
-#https://stackoverflow.com/questions/12615154/how-to-get-the-currently-logged-in-users-user-id-in-django
+# https://stackoverflow.com/questions/12615154/how-to-get-the-currently-logged-in-users-user-id-in-django
+# https://www.django-rest-framework.org/api-guide/views/
 #@login_required(login_url="home")
 #@api_view(['GET'])
-class PostToUserHandlerView(generic.ListView):
-    template_name = 'myBlog/postsList.html'
-    context_object_name = 'posts_list'
+class PostToUserHandlerView(APIView):
 
-    def get_queryset(self):
+    def get(self, request, format=None):
     	current_user_id = int(self.request.user.id)
-    	return Post.objects.filter(author_id=current_user_id)
+    	posts = Post.objects.filter(author_id=current_user_id)
+    	return Response(PostSerializer(posts, many=True).data)
 
 
+# https://stackoverflow.com/questions/19360874/pass-url-argument-to-listview-queryset
+#@login_required(login_url="home")
+#@api_view(['GET'])
+class PostToUserIDHandler(APIView):
 
-@login_required(login_url="home")
-@api_view(['GET'])
-def PostToUserIDHandler(request, user_id):
-    if request.method == 'GET':
-    	return Response({"message": "GET method", "data": post})    
-
+    def get(self, request, user_id, format=None):
+    	posts = Post.objects.filter(author_id=user_id)
+    	return Response(PostSerializer(posts, many=True).data)
 
 @login_required(login_url="home")
 @api_view(['POST'])
