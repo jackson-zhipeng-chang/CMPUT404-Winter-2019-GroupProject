@@ -1,0 +1,9 @@
+{% if posts_list %}
+    <ul>
+    {% for post in posts_list %}
+        <li><a href="{/myBlog/{{ post.post_id }}/}">{{ post.post_title }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No posts for user {{ user.username }}</p>
+{% endif %}

@@ -11,8 +11,7 @@ from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import redirect
 from django.contrib.auth.models import User
-
-
+from django.views import generic
 
 # Code from: Reference: https://simpleisbetterthancomplex.com/tutorial/2017/02/18/how-to-create-user-sign-up-view.html
 # https://docs.djangoproject.com/en/2.1/topics/auth/default/
@@ -21,8 +20,8 @@ def signup(request):
         form = UserCreationForm(request.POST)
         if form.is_valid():
             username = form.cleaned_data.get('username')
-            raw_password = form.cleaned_data.get('password1')
-            user = User.objects.create_user(username=username,password=raw_password, is_active=False)
+            password = form.cleaned_data.get('password1')
+            user = User.objects.create_user(username=username,password=password, is_active=False)
             return redirect('home')
     else:
         form = UserCreationForm()
@@ -66,12 +65,18 @@ def FriendRequestHandler(request):
     if request.method == 'POST':
     	return Response({"message": "POST method", "data": post})    
 
+#https://stackoverflow.com/questions/12615154/how-to-get-the-currently-logged-in-users-user-id-in-django
+#@login_required(login_url="home")
+#@api_view(['GET'])
+class PostToUserHandlerView(generic.ListView):
+    template_name = 'myBlog/postsList.html'
+    context_object_name = 'posts_list'
 
-@login_required(login_url="home")
-@api_view(['GET'])
-def PostToUserHandler(request):
-    if request.method == 'GET':
-    	return Response({"message": "GET method", "data": post})    
+    def get_queryset(self):
+    	current_user_id = int(self.request.user.id)
+    	print(Post.objects.filter(author_id=current_user_id))
+    	return Post.objects.filter(author_id=current_user_id)
+
 
 
 @login_required(login_url="home")
