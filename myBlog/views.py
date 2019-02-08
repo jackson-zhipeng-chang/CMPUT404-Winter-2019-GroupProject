@@ -74,7 +74,6 @@ class PostToUserHandlerView(generic.ListView):
 
     def get_queryset(self):
     	current_user_id = int(self.request.user.id)
-    	print(Post.objects.filter(author_id=current_user_id))
     	return Post.objects.filter(author_id=current_user_id)
 
 
