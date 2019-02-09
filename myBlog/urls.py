@@ -31,6 +31,6 @@ urlpatterns = [
     path('friends/<int:user_id>', views.FriendQueryHandler, name='friendquery'),
     path('author/posts/', views.PostToUserHandlerView.as_view(), name='posttouser'),
     path('author/<int:user_id>/posts', views.PostToUserIDHandler.as_view(), name='posttouserid'),
-    path('author/<int: userid>', views.AuthorProfileHandler, name='authorprofile'),
+    path('author/<int:user_id>', views.AuthorProfileHandler, name='authorprofile'),
     path('author/<int:user_id1>/friends/<int:user_id2>', views.Friend2FriendHandler, name='friend2friend'),
 ]
