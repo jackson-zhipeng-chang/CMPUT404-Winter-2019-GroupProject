@@ -1,3 +1,25 @@
+/* h1 {
+    font-size: 5em;
+} */
+.card {
+    background-color: rgb(241, 241, 241);
+}
 p {
     color: red;
+}
+.secondary-color {
+    color: #66fcf1;
+}
+.primary-color {
+    color: #45a29e;
+}
+.off-black {
+    background-color: #0b0c10;
+}
+.off-blue {
+    background-color: #1f2833;
+}
+html {
+    background-color: #272727;
+    color: #c5c6c7;
 }
