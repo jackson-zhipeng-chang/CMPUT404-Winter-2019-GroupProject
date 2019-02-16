@@ -25,7 +25,7 @@ from django.contrib.auth.decorators import login_required
 
 
 urlpatterns = [
-    path('api-docs/',login_required(get_swagger_view(title='CMPUT 404 Team 4 API docs')), name='apiDocs'),
+    path('api-docs/',login_required(get_swagger_view(title='Welcome to myBlog APIs Documentation!')), name='apiDocs'),
     path('posts/<uuid:post_id>/', views.PostHandler, name='post'),
     path('comments/<uuid:post_id>/', views.CommentHandler, name='comment'),
     path('friendrequest/', views.FriendRequestHandler, name='friendrequest'),
