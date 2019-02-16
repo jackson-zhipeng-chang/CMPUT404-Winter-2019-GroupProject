@@ -17,7 +17,7 @@ class Post(models.Model):
     post_title = models.CharField(max_length=400)
     post_content = models.TextField()
     post_type = models.CharField(max_length=32, choices=postType)
-    author = models.ForeignKey(User, related_name='author', on_delete=models.PROTECT)
+    author = models.ForeignKey(User, related_name='post_author', on_delete=models.PROTECT)
 
     #post_comment = models.CharField(max_length=1000)
 
@@ -26,10 +26,7 @@ class Post(models.Model):
     	return self.post_title
 
 
-
-
-
-class User(models.Model):
+class Author(models.Model):
     # https://blog.csdn.net/laikaikai/article/details/80563387
     # https://simpleisbetterthancomplex.com/tutorial/2016/07/22/how-to-extend-django-user-model.html By Vitor Freitas
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -43,7 +40,7 @@ class User(models.Model):
 class Comment(models.Model):    
     comment_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) 
     post = models.ForeignKey(Post,on_delete=models.PROTECT, related_name='post_comment')                      
-    author = models.ForeignKey(User, on_delete=models.PROTECT, related_name='comment_author')                                          
+    author = models.ForeignKey(User,  related_name='comment_author', on_delete=models.PROTECT)                                          
     content = models.CharField(max_length=400)
     comment_time = models.DateTimeField(auto_now_add=True, blank=True)
        
