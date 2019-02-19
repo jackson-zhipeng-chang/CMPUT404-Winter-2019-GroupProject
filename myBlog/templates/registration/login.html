@@ -8,10 +8,10 @@
     <div class="w3-container w3-padding">
       <h2 class="w3-center">Login</h2>
       <form class="w3-center" method="post">
-          {% csrf_token %}
-          {{ form.as_p }}
-          <button type="submit" class="w3-button w3-theme-d2 w3-margin-bottom"><i class="fa fa-sign-in"></i>  Login</button>
-        </form>
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="w3-button w3-theme-d2 w3-margin-bottom"><i class="fa fa-sign-in"></i>  Login</button>
+      </form>
     </div>
   </div>
 {% endblock %}
