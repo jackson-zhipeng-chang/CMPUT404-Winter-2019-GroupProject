@@ -26,7 +26,8 @@ from django.contrib.auth.decorators import login_required
 
 urlpatterns = [
     path('api-docs/',login_required(get_swagger_view(title='Welcome to myBlog APIs Documentation!')), name='apiDocs'),
-    path('posts/<uuid:post_id>/', views.PostHandler, name='post'),
+    path('posts/', views.NewPostHandler.as_view(), name='new_post'),
+    path('posts/<uuid:post_id>/', views.PostHandler.as_view(), name='modify_post'),
     path('comments/<uuid:post_id>/', views.CommentHandler, name='comment'),
     path('friendrequest/', views.FriendRequestHandler, name='friendrequest'),
     path('friends/<int:user_id>', views.FriendQueryHandler, name='friendquery'),

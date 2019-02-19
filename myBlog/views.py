@@ -6,7 +6,8 @@ from rest_framework.decorators import api_view
 from django.shortcuts import get_object_or_404, render
 from .models import Post
 from .serializers import PostSerializer
-
+from rest_framework.parsers import JSONParser
+from rest_framework import status
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import redirect
@@ -30,18 +31,28 @@ def signup(request):
 
 
 # https://www.django-rest-framework.org/api-guide/views/
+# https://www.django-rest-framework.org/tutorial/2-requests-and-responses/
+# https://www.django-rest-framework.org/tutorial/1-serialization/
+class NewPostHandler(APIView):
+    def post(self, request, format=None):
+        data = JSONParser().parse(request)
+        serializer = PostSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@login_required(login_url="home")
-@api_view(['GET','POST', 'PUT', 'DELETE'])
-def PostHandler(request, post_id):
-    post = get_object_or_404(Post, pk=post_id)
-    if request.method == 'GET':
-    	return Response(PostSerializer(post).data)
-    elif request.method == 'POST':
-    	return Response({"message": "POST method", "data": post})    
-    elif request.method == 'PUT':
+
+
+class PostHandler(APIView):
+    def get(self, request,post_id, format=None):
+        post = get_object_or_404(Post, pk=post_id)
+        return Response(PostSerializer(post).data)
+  
+    def put(self, request, post_id, format=None):
         return Response({"message": "PUT method", "data": request.data})
-    elif request.method == 'DELETE':
+
+    def delete(self, request, post_id, format=None):
         return Response({"message": "DELETE Method", "data": request.data})
 
 
@@ -67,8 +78,7 @@ def FriendRequestHandler(request):
 
 # https://stackoverflow.com/questions/12615154/how-to-get-the-currently-logged-in-users-user-id-in-django
 # https://www.django-rest-framework.org/api-guide/views/
-#@login_required(login_url="home")
-#@api_view(['GET'])
+
 class PostToUserHandlerView(APIView):
 
     def get(self, request, format=None):
@@ -78,8 +88,6 @@ class PostToUserHandlerView(APIView):
 
 
 # https://stackoverflow.com/questions/19360874/pass-url-argument-to-listview-queryset
-#@login_required(login_url="home")
-#@api_view(['GET'])
 class PostToUserIDHandler(APIView):
 
     def get(self, request, user_id, format=None):

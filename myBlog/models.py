@@ -19,9 +19,6 @@ class Post(models.Model):
     post_type = models.CharField(max_length=32, choices=postType)
     author = models.ForeignKey(User, related_name='post_author', on_delete=models.PROTECT)
 
-    #post_comment = models.CharField(max_length=1000)
-
-
     def __str__(self):
     	return self.post_title
 
