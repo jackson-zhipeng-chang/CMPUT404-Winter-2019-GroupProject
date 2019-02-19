@@ -13,6 +13,8 @@ from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import redirect
 from django.contrib.auth.models import User
 from django.views import generic
+from django.http import HttpResponse, JsonResponse
+
 
 # Code from: Reference: https://simpleisbetterthancomplex.com/tutorial/2017/02/18/how-to-create-user-sign-up-view.html
 # https://docs.djangoproject.com/en/2.1/topics/auth/default/
@@ -47,13 +49,22 @@ class NewPostHandler(APIView):
 class PostHandler(APIView):
     def get(self, request,post_id, format=None):
         post = get_object_or_404(Post, pk=post_id)
-        return Response(PostSerializer(post).data)
+        serializer = SnippetSerializer(snippet)
+        return JsonResponse(serializer.data)
   
     def put(self, request, post_id, format=None):
-        return Response({"message": "PUT method", "data": request.data})
+        data = JSONParser().parse(request)
+        post = get_object_or_404(Post, pk=post_id)
+        serializer = PostSerializer(post, data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data)
+        return JsonResponse(serializer.errors, status=400)
 
     def delete(self, request, post_id, format=None):
-        return Response({"message": "DELETE Method", "data": request.data})
+        post = get_object_or_404(Post, pk=post_id)
+        post.delete()
+        return HttpResponse(status=204)
 
 
 @login_required(login_url="home")
