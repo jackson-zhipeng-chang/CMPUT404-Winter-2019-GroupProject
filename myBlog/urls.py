@@ -21,11 +21,13 @@ from django.contrib import admin
 from django.urls import path, include
 from . import views
 from rest_framework_swagger.views import get_swagger_view
+from django.contrib.auth.decorators import login_required
 
 
 urlpatterns = [
-    path('api-docs/', get_swagger_view(title='CMPUT 404 Team 4 API docs'), name='apiDocs'),
-    path('posts/<uuid:post_id>/', views.PostHandler, name='post'),
+    path('api-docs/',login_required(get_swagger_view(title='Welcome to myBlog APIs Documentation!')), name='apiDocs'),
+    path('posts/', views.NewPostHandler.as_view(), name='new_post'),
+    path('posts/<uuid:post_id>/', login_required(views.PostHandler.as_view()), name='modify_post'),
     path('comments/<uuid:post_id>/', views.CommentHandler, name='comment'),
     path('friendrequest/', views.FriendRequestHandler, name='friendrequest'),
     path('friends/<int:user_id>', views.FriendQueryHandler, name='friendquery'),

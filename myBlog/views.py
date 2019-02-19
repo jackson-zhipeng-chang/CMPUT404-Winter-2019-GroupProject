@@ -6,12 +6,15 @@ from rest_framework.decorators import api_view
 from django.shortcuts import get_object_or_404, render
 from .models import Post
 from .serializers import PostSerializer
-
+from rest_framework.parsers import JSONParser
+from rest_framework import status
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import redirect
 from django.contrib.auth.models import User
 from django.views import generic
+from django.http import HttpResponse, JsonResponse
+
 
 # Code from: Reference: https://simpleisbetterthancomplex.com/tutorial/2017/02/18/how-to-create-user-sign-up-view.html
 # https://docs.djangoproject.com/en/2.1/topics/auth/default/
@@ -30,19 +33,55 @@ def signup(request):
 
 
 # https://www.django-rest-framework.org/api-guide/views/
+# https://www.django-rest-framework.org/tutorial/2-requests-and-responses/
+# https://www.django-rest-framework.org/tutorial/1-serialization/
+class NewPostHandler(APIView):
+    def post(self, request, format=None):
+        current_user_id = int(self.request.user.id)
+        data = JSONParser().parse(request)
+        serializer = PostSerializer(data=data, context={'author': current_user_id})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@login_required(login_url="home")
-@api_view(['GET','POST', 'PUT', 'DELETE'])
-def PostHandler(request, post_id):
-    post = get_object_or_404(Post, pk=post_id)
-    if request.method == 'GET':
-    	return Response(PostSerializer(post).data)
-    elif request.method == 'POST':
-    	return Response({"message": "POST method", "data": post})    
-    elif request.method == 'PUT':
-        return Response({"message": "PUT method", "data": request.data})
-    elif request.method == 'DELETE':
-        return Response({"message": "DELETE Method", "data": request.data})
+
+
+class PostHandler(APIView):
+    def get(self, request,post_id, format=None):
+        current_user_id = int(self.request.user.id)
+        post = get_object_or_404(Post, pk=post_id)
+        post_visibility = post.open_to
+        post_author = int(post.author_id)
+        if post_visibility == 'public' or (post_visibility == 'me' and current_user_id == post_author):
+            serializer = PostSerializer(post)
+            return JsonResponse(serializer.data)
+        else:
+            return HttpResponse(status=404)
+  
+    def put(self, request, post_id, format=None):
+        data = JSONParser().parse(request)
+        post = get_object_or_404(Post, pk=post_id)
+        current_user_id = int(self.request.user.id)
+        post_author = int(post.author_id)
+        if current_user_id == post_author:
+            serializer = PostSerializer(post, data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return JsonResponse(serializer.data)
+            return JsonResponse(serializer.errors, status=400)
+        else:
+            return HttpResponse(status=404)
+
+    def delete(self, request, post_id, format=None):
+        post = get_object_or_404(Post, pk=post_id)
+        current_user_id = int(self.request.user.id)
+        post_author = int(post.author_id)
+        if current_user_id == post_author:
+            post.delete()
+            return HttpResponse(status=204)
+        else:
+            return HttpResponse(status=404)
 
 
 @login_required(login_url="home")
@@ -67,8 +106,7 @@ def FriendRequestHandler(request):
 
 # https://stackoverflow.com/questions/12615154/how-to-get-the-currently-logged-in-users-user-id-in-django
 # https://www.django-rest-framework.org/api-guide/views/
-#@login_required(login_url="home")
-#@api_view(['GET'])
+
 class PostToUserHandlerView(APIView):
 
     def get(self, request, format=None):
@@ -78,8 +116,6 @@ class PostToUserHandlerView(APIView):
 
 
 # https://stackoverflow.com/questions/19360874/pass-url-argument-to-listview-queryset
-#@login_required(login_url="home")
-#@api_view(['GET'])
 class PostToUserIDHandler(APIView):
 
     def get(self, request, user_id, format=None):
