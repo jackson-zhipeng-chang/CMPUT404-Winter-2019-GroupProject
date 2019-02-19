@@ -37,8 +37,9 @@ def signup(request):
 # https://www.django-rest-framework.org/tutorial/1-serialization/
 class NewPostHandler(APIView):
     def post(self, request, format=None):
+        current_user_id = int(self.request.user.id)
         data = JSONParser().parse(request)
-        serializer = PostSerializer(data=data)
+        serializer = PostSerializer(data=data, context={'author': current_user_id})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -48,23 +49,39 @@ class NewPostHandler(APIView):
 
 class PostHandler(APIView):
     def get(self, request,post_id, format=None):
+        current_user_id = int(self.request.user.id)
         post = get_object_or_404(Post, pk=post_id)
-        serializer = SnippetSerializer(snippet)
-        return JsonResponse(serializer.data)
+        post_visibility = post.open_to
+        post_author = int(post.author_id)
+        if post_visibility == 'public' or (post_visibility == 'me' and current_user_id == post_author):
+            serializer = PostSerializer(post)
+            return JsonResponse(serializer.data)
+        else:
+            return HttpResponse(status=404)
   
     def put(self, request, post_id, format=None):
         data = JSONParser().parse(request)
         post = get_object_or_404(Post, pk=post_id)
-        serializer = PostSerializer(post, data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return JsonResponse(serializer.data)
-        return JsonResponse(serializer.errors, status=400)
+        current_user_id = int(self.request.user.id)
+        post_author = int(post.author_id)
+        if current_user_id == post_author:
+            serializer = PostSerializer(post, data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return JsonResponse(serializer.data)
+            return JsonResponse(serializer.errors, status=400)
+        else:
+            return HttpResponse(status=404)
 
     def delete(self, request, post_id, format=None):
         post = get_object_or_404(Post, pk=post_id)
-        post.delete()
-        return HttpResponse(status=204)
+        current_user_id = int(self.request.user.id)
+        post_author = int(post.author_id)
+        if current_user_id == post_author:
+            post.delete()
+            return HttpResponse(status=204)
+        else:
+            return HttpResponse(status=404)
 
 
 @login_required(login_url="home")

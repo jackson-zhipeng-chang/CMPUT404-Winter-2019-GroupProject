@@ -13,12 +13,19 @@ class Post(models.Model):
         ('text/markdown', 'text/markdown'),
         ('text/plain', 'text/plain'),
     )
+    open_toType =(
+        ('me', 'me'),
+        ('author', 'author'),
+        ('friends', 'friends'),
+        ('FoF', 'FoF'),
+        ('public', 'public'),
+    )
     post_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     post_title = models.CharField(max_length=400)
     post_content = models.TextField()
     post_type = models.CharField(max_length=32, choices=postType)
     author = models.ForeignKey(User, related_name='post_author', on_delete=models.PROTECT)
-
+    open_to = models.CharField(max_length=32, choices=open_toType)
     def __str__(self):
     	return self.post_title
 
