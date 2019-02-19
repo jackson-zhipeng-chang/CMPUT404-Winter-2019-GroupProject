@@ -4,10 +4,14 @@
 {% block title %}Login{% endblock %}
 
 {% block content %}
-<h2>Login</h2>
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Login</button>
-</form>
+<div class="w3-card w3-round w3-white" style="width:30%;margin:auto;margin-top: 5%;">
+    <div class="w3-container w3-padding">
+      <h2 class="w3-center">Login</h2>
+      <form class="w3-center" method="post">
+          {% csrf_token %}
+          {{ form.as_p }}
+          <button type="submit" class="w3-button w3-theme-d2 w3-margin-bottom"><i class="fa fa-sign-in"></i>  Login</button>
+        </form>
+    </div>
+  </div>
 {% endblock %}
