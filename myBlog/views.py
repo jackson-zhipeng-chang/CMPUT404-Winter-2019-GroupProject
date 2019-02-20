@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from django.shortcuts import get_object_or_404, render
 from .models import Post, Author, Comment
-from .serializers import PostSerializer, CommentSerializer
+from .serializers import PostSerializer, CommentSerializer, AuthorFullSerializer
 from rest_framework.parsers import JSONParser
 from rest_framework import status
 from django.contrib.auth import login, authenticate
@@ -86,7 +86,7 @@ class PostHandler(APIView):
         post = get_object_or_404(Post, pk=post_id)
         current_user_uuid = get_current_user_uuid(request)
         post_author = post.author_id
-        if current_user_id == post_author:
+        if current_user_uuid == post_author:
             post.delete()
             return HttpResponse(status=204)
         else:
@@ -95,13 +95,10 @@ class PostHandler(APIView):
 
 class CommentHandler(APIView):
     def get(self, request, post_id, format=None):
-        try:
-            post = get_object_or_404(Post, pk=post_id)
-            commment = get_object_or_404(Comment, post=post)
-            serializer = CommentSerializer(post)
-            return JsonResponse(serializer.data)
-        except:
-            return HttpResponse(status=404)
+        post = get_object_or_404(Post, pk=post_id)
+        commment = get_object_or_404(Comment, post=post)
+        serializer = CommentSerializer(post)
+        return JsonResponse(serializer.data)
 
     def post(self, request, post_id, format=None):
         post = get_object_or_404(Post, pk=post_id)
@@ -125,7 +122,6 @@ class CommentHandler(APIView):
 # https://www.django-rest-framework.org/api-guide/views/
 # https://stackoverflow.com/questions/6567831/how-to-perform-or-condition-in-django-queryset
 class PostToUserHandlerView(APIView):
-
     def get(self, request, format=None):
         current_user_uuid = get_current_user_uuid(request)
         posts = Post.objects.filter(Q(author_id=current_user_uuid) | Q(open_to='public'))
@@ -134,12 +130,38 @@ class PostToUserHandlerView(APIView):
 
 # https://stackoverflow.com/questions/19360874/pass-url-argument-to-listview-queryset
 class PostToUserIDHandler(APIView):
-
     def get(self, request, user_id, format=None):
     	posts = Post.objects.filter(author_id=user_id)
     	return Response(PostSerializer(posts, many=True).data)
 
 
+class AuthorProfileHandler(APIView):
+    def get(self, request, user_id, format=None):
+        author = get_object_or_404(Author, user_uuid=user_id)
+        serializer = AuthorFullSerializer(author)
+        return JsonResponse(serializer.data)
+
+    def put(self, request, user_id, format=None):
+        data = JSONParser().parse(request)
+        author = get_object_or_404(Author, user_uuid=user_id)
+        current_user_uuid = get_current_user_uuid(request)
+        if current_user_uuid == author.user_uuid:
+            serializer = AuthorFullSerializer(author, data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return JsonResponse(serializer.data)
+            return JsonResponse(serializer.errors, status=400)
+        else:
+            return HttpResponse(status=404)
+  
+    def delete(self, request, user_id, format=None):
+        author = get_object_or_404(Author, pk=post_id)
+        current_user_uuid = get_current_user_uuid(request)
+        if current_user_uuid == author.user_uuid:
+            author.delete()
+            return HttpResponse(status=204)
+        else:
+            return HttpResponse(status=404)
 
 
 
@@ -161,10 +183,4 @@ def FriendQueryHandler(request, user_id):
 def Friend2FriendHandler(request, user_id1, user_id2):
     if request.method == 'GET':
     	return Response({"message": "GET method", "data": post})    
-
-
-@login_required(login_url="home")
-@api_view(['GET'])
-def AuthorProfileHandler(request, user_id):
-    if request.method == 'GET':
-    	return Response({"message": "GET method", "data": post})    
+ 
