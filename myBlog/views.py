@@ -155,10 +155,12 @@ class AuthorProfileHandler(APIView):
             return HttpResponse(status=404)
   
     def delete(self, request, user_id, format=None):
-        author = get_object_or_404(Author, pk=post_id)
+        author = get_object_or_404(Author, pk=user_id)
+        user = get_object_or_404(User, pk=author.user.id)
         current_user_uuid = get_current_user_uuid(request)
         if current_user_uuid == author.user_uuid:
             author.delete()
+            user.delete()
             return HttpResponse(status=204)
         else:
             return HttpResponse(status=404)
