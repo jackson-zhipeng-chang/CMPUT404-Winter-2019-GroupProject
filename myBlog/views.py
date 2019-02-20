@@ -59,7 +59,10 @@ class NewPostHandler(APIView):
     def post(self, request, format=None):
         current_user_uuid = get_current_user_uuid(request)
         author = get_object_or_404(Author, user_uuid=current_user_uuid)
+        print("author: "+author)
         data = JSONParser().parse(request)
+        print("request: "+request)
+        print("data: "+data)
         serializer = PostSerializer(data=data, context={'author': author})
         print("debugging: "+serializer.initial_data)
         if serializer.is_valid():
