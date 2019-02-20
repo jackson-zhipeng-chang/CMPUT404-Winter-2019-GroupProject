@@ -56,7 +56,6 @@ class NewPostHandler(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
 class PostHandler(APIView):
     def get(self, request,post_id, format=None):
         current_user_uuid = get_current_user_uuid(request)
@@ -93,6 +92,7 @@ class PostHandler(APIView):
         else:
             return HttpResponse(status=404)
 
+
 class CommentHandler(APIView):
     def get(self, request, post_id, format=None):
         try:
@@ -121,12 +121,6 @@ class CommentHandler(APIView):
         post = get_object_or_404(Post, pk=post_id) 
 
 
-@login_required(login_url="home")
-@api_view(['POST'])
-def FriendRequestHandler(request):
-    if request.method == 'POST':
-    	return Response({"message": "POST method", "data": post})    
-
 # https://stackoverflow.com/questions/12615154/how-to-get-the-currently-logged-in-users-user-id-in-django
 # https://www.django-rest-framework.org/api-guide/views/
 # https://stackoverflow.com/questions/6567831/how-to-perform-or-condition-in-django-queryset
@@ -144,6 +138,17 @@ class PostToUserIDHandler(APIView):
     def get(self, request, user_id, format=None):
     	posts = Post.objects.filter(author_id=user_id)
     	return Response(PostSerializer(posts, many=True).data)
+
+
+
+
+
+
+@login_required(login_url="home")
+@api_view(['POST'])
+def FriendRequestHandler(request):
+    if request.method == 'POST':
+        return Response({"message": "POST method", "data": post})    
 
 @login_required(login_url="home")
 @api_view(['POST'])
