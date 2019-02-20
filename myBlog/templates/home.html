@@ -6,7 +6,23 @@
 {% block content %}
 {% if user.is_authenticated %}
   <div>
-    <meta http-equiv = "refresh" content = "0; url=./myBlog/author/posts/" />
+    <!-- <meta http-equiv = "refresh" content = "0; url=./myBlog/author/posts/" /> -->
+    <h1 class="secondary-color">Hi {{ user.username }}!</h1>
+    <!-- <div class="w3-row-padding"> -->
+      <!-- <div class="w3-col m12"> -->
+        <div class="w3-card w3-round w3-white">
+        <div class="w3-container w3-padding">
+            <h4>Post title</h4>
+            <input class="w3-border w3-padding" type="text" name="Title" placeholder="My title" id=post-title><br>
+            <h4>Post content</h4>
+            <textarea style="width: 100%; height:10em;"class="w3-border w3-padding" type="text" name="Title" placeholder="What's on your mind?" id=post-content></textarea><br><br>
+            {% csrf_token %}
+            <button type="button" class="w3-button w3-theme" onclick="post()"><i class="fa fa-pencil"></i>  Post</button> 
+          </div>
+        <!-- </div>
+      </div> -->
+    </div>
+    
   </div>
   <br>
   <a href="{% url 'logout' %}" class="w3-button w3-theme-d1 w3-margin-bottom"><i class="fa fa-sign-out-alt"></i>  Logout</a>
@@ -23,3 +39,7 @@
   </div>
 {% endif %}
 {% endblock %}
+
+<script>
+    var csrf_token = '{{ csrf_token }}';
+</script>
