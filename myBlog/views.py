@@ -4,8 +4,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from django.shortcuts import get_object_or_404, render
-from .models import Post
-from .serializers import PostSerializer
+from .models import Post, Author, Comment
+from .serializers import PostSerializer, CommentSerializer
 from rest_framework.parsers import JSONParser
 from rest_framework import status
 from django.contrib.auth import login, authenticate
@@ -14,6 +14,7 @@ from django.shortcuts import redirect
 from django.contrib.auth.models import User
 from django.views import generic
 from django.http import HttpResponse, JsonResponse
+from django.db.models import Q
 
 
 # Code from: Reference: https://simpleisbetterthancomplex.com/tutorial/2017/02/18/how-to-create-user-sign-up-view.html
@@ -25,21 +26,30 @@ def signup(request):
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password1')
             user = User.objects.create_user(username=username,password=password, is_active=False)
+            userObj = get_object_or_404(User, username=username)
+            author = Author.objects.create(name=username,user=userObj)
+            author.save()
             return redirect('home')
     else:
         form = UserCreationForm()
     return render(request, 'signup.html', {'form': form})
 
+def get_current_user_uuid(request):
+    current_user = get_object_or_404(User, pk=request.user.id)
+    author = get_object_or_404(Author, user=current_user)
+    return author.user_uuid
 
 
 # https://www.django-rest-framework.org/api-guide/views/
 # https://www.django-rest-framework.org/tutorial/2-requests-and-responses/
 # https://www.django-rest-framework.org/tutorial/1-serialization/
+# https://www.geeksforgeeks.org/python-uploading-images-in-django/
 class NewPostHandler(APIView):
     def post(self, request, format=None):
-        current_user_id = int(self.request.user.id)
+        current_user_uuid = get_current_user_uuid(request)
+        author = get_object_or_404(Author, user_uuid=current_user_uuid)
         data = JSONParser().parse(request)
-        serializer = PostSerializer(data=data, context={'author': current_user_id})
+        serializer = PostSerializer(data=data, context={'author': author})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -49,11 +59,11 @@ class NewPostHandler(APIView):
 
 class PostHandler(APIView):
     def get(self, request,post_id, format=None):
-        current_user_id = int(self.request.user.id)
+        current_user_uuid = get_current_user_uuid(request)
         post = get_object_or_404(Post, pk=post_id)
         post_visibility = post.open_to
-        post_author = int(post.author_id)
-        if post_visibility == 'public' or (post_visibility == 'me' and current_user_id == post_author):
+        post_author = post.author_id
+        if post_visibility == 'public' or (post_visibility == 'me' and current_user_uuid == post_author):
             serializer = PostSerializer(post)
             return JsonResponse(serializer.data)
         else:
@@ -62,9 +72,9 @@ class PostHandler(APIView):
     def put(self, request, post_id, format=None):
         data = JSONParser().parse(request)
         post = get_object_or_404(Post, pk=post_id)
-        current_user_id = int(self.request.user.id)
-        post_author = int(post.author_id)
-        if current_user_id == post_author:
+        current_user_uuid = get_current_user_uuid(request)
+        post_author = post.author_id
+        if current_user_uuid == post_author:
             serializer = PostSerializer(post, data=data)
             if serializer.is_valid():
                 serializer.save()
@@ -75,27 +85,40 @@ class PostHandler(APIView):
 
     def delete(self, request, post_id, format=None):
         post = get_object_or_404(Post, pk=post_id)
-        current_user_id = int(self.request.user.id)
-        post_author = int(post.author_id)
+        current_user_uuid = get_current_user_uuid(request)
+        post_author = post.author_id
         if current_user_id == post_author:
             post.delete()
             return HttpResponse(status=204)
         else:
             return HttpResponse(status=404)
 
+class CommentHandler(APIView):
+    def get(self, request, post_id, format=None):
+        try:
+            post = get_object_or_404(Post, pk=post_id)
+            commment = get_object_or_404(Comment, post=post)
+            serializer = CommentSerializer(post)
+            return JsonResponse(serializer.data)
+        except:
+            return HttpResponse(status=404)
 
-@login_required(login_url="home")
-@api_view(['GET','POST', 'PUT', 'DELETE'])
-def CommentHandler(request, post_id):
-    post = get_object_or_404(Post, pk=post_id)
-    if request.method == 'GET':
-    	return Response(PostSerializer(post).data)
-    elif request.method == 'POST':
-    	return Response({"message": "POST method", "data": post})    
-    elif request.method == 'PUT':
-        return Response({"message": "PUT method", "data": request.data})
-    elif request.method == 'DELETE':
-        return Response({"message": "DELETE Method", "data": request.data})
+    def post(self, request, post_id, format=None):
+        post = get_object_or_404(Post, pk=post_id)
+        current_user_uuid = get_current_user_uuid(request)
+        author = get_object_or_404(Author, user_uuid=current_user_uuid)
+        data = JSONParser().parse(request)
+        serializer = CommentSerializer(data=data, context={'author': author, 'post_id':post_id})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, post_id, format=None):
+        post = get_object_or_404(Post, pk=post_id)
+
+    def delete(self, request, post_id, format=None):   
+        post = get_object_or_404(Post, pk=post_id) 
 
 
 @login_required(login_url="home")
@@ -106,13 +129,13 @@ def FriendRequestHandler(request):
 
 # https://stackoverflow.com/questions/12615154/how-to-get-the-currently-logged-in-users-user-id-in-django
 # https://www.django-rest-framework.org/api-guide/views/
-
+# https://stackoverflow.com/questions/6567831/how-to-perform-or-condition-in-django-queryset
 class PostToUserHandlerView(APIView):
 
     def get(self, request, format=None):
-    	current_user_id = int(self.request.user.id)
-    	posts = Post.objects.filter(author_id=current_user_id)
-    	return Response(PostSerializer(posts, many=True).data)
+        current_user_uuid = get_current_user_uuid(request)
+        posts = Post.objects.filter(Q(author_id=current_user_uuid) | Q(open_to='public'))
+        return Response(PostSerializer(posts, many=True).data)
 
 
 # https://stackoverflow.com/questions/19360874/pass-url-argument-to-listview-queryset
