@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from django.shortcuts import get_object_or_404, render
 from .models import Post, Author, Comment
-from .serializers import PostSerializer, CommentSerializer, AuthorFullSerializer
+from .serializers import PostSerializer, CommentSerializer, AuthorSerializer
 from rest_framework.parsers import JSONParser
 from rest_framework import status
 from django.contrib.auth import login, authenticate
@@ -18,6 +18,7 @@ from django.db.models import Q
 
 # https://stackoverflow.com/questions/37752440/relative-redirect-using-meta-http-equiv-refresh-with-gh-pages
 # https://www.tutorialspoint.com/How-to-automatically-redirect-a-Web-Page-to-another-URL for redirecting
+
 # Code from: Reference: https://simpleisbetterthancomplex.com/tutorial/2017/02/18/how-to-create-user-sign-up-view.html
 # https://docs.djangoproject.com/en/2.1/topics/auth/default/
 def signup(request):
@@ -40,6 +41,15 @@ def get_current_user_uuid(request):
     author = get_object_or_404(Author, user=current_user)
     return author.user_uuid
 
+def verify_current_user(post):
+    current_user_uuid = get_current_user_uuid(request)
+    post = get_object_or_404(Post, pk=post_id)
+    post_visibility = post.open_to
+    post_author = post.author_id
+    if current_user_uuid == post_author:
+        return True
+    else:
+        return False
 
 # https://www.django-rest-framework.org/api-guide/views/
 # https://www.django-rest-framework.org/tutorial/2-requests-and-responses/
@@ -56,25 +66,28 @@ class NewPostHandler(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
+# https://www.django-rest-framework.org/tutorial/2-requests-and-responses/
+# https://www.django-rest-framework.org/tutorial/1-serialization/
 class PostHandler(APIView):
     def get(self, request,post_id, format=None):
-        current_user_uuid = get_current_user_uuid(request)
         post = get_object_or_404(Post, pk=post_id)
-        post_visibility = post.open_to
-        post_author = post.author_id
-        if post_visibility == 'public' or (post_visibility == 'me' and current_user_uuid == post_author):
+        unlisted_post = post.unlisted
+        if unlisted_post:
             serializer = PostSerializer(post)
             return JsonResponse(serializer.data)
         else:
-            return HttpResponse(status=404)
+            user_verified = verify_current_user(post)
+            if post_visibility == 'public' or (post_visibility == 'me' and user_verified):
+                serializer = PostSerializer(post)
+                return JsonResponse(serializer.data, status=200)
+            else:
+                return HttpResponse(status=404)
   
     def put(self, request, post_id, format=None):
         data = JSONParser().parse(request)
         post = get_object_or_404(Post, pk=post_id)
-        current_user_uuid = get_current_user_uuid(request)
-        post_author = post.author_id
-        if current_user_uuid == post_author:
+        user_verified = verify_current_user(post)
+        if user_verified:
             serializer = PostSerializer(post, data=data)
             if serializer.is_valid():
                 serializer.save()
@@ -85,9 +98,8 @@ class PostHandler(APIView):
 
     def delete(self, request, post_id, format=None):
         post = get_object_or_404(Post, pk=post_id)
-        current_user_uuid = get_current_user_uuid(request)
-        post_author = post.author_id
-        if current_user_uuid == post_author:
+        user_verified = verify_current_user(post)
+        if user_verified:
             post.delete()
             return HttpResponse(status=204)
         else:
@@ -102,7 +114,6 @@ class CommentHandler(APIView):
         return JsonResponse(serializer.data)
 
     def post(self, request, post_id, format=None):
-        post = get_object_or_404(Post, pk=post_id)
         current_user_uuid = get_current_user_uuid(request)
         author = get_object_or_404(Author, user_uuid=current_user_uuid)
         data = JSONParser().parse(request)
@@ -139,7 +150,7 @@ class PostToUserIDHandler(APIView):
 class AuthorProfileHandler(APIView):
     def get(self, request, user_id, format=None):
         author = get_object_or_404(Author, user_uuid=user_id)
-        serializer = AuthorFullSerializer(author)
+        serializer = AuthorSerializer(author)
         return JsonResponse(serializer.data)
 
     def put(self, request, user_id, format=None):
@@ -147,7 +158,7 @@ class AuthorProfileHandler(APIView):
         author = get_object_or_404(Author, user_uuid=user_id)
         current_user_uuid = get_current_user_uuid(request)
         if current_user_uuid == author.user_uuid:
-            serializer = AuthorFullSerializer(author, data=data)
+            serializer = AuthorSerializer(author, data=data)
             if serializer.is_valid():
                 serializer.save()
                 return JsonResponse(serializer.data)

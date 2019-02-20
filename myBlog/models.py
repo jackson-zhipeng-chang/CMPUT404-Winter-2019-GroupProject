@@ -41,6 +41,9 @@ class Post(models.Model):
     author = models.ForeignKey(Author, related_name='post_author', on_delete=models.PROTECT)
     open_to = models.CharField(max_length=32, choices=open_toType)
     image = models.ImageField(upload_to='images/', null=True, blank=True)
+#https://stackoverflow.com/questions/5190313/django-booleanfield-how-to-set-the-default-value-to-true
+    unlisted = models.BooleanField(default=False)
+    post_time = models.DateTimeField(auto_now_add=True, blank=True)
 
     def __str__(self):
     	return self.post_title
