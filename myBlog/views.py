@@ -61,7 +61,7 @@ class NewPostHandler(APIView):
         author = get_object_or_404(Author, user_uuid=current_user_uuid)
         data = JSONParser().parse(request)
         serializer = PostSerializer(data=data, context={'author': author})
-        print(serializer.initial_data)
+        print("debugging: "+serializer.initial_data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
