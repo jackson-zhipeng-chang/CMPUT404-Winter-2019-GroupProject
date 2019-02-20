@@ -5,11 +5,21 @@
 
 {% block content %}
 {% if user.is_authenticated %}
-  Hi {{ user.username }}!
-  <p><a href="{% url 'logout' %}">logout</a></p>
-{% else %}
-  <p>You are not logged in</p>
-  <a href="{% url 'login' %}">login</a></br>
-  <a href="{% url 'signup' %}">signup</a></br>
+  <div>
+    <h1 class="secondary-color">Hi {{ user.username }}!</h1>
+  </div>
+  <br>
+  <a href="{% url 'logout' %}" class="w3-button w3-theme-d1 w3-margin-bottom"><i class="fa fa-sign-out-alt"></i>  Logout</a>
+
+  {% else %}
+  <div class="w3-card w3-round w3-white" style="width:30%;margin:auto;margin-top: 5%;">
+    <div class="w3-container w3-padding">
+      <div class="w3-center">
+        <h3>You are not logged in</h3>
+        <a href="{% url 'login' %}" class="w3-button w3-theme-d1 w3-margin-bottom"><i class="fa fa-sign-in"></i>  Login</a>
+        <a href="{% url 'signup' %}" class="w3-button w3-theme-d1 w3-margin-bottom"><i class="fa fa-angle-double-up"></i>  Sign up</a>
+      </div>
+    </div>
+  </div>
 {% endif %}
 {% endblock %}
