@@ -31,7 +31,8 @@ class PostSerializer(serializers.ModelSerializer):
     author = AuthorInfoSerializer(read_only=True)
     class Meta:
     	model = Post
-    	fields = '__all__'
+    	fields = ('post_id', 'post_title', 'post_content','post_type', 'author', 'open_to', 'image', 'unlisted', 'post_time', 'comments')
+
 
     def get_comments(self, obj):
         comments = Comment.objects.filter(post_id=obj.post_id).order_by('comment_time')

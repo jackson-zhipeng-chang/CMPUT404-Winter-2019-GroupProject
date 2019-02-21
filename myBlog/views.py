@@ -136,7 +136,7 @@ class CommentHandler(APIView):
 class PostToUserHandlerView(APIView):
     def get(self, request, format=None):
         current_user_uuid = get_current_user_uuid(request)
-        posts = Post.objects.filter(Q(author_id=current_user_uuid) | Q(open_to='public'))
+        posts = Post.objects.filter(Q(author_id=current_user_uuid) | Q(open_to='public')).order_by('-post_time')
         return Response(PostSerializer(posts, many=True).data)
 
 
