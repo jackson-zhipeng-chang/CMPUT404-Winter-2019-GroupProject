@@ -59,7 +59,7 @@ class NewPostHandler(APIView):
     def post(self, request, format=None):
         current_user_uuid = get_current_user_uuid(request)
         author = get_object_or_404(Author, user_uuid=current_user_uuid)
-        data = JSONParser().parse(request)
+        data = request.data
         serializer = PostSerializer(data=data, context={'author': author})
         if serializer.is_valid():
             serializer.save()
@@ -84,7 +84,7 @@ class PostHandler(APIView):
                 return HttpResponse(status=404)
   
     def put(self, request, post_id, format=None):
-        data = JSONParser().parse(request)
+        data = request.data
         post = get_object_or_404(Post, pk=post_id)
         user_verified = verify_current_user(post)
         if user_verified:
@@ -108,15 +108,15 @@ class PostHandler(APIView):
 
 class CommentHandler(APIView):
     def get(self, request, post_id, format=None):
-        post = get_object_or_404(Post, pk=post_id)
-        commment = get_object_or_404(Comment, post=post)
-        serializer = CommentSerializer(post)
+        commment = get_object_or_404(Comment, post_id=post_id)
+        serializer = CommentSerializer(commment)
         return JsonResponse(serializer.data)
 
     def post(self, request, post_id, format=None):
         current_user_uuid = get_current_user_uuid(request)
+        post = get_object_or_404(Post, pk=post_id)
         author = get_object_or_404(Author, user_uuid=current_user_uuid)
-        data = JSONParser().parse(request)
+        data = request.data
         serializer = CommentSerializer(data=data, context={'author': author, 'post_id':post_id})
         if serializer.is_valid():
             serializer.save()
@@ -154,7 +154,7 @@ class AuthorProfileHandler(APIView):
         return JsonResponse(serializer.data)
 
     def put(self, request, user_id, format=None):
-        data = JSONParser().parse(request)
+        data = request.data
         author = get_object_or_404(Author, user_uuid=user_id)
         current_user_uuid = get_current_user_uuid(request)
         if current_user_uuid == author.user_uuid:
