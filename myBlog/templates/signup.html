@@ -1,14 +1,27 @@
 {% extends 'base.html' %}
 
 {% block content %}
-  <div class="w3-card w3-round w3-white" style="width:50%;margin:auto;margin-top: 5%;">
-    <div class="w3-container w3-padding">
-      <h2 class="w3-center">Sign up</h2>
-      <form method="post">
-          {% csrf_token %}
-          {{ form.as_p }}
-          <button type="submit" class="w3-button w3-theme-d2 w3-margin-bottom"><i class="fa fa-angle-double-up"></i>  Sign up</button>
-        </form>
+    <div class="w3-card w3-round w3-white" style="width:50%;margin:auto;margin-top: 5%;">
+        <div class="w3-container w3-padding">
+            <h2 class="w3-center">Sign up</h2>
+            <form method="post">
+                {% csrf_token %}
+
+                {#Based off https://simpleisbetterthancomplex.com/tutorial/2017/02/18/how-to-create-user-sign-up-view.html#}
+                {% for field in form %}
+                    <p align="center">
+                        {{ field.label_tag }}<br>
+                        {{ field }}
+                        {% for error in field.errors %}
+                            <p style="color: red" align="center">{{ error }}</p>
+                        {% endfor %}
+                    </p>
+                {% endfor %}
+                <div align="center">
+                    <button type="submit" class="w3-button w3-theme-d2 w3-margin-bottom"><i class="fa fa-angle-double-up"></i>  Sign up</button>
+                </div>
+
+            </form>
+        </div>
     </div>
-  </div>
 {% endblock %}
