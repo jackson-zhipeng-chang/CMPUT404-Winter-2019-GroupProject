@@ -11,13 +11,16 @@ function post() {
     form.post_content = document.getElementById("post-content").value;
 
     var xhr = new XMLHttpRequest();
+    console.log("Posting...")
     xhr.open("POST", "myBlog/posts/", true);
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.setRequestHeader("X-CSRFToken", csrf_token);
     xhr.send(JSON.stringify(form));
-    console.log(form);
-    console.log(JSON.stringify(form));
+    console.log("Finished Posting!")
 
+    //resetting fields
+    document.getElementById("post-title").value = "";
+    document.getElementById("post-content").value = "";
   }
 function getAllPosts() {
     var xhr = new XMLHttpRequest();
