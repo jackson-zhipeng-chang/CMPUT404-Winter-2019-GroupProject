@@ -41,7 +41,7 @@ def get_current_user_uuid(request):
     author = get_object_or_404(Author, user=current_user)
     return author.user_uuid
 
-def verify_current_user(post):
+def verify_current_user(post, request):
     current_user_uuid = get_current_user_uuid(request)
     post_visibility = post.open_to
     post_author = post.author_id
@@ -70,12 +70,13 @@ class NewPostHandler(APIView):
 class PostHandler(APIView):
     def get(self, request,post_id, format=None):
         post = get_object_or_404(Post, pk=post_id)
+        post_visibility = post.open_to
         unlisted_post = post.unlisted
         if unlisted_post:
             serializer = PostSerializer(post)
             return JsonResponse(serializer.data)
         else:
-            user_verified = verify_current_user(post)
+            user_verified = verify_current_user(post, request)
             if post_visibility == 'public' or (post_visibility == 'me' and user_verified):
                 serializer = PostSerializer(post)
                 return JsonResponse(serializer.data, status=200)
@@ -85,7 +86,7 @@ class PostHandler(APIView):
     def put(self, request, post_id, format=None):
         data = request.data
         post = get_object_or_404(Post, pk=post_id)
-        user_verified = verify_current_user(post)
+        user_verified = verify_current_user(post, request)
         if user_verified:
             serializer = PostSerializer(post, data=data)
             if serializer.is_valid():
@@ -97,7 +98,7 @@ class PostHandler(APIView):
 
     def delete(self, request, post_id, format=None):
         post = get_object_or_404(Post, pk=post_id)
-        user_verified = verify_current_user(post)
+        user_verified = verify_current_user(post, request)
         if user_verified:
             post.delete()
             return HttpResponse(status=204)
