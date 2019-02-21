@@ -19,21 +19,20 @@ function post() {
     console.log(JSON.stringify(form));
 
   }
-// function getAllPosts() {
-//     var xhr = new XMLHttpRequest();
-//     xhr.onreadystatechange = function () {
-//         if (this.readyState != 4) return;
+function getAllPosts() {
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+            
+            var data = JSON.parse(this.responseText);
+            console.log(data);
+            // we get the returned data
+        }
+    };
+    xhr.open("GET", "/myBlog/author/posts/", true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.setRequestHeader("Accept", "application/json");
+    xhr.setRequestHeader("x-csrf-token", csrf_token);
+    xhr.send();
     
-//         if (this.status == 200) {
-//             var data = JSON.parse(this.responseText);
-//             console.log(data);
-//             // we get the returned data
-//         }
-    
-//         // end of state change: it can be after some time (async)
-//     };
-//     xhr.open("GET", "myBlog/posts/", true);
-//     // xhr.setRequestHeader('Content-Type', 'application/json');
-//     xhr.send();
-    
-// }
+}
