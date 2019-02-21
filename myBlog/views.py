@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from django.shortcuts import get_object_or_404, render
 from .models import Post, Author, Comment
-from .serializers import PostSerializer, CommentSerializer, AuthorSerializer
+from .serializers import PostSerializer, CommentSerializer, AuthorSerializer, ResponsSerializer
 from rest_framework.parsers import JSONParser
 from rest_framework import status
 from django.contrib.auth import login, authenticate
@@ -22,6 +22,21 @@ from urllib.parse import urlparse
 
 # Code from: Reference: https://simpleisbetterthancomplex.com/tutorial/2017/02/18/how-to-create-user-sign-up-view.html
 # https://docs.djangoproject.com/en/2.1/topics/auth/default/
+
+class Respons(object):
+    def __init__(self, query, content, size, next, previous,posts):
+        self.query = query
+        self.content = content
+        self.size = size
+        self.next = next
+        self.previous = previous
+        self.posts = posts
+
+def get_host_from_request(request):
+# https://docs.djangoproject.com/en/2.1/ref/request-response/
+    host = request.scheme+"://"+request.get_host()
+    return host
+
 def signup(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
@@ -31,7 +46,8 @@ def signup(request):
             user = User.objects.create_user(username=username,password=password, is_active=False)
             userObj = get_object_or_404(User, username=username)
 # https://stackoverflow.com/questions/9626535/get-protocol-host-name-from-url
-            author = Author.objects.create(displayName=username,user=userObj, host=request.get_host(), url=request.get_host())
+            host = get_host_from_request(request)
+            author = Author.objects.create(displayName=username,user=userObj, host=host)
             author.save()
             return redirect('home')
     else:
@@ -62,7 +78,8 @@ class NewPostHandler(APIView):
         current_user_uuid = get_current_user_uuid(request)
         author = get_object_or_404(Author, id=current_user_uuid)
         data = request.data
-        serializer = PostSerializer(data=data, context={'author': author, 'origin': request.get_host(), 'host': request.get_host()})
+        origin=get_host_from_request(request)
+        serializer = PostSerializer(data=data, context={'author': author, 'origin': origin, 'source': origin})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -81,7 +98,6 @@ class PostHandler(APIView):
         else:
             user_verified = verify_current_user(post, request)
             if post_visibility == 'PUBLIC' or (post_visibility == 'PRIVATE' and user_verified):
-                serializer = PostSerializer(post)
                 return JsonResponse(serializer.data, status=200)
             else:
                 return HttpResponse(status=404)
@@ -131,9 +147,21 @@ class CommentHandler(APIView):
 # https://stackoverflow.com/questions/6567831/how-to-perform-or-condition-in-django-queryset
 class PostToUserHandlerView(APIView):
     def get(self, request, format=None):
+        print(get_host_from_request(request)+request.get_full_path())
+
+        try:
+            size = request.GET["size"]
+        except:
+            size = -1
+        next = get_host_from_request(request)+request.get_full_path()
+        previous = get_host_from_request(request)+request.get_full_path()
         current_user_uuid = get_current_user_uuid(request)
         posts = Post.objects.filter(Q(author_id=current_user_uuid) | Q(visibility='PUBLIC')).order_by('-published')
-        return Response(PostSerializer(posts, many=True).data)
+        respons = Respons(query="posts", content=posts.count(), size=size, next=next, previous=previous, posts=posts)
+        responsSerializer = ResponsSerializer(respons)
+        #serializer = PostSerializer(posts, many=True)
+        #return Response(serializer.data)
+        return Response(responsSerializer.data)
 
 
 # https://stackoverflow.com/questions/19360874/pass-url-argument-to-listview-queryset
