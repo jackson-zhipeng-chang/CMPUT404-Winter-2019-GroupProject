@@ -14,10 +14,10 @@ function post() {
     xhr.open("POST", "myBlog/posts/", true);
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.setRequestHeader("X-CSRFToken", csrf_token);
-    xhr.send(JSON.stringify({
-        form
-    }));
+    xhr.send(JSON.stringify(form));
     console.log(form);
+    console.log(JSON.stringify(form));
+
   }
 // function getAllPosts() {
 //     var xhr = new XMLHttpRequest();
