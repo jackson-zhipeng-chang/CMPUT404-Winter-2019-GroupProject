@@ -25,13 +25,14 @@ from django.contrib.auth.decorators import login_required
 
 
 urlpatterns = [
-    path('api-docs/',login_required(get_swagger_view(title='CMPUT 404 Team 4 API docs')), name='apiDocs'),
-    path('posts/<uuid:post_id>/', views.PostHandler, name='post'),
-    path('comments/<uuid:post_id>/', views.CommentHandler, name='comment'),
+    path('api-docs/',login_required(get_swagger_view(title='Welcome to myBlog APIs Documentation!')), name='apiDocs'),
+    path('posts/', views.NewPostHandler.as_view(), name='new_post'),
+    path('posts/<uuid:post_id>/', views.PostHandler.as_view(), name='modify_post'),
+    path('comments/<uuid:post_id>/', views.CommentHandler.as_view(), name='comment'),
     path('friendrequest/', views.FriendRequestHandler, name='friendrequest'),
-    path('friends/<int:user_id>', views.FriendQueryHandler, name='friendquery'),
-    path('author/posts/', views.PostToUserHandlerView.as_view(), name='posttouser'),
-    path('author/<int:user_id>/posts', views.PostToUserIDHandler.as_view(), name='posttouserid'),
-    path('author/<int:user_id>', views.AuthorProfileHandler, name='authorprofile'),
-    path('author/<int:user_id1>/friends/<int:user_id2>', views.Friend2FriendHandler, name='friend2friend'),
+    path('friends/<uuid:user_id>/', views.FriendQueryHandler, name='friendquery'),
+    path('author/posts/', login_required(views.PostToUserHandlerView.as_view()), name='posttouser'),
+    path('author/<uuid:user_id>/posts/', views.PostToUserIDHandler.as_view(), name='posttouserid'),
+    path('author/<uuid:user_id>/', login_required(views.AuthorProfileHandler.as_view()), name='authorprofile'),
+    path('author/<uuid:user_id1>/friends/<uuid:user_id2>/', views.Friend2FriendHandler, name='friend2friend'),
 ]
