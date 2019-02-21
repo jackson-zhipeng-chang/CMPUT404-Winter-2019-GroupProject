@@ -120,7 +120,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/2.1/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
-
+# https://stackoverflow.com/questions/27182557/valueerror-incorrect-timezone-setting-while-migrating-manage-py-file-in-django
 TIME_ZONE = 'America/Edmonton'
 
 USE_I18N = True

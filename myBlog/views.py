@@ -43,7 +43,6 @@ def get_current_user_uuid(request):
 
 def verify_current_user(post):
     current_user_uuid = get_current_user_uuid(request)
-    post = get_object_or_404(Post, pk=post_id)
     post_visibility = post.open_to
     post_author = post.author_id
     if current_user_uuid == post_author:
