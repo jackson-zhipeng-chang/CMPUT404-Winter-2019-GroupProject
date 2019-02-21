@@ -40,13 +40,14 @@ class Post(models.Model):
 #https://stackoverflow.com/questions/1110153/what-is-the-most-efficient-way-to-store-a-list-in-the-django-models
     postid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=400)
-    source = models.URLField(null=True, blank=False)
-    origin = models.URLField()
+    source = models.URLField(null=True, blank=True)
+    origin = models.URLField(null=True, blank=True)
     content = models.TextField()
+    categories = models.TextField(null=True, blank=True)
     contentType = models.CharField(max_length=32, choices=contentTypeChoice)
     author = models.ForeignKey(Author, related_name='post_author', on_delete=models.PROTECT)
     visibility = models.CharField(max_length=32, choices=visibilityType)
-    visibleTo = models.TextField(null=True, blank=False)
+    visibleTo = models.TextField(null=True, blank=True)
     description = models.TextField()
 #https://stackoverflow.com/questions/5190313/django-booleanfield-how-to-set-the-default-value-to-true
     unlisted = models.BooleanField(default=False)
@@ -65,10 +66,10 @@ class Comment(models.Model):
         ('image/jpeg;base64', 'image/jpeg;base64'),
     )   
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) 
-    postid = models.UUIDField(default=uuid.uuid4, editable=False)               
+    postid = models.UUIDField(default=uuid.uuid4)               
     author = models.ForeignKey(Author,  related_name='comment_author', on_delete=models.PROTECT)                                          
     comment = models.CharField(max_length=400)
     contentType = models.CharField(max_length=32, choices=contentTypeChoice)
     published = models.DateTimeField(auto_now_add=True, blank=True)
     def __str__(self):
-        return self.content
+        return self.comment
