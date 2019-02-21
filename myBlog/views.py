@@ -15,6 +15,7 @@ from django.contrib.auth.models import User
 from django.views import generic
 from django.http import HttpResponse, JsonResponse
 from django.db.models import Q
+from urllib.parse import urlparse
 
 # https://stackoverflow.com/questions/37752440/relative-redirect-using-meta-http-equiv-refresh-with-gh-pages
 # https://www.tutorialspoint.com/How-to-automatically-redirect-a-Web-Page-to-another-URL for redirecting
@@ -29,7 +30,8 @@ def signup(request):
             password = form.cleaned_data.get('password1')
             user = User.objects.create_user(username=username,password=password, is_active=False)
             userObj = get_object_or_404(User, username=username)
-            author = Author.objects.create(name=username,user=userObj)
+# https://stackoverflow.com/questions/9626535/get-protocol-host-name-from-url
+            author = Author.objects.create(displayName=username,user=userObj, host=request.get_host(), url=request.get_host())
             author.save()
             return redirect('home')
     else:
@@ -39,11 +41,11 @@ def signup(request):
 def get_current_user_uuid(request):
     current_user = get_object_or_404(User, pk=request.user.id)
     author = get_object_or_404(Author, user=current_user)
-    return author.user_uuid
+    return author.id
 
 def verify_current_user(post, request):
     current_user_uuid = get_current_user_uuid(request)
-    post_visibility = post.open_to
+    post_visibility = post.visibility
     post_author = post.author_id
     if current_user_uuid == post_author:
         return True
@@ -54,12 +56,13 @@ def verify_current_user(post, request):
 # https://www.django-rest-framework.org/tutorial/2-requests-and-responses/
 # https://www.django-rest-framework.org/tutorial/1-serialization/
 # https://www.geeksforgeeks.org/python-uploading-images-in-django/
+# https://stackoverflow.com/questions/4093999/how-to-use-django-to-get-the-name-for-the-host-server
 class NewPostHandler(APIView):
     def post(self, request, format=None):
         current_user_uuid = get_current_user_uuid(request)
-        author = get_object_or_404(Author, user_uuid=current_user_uuid)
+        author = get_object_or_404(Author, id=current_user_uuid)
         data = request.data
-        serializer = PostSerializer(data=data, context={'author': author})
+        serializer = PostSerializer(data=data, context={'author': author, 'origin': request.get_host(), 'host': request.get_host()})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -68,24 +71,24 @@ class NewPostHandler(APIView):
 # https://www.django-rest-framework.org/tutorial/2-requests-and-responses/
 # https://www.django-rest-framework.org/tutorial/1-serialization/
 class PostHandler(APIView):
-    def get(self, request,post_id, format=None):
-        post = get_object_or_404(Post, pk=post_id)
-        post_visibility = post.open_to
+    def get(self, request,postid, format=None):
+        post = get_object_or_404(Post, pk=postid)
+        post_visibility = post.visibility
         unlisted_post = post.unlisted
         if unlisted_post:
             serializer = PostSerializer(post)
             return JsonResponse(serializer.data)
         else:
             user_verified = verify_current_user(post, request)
-            if post_visibility == 'public' or (post_visibility == 'me' and user_verified):
+            if post_visibility == 'PUBLIC' or (post_visibility == 'PRIVATE' and user_verified):
                 serializer = PostSerializer(post)
                 return JsonResponse(serializer.data, status=200)
             else:
                 return HttpResponse(status=404)
   
-    def put(self, request, post_id, format=None):
+    def put(self, request, postid, format=None):
         data = request.data
-        post = get_object_or_404(Post, pk=post_id)
+        post = get_object_or_404(Post, pk=postid)
         user_verified = verify_current_user(post, request)
         if user_verified:
             serializer = PostSerializer(post, data=data)
@@ -96,8 +99,8 @@ class PostHandler(APIView):
         else:
             return HttpResponse(status=404)
 
-    def delete(self, request, post_id, format=None):
-        post = get_object_or_404(Post, pk=post_id)
+    def delete(self, request, postid, format=None):
+        post = get_object_or_404(Post, pk=postid)
         user_verified = verify_current_user(post, request)
         if user_verified:
             post.delete()
@@ -105,29 +108,22 @@ class PostHandler(APIView):
         else:
             return HttpResponse(status=404)
 
-
 class CommentHandler(APIView):
-    def get(self, request, post_id, format=None):
-        commment = get_object_or_404(Comment, post_id=post_id)
+    def get(self, request, postid, format=None):
+        commment = get_object_or_404(Comment, postid=postid)
         serializer = CommentSerializer(commment)
         return JsonResponse(serializer.data)
 
-    def post(self, request, post_id, format=None):
+    def post(self, request, postid, format=None):
         current_user_uuid = get_current_user_uuid(request)
-        post = get_object_or_404(Post, pk=post_id)
-        author = get_object_or_404(Author, user_uuid=current_user_uuid)
+        post = get_object_or_404(Post, pk=postid)
+        author = get_object_or_404(Author, id=current_user_uuid)
         data = request.data
-        serializer = CommentSerializer(data=data, context={'author': author, 'post_id':post_id})
+        serializer = CommentSerializer(data=data, context={'author': author, 'postid':postid})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def put(self, request, post_id, format=None):
-        post = get_object_or_404(Post, pk=post_id)
-
-    def delete(self, request, post_id, format=None):   
-        post = get_object_or_404(Post, pk=post_id) 
 
 
 # https://stackoverflow.com/questions/12615154/how-to-get-the-currently-logged-in-users-user-id-in-django
@@ -136,28 +132,29 @@ class CommentHandler(APIView):
 class PostToUserHandlerView(APIView):
     def get(self, request, format=None):
         current_user_uuid = get_current_user_uuid(request)
-        posts = Post.objects.filter(Q(author_id=current_user_uuid) | Q(open_to='public')).order_by('-post_time')
+        posts = Post.objects.filter(Q(author_id=current_user_uuid) | Q(visibility='PUBLIC')).order_by('-published')
         return Response(PostSerializer(posts, many=True).data)
 
 
 # https://stackoverflow.com/questions/19360874/pass-url-argument-to-listview-queryset
 class PostToUserIDHandler(APIView):
     def get(self, request, user_id, format=None):
-    	posts = Post.objects.filter(author_id=user_id)
-    	return Response(PostSerializer(posts, many=True).data)
+        current_user_uuid = get_current_user_uuid(request)
+        posts = Post.objects.filter(Q(author_id=current_user_uuid) | Q(visibility='PUBLIC')).order_by('-published')
+        return Response(PostSerializer(posts, many=True).data)
 
 
 class AuthorProfileHandler(APIView):
     def get(self, request, user_id, format=None):
-        author = get_object_or_404(Author, user_uuid=user_id)
+        author = get_object_or_404(Author, id=user_id)
         serializer = AuthorSerializer(author)
         return JsonResponse(serializer.data)
 
     def put(self, request, user_id, format=None):
         data = request.data
-        author = get_object_or_404(Author, user_uuid=user_id)
+        author = get_object_or_404(Author, id=user_id)
         current_user_uuid = get_current_user_uuid(request)
-        if current_user_uuid == author.user_uuid:
+        if current_user_uuid == author.id:
             serializer = AuthorSerializer(author, data=data)
             if serializer.is_valid():
                 serializer.save()
@@ -170,7 +167,7 @@ class AuthorProfileHandler(APIView):
         author = get_object_or_404(Author, pk=user_id)
         user = get_object_or_404(User, pk=author.user.id)
         current_user_uuid = get_current_user_uuid(request)
-        if current_user_uuid == author.user_uuid:
+        if current_user_uuid == author.id:
             author.delete()
             user.delete()
             return HttpResponse(status=204)

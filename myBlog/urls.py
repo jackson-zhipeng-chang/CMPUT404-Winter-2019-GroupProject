@@ -28,7 +28,7 @@ urlpatterns = [
     path('api-docs/',login_required(get_swagger_view(title='Welcome to myBlog APIs Documentation!')), name='apiDocs'),
     path('posts/', views.NewPostHandler.as_view(), name='new_post'),
     path('posts/<uuid:post_id>/', views.PostHandler.as_view(), name='modify_post'),
-    path('comments/<uuid:post_id>/', views.CommentHandler.as_view(), name='comment'),
+    path('posts/<uuid:post_id>/comments', views.CommentHandler.as_view(), name='comment'),
     path('friendrequest/', views.FriendRequestHandler, name='friendrequest'),
     path('friends/<uuid:user_id>/', views.FriendQueryHandler, name='friendquery'),
     path('author/posts/', login_required(views.PostToUserHandlerView.as_view()), name='posttouser'),

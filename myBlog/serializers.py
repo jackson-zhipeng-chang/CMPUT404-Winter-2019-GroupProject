@@ -8,19 +8,20 @@ import uuid
 # https://stackoverflow.com/questions/35522768/django-serializer-imagefield-to-get-full-url
 # https://www.geeksforgeeks.org/python-uploading-images-in-django/
 # https://www.django-rest-framework.org/api-guide/fields/
-
-class AuthorInfoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Author
-        fields = ('user_uuid', 'host')
-
+# https://www.django-rest-framework.org/api-guide/fields/#serializermethodfield
 class AuthorSerializer(serializers.ModelSerializer):
+    url = serializers.SerializerMethodField()
+
     class Meta:
         model = Author
-        fields = ('name', 'user_uuid','host', 'github')
+        fields = ('id','displayName', 'url','host', 'github')
+
+    def get_url(self, obj):
+        url = obj.host+"/"+str(obj.id)
+        return url
 
     def update(self, instance, validated_data):
-        instance.name = validated_data.get('name', instance.name)
+        instance.displayName = validated_data.get('displayName', instance.displayName)
         instance.github = validated_data.get('github', instance.github)
         instance.save()
         return instance
@@ -28,14 +29,14 @@ class AuthorSerializer(serializers.ModelSerializer):
 class PostSerializer(serializers.ModelSerializer):
     comments = serializers.SerializerMethodField()
 #https://www.django-rest-framework.org/api-guide/serializers/#specifying-fields-explicitly
-    author = AuthorInfoSerializer(read_only=True)
+    author = AuthorSerializer(read_only=True)
     class Meta:
     	model = Post
-    	fields = ('post_id', 'post_title', 'post_content','post_type', 'author', 'open_to', 'image', 'unlisted', 'post_time', 'comments')
+    	fields = '__all__'
 
 
     def get_comments(self, obj):
-        comments = Comment.objects.filter(post_id=obj.post_id).order_by('comment_time')
+        comments = Comment.objects.filter(postid=obj.postid).order_by('published')
         serializer = CommentSerializer(comments, many=True)
         return serializer.data
     # https://www.django-rest-framework.org/api-guide/serializers/#saving-instances
@@ -46,22 +47,22 @@ class PostSerializer(serializers.ModelSerializer):
         return post
 # https://www.django-rest-framework.org/api-guide/serializers/#saving-instances
     def update(self, instance, validated_data):
-        instance.post_title = validated_data.get('post_title', instance.post_title)
-        instance.post_content = validated_data.get('post_content', instance.post_content)
-        instance.post_type = validated_data.get('post_type', instance.post_type)
-        instance.open_to = validated_data.get('open_to', instance.open_to)
+        instance.title = validated_data.get('title', instance.title)
+        instance.content = validated_data.get('content', instance.content)
+        instance.contentType = validated_data.get('contentType', instance.contentType)
+        instance.visibility = validated_data.get('visibility', instance.visibility)
         instance.save()
         return instance
 
 class CommentSerializer(serializers.ModelSerializer):
-    author = AuthorInfoSerializer(read_only=True)
+    author = AuthorSerializer(read_only=True)
     class Meta:
         model =Comment
         fields = '__all__'
 
     def create(self, validated_data):
         author = self.context['author']
-        post_id = self.context['post_id']
-        comment = Comment.objects.create(author=author, post_id=post_id, **validated_data)
+        postid = self.context['postid']
+        comment = Comment.objects.create(author=author, postid=postid, **validated_data)
         comment.save()
         return comment
