@@ -28,11 +28,6 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('myBlog/', include('myBlog.urls'), name='myBlog'),
-    path('accounts/', include('django.contrib.auth.urls')),
-    path('signup/', views.signup, name="signup"),
     path('', TemplateView.as_view(template_name='home.html'), name='home'),
 
 ]
-
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
