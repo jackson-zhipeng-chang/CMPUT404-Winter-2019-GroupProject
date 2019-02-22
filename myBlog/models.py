@@ -35,6 +35,10 @@ class Friend(models.Model):
     status = models.CharField(max_length=32, choices=friednStatusChoise, default='Pending')
     last_modified_time = models.DateTimeField(auto_now_add=True, editable=False)
 
+    class Meta:
+        unique_together = ('author', 'friend',)
+
+
     def __str__(self):
         return "Friend request from %s to %s"%(self.author, self.friend)
 

@@ -85,7 +85,7 @@ class FriendSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Friend
-        fields = ('author', 'status', 'last_modified_time')
+        fields = ('id','author','friend', 'status', 'last_modified_time')
 
 
 class PostSerializer(serializers.ModelSerializer):
