@@ -8,18 +8,62 @@ from .models import Post, Author, Comment, Friend
 from .serializers import PostSerializer, CommentSerializer, AuthorSerializer, CustomPagination, FriendSerializer
 from rest_framework.parsers import JSONParser
 from rest_framework import status
-from django.contrib.auth import login, authenticate
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.shortcuts import redirect
 from django.contrib.auth.models import User
 from django.views import generic
 from django.http import HttpResponse, JsonResponse
+from django.views.generic.edit import FormView
 from django.db.models import Q
 from urllib.parse import urlparse
 
 # https://stackoverflow.com/questions/37752440/relative-redirect-using-meta-http-equiv-refresh-with-gh-pages
 # https://www.tutorialspoint.com/How-to-automatically-redirect-a-Web-Page-to-another-URL for redirecting
 
+class SignupView(FormView):
+    template_name = 'signup.html'
+    form_class = UserCreationForm  # The Form class the FormView should use
+    success_url = '/'  # Go here after successful POST
+
+    def form_valid(self, form):
+        username = form.cleaned_data.get('username')
+        password = form.cleaned_data.get('password1')
+
+        # is_active should equal true so user can login
+        User.objects.create_user(username=username, password=password, is_active=True)
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        return super().form_invalid(form)
+
+
+class LoginView(FormView):
+    template_name = 'login.html'
+    form_class = AuthenticationForm # The Form class the FormView should use
+    success_url = '/'  # Go here after successful POST
+
+    def form_valid(self, form):
+        username = form.cleaned_data.get('username')
+        password = form.cleaned_data.get('password')
+        user = authenticate(username=username, password=password)
+
+        if user is not None:
+            login(self.request, user)
+        else:
+            raise Exception  # TODO: better error checking?
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        return super().form_invalid(form)
+
+
+def logout_user(request):
+    logout(request)
+    return redirect("home")
+
+
+'''
 # Code from: Reference: https://simpleisbetterthancomplex.com/tutorial/2017/02/18/how-to-create-user-sign-up-view.html
 # https://docs.djangoproject.com/en/2.1/topics/auth/default/
 
@@ -55,7 +99,7 @@ def signup(request):
     else:
         form = UserCreationForm()
     return render(request, 'signup.html', {'form': form})
-
+    
 def get_current_user_uuid(request):
     if (not User.objects.filter(pk=request.user.id).exists()):
         return Response("User coudn't find", status=404)
@@ -69,7 +113,6 @@ def verify_current_user_to_post(post, request):
     post_visibility = post.visibility
     post_author = post.author_id
     unlisted_post = post.unlisted
-
 
     if User.objects.filter(pk=request.user.id).exists():
         if unlisted_post:
@@ -274,7 +317,6 @@ class AuthorProfileHandler(APIView):
 
 
 class FriendRequestHandler(APIView):
-
     def get(self, request, format=None):
         current_user_uuid = get_current_user_uuid(request)
         author_object = Author.objects.get(id=current_user_uuid)
@@ -307,7 +349,6 @@ class FriendRequestHandler(APIView):
                 return Response("You are already friends", status=status.HTTP_400_BAD_REQUEST)  
         else:
             return Response("You are not sending the friendrequest with the correct format.",status=status.HTTP_400_BAD_REQUEST)  
-
 
     def put(self, request, format=None):
         data = request.data
@@ -372,12 +413,11 @@ class FriendRequestHandler(APIView):
             else:
                 return Response("Opreation not allowed.", status=status.HTTP_400_BAD_REQUEST)
 
-
 @login_required(login_url="home")
 @api_view(['POST'])
 def FriendQueryHandler(request, user_id):
     if request.method == 'POST':
-    	return Response({"message": "POST method", "data": post})    
+        return Response({"message": "POST method", "data": post})
 
 @login_required(login_url="home")
 @api_view(['GET'])
