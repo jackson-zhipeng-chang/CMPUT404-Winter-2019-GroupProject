@@ -29,10 +29,10 @@ urlpatterns = [
     path('posts/', views.NewPostHandler.as_view(), name='new_post'),
     path('posts/<uuid:postid>/', views.PostHandler.as_view(), name='modify_post'),
     path('posts/<uuid:postid>/comments/', views.CommentHandler.as_view(), name='comment'),
-    path('friendrequest/', views.FriendRequestHandler, name='friendrequest'),
+    path('friendrequest/', views.FriendRequestHandler.as_view(), name='friendrequest'),
     path('friends/<uuid:user_id>/', views.FriendQueryHandler, name='friendquery'),
     path('author/posts/', login_required(views.PostToUserHandlerView.as_view()), name='posttouser'),
     path('author/<uuid:user_id>/posts/', views.PostToUserIDHandler.as_view(), name='posttouserid'),
-    path('author/<uuid:user_id>/', login_required(views.AuthorProfileHandler.as_view()), name='authorprofile'),
+    path('author/<uuid:user_id>/', views.AuthorProfileHandler.as_view(), name='authorprofile'),
     path('author/<uuid:user_id1>/friends/<uuid:user_id2>/', views.Friend2FriendHandler, name='friend2friend'),
 ]

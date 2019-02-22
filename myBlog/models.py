@@ -12,13 +12,32 @@ class Author(models.Model):
     # https://docs.djangoproject.com/en/2.1/topics/db/examples/one_to_one/
     # https://simpleisbetterthancomplex.com/tutorial/2016/07/22/how-to-extend-django-user-model.html By Vitor Freitas
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.OneToOneField(User, on_delete=models.PROTECT)
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
     displayName = models.CharField(max_length=128)
     github = models.URLField(null=True, blank=False)
     host = models.URLField()
 
     def __str__(self):
         return self.displayName
+
+
+class Friend(models.Model):
+#https://briancaffey.github.io/2017/07/19/different-ways-to-build-friend-models-in-django.html
+# https://stackoverflow.com/questions/2201598/how-to-define-two-fields-unique-as-couple
+    friednStatusChoise = (
+        ('Accept', 'Accept'),
+        ('Decline', 'Decline'),
+        ('Pending', 'Pending'),
+    )
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    author = models.ForeignKey(Author, related_name='sender',on_delete=models.PROTECT, editable=False)
+    friend = models.ForeignKey(Author,  related_name='reciver',on_delete=models.PROTECT, editable=False)
+    status = models.CharField(max_length=32, choices=friednStatusChoise, default='Pending')
+    last_modified_time = models.DateTimeField(auto_now_add=True, editable=False)
+
+    def __str__(self):
+        return "Friend request from %s to %s"%(self.author, self.friend)
+
 
 
 class Post(models.Model):
@@ -73,3 +92,4 @@ class Comment(models.Model):
     published = models.DateTimeField(auto_now_add=True, blank=True)
     def __str__(self):
         return self.comment
+

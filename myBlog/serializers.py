@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Post, Comment, Author
+from .models import Post, Comment, Author, Friend
 import uuid
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
@@ -71,7 +71,7 @@ class AuthorSerializer(serializers.ModelSerializer):
         fields = ('id','displayName', 'url','host', 'github')
 
     def get_url(self, obj):
-        url = obj.host+"/"+str(obj.id)
+        url = obj.host+"/myBlog/author/"+str(obj.id)
         return url
 
     def update(self, instance, validated_data):
@@ -79,6 +79,14 @@ class AuthorSerializer(serializers.ModelSerializer):
         instance.github = validated_data.get('github', instance.github)
         instance.save()
         return instance
+
+class FriendSerializer(serializers.ModelSerializer):
+    author = AuthorSerializer(read_only=True)
+
+    class Meta:
+        model = Friend
+        fields = ('author', 'status', 'last_modified_time')
+
 
 class PostSerializer(serializers.ModelSerializer):
     comments = serializers.SerializerMethodField()

@@ -4,8 +4,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from django.shortcuts import get_object_or_404, render,get_list_or_404
-from .models import Post, Author, Comment
-from .serializers import PostSerializer, CommentSerializer, AuthorSerializer, CustomPagination
+from .models import Post, Author, Comment, Friend
+from .serializers import PostSerializer, CommentSerializer, AuthorSerializer, CustomPagination, FriendSerializer
 from rest_framework.parsers import JSONParser
 from rest_framework import status
 from django.contrib.auth import login, authenticate
@@ -22,6 +22,9 @@ from urllib.parse import urlparse
 
 # Code from: Reference: https://simpleisbetterthancomplex.com/tutorial/2017/02/18/how-to-create-user-sign-up-view.html
 # https://docs.djangoproject.com/en/2.1/topics/auth/default/
+
+
+
 
 
 # ---------------------------------------------------------------------Helper functions---------------------------------------------------------------------
@@ -85,6 +88,13 @@ def verify_current_user_to_post(post, request):
         else:
             return False
 
+def get_friends(self):
+    connections = Friend.objects.filter(user=self.user)
+    return connections
+          
+def get_followings(self):
+    followings = Friend.objects.filter(friend=self.user)
+    return followings
 # ---------------------------------------------------------------------End of helper functions---------------------------------------------------------------------
 
 # https://www.django-rest-framework.org/api-guide/views/
@@ -101,7 +111,12 @@ class NewPostHandler(APIView):
         serializer = PostSerializer(data=data, context={'author': author, 'origin': origin})
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            responsBody={
+                "query": "addPost",
+                "success":True,
+                "message":"Post Added"
+                }
+            return Response(responsBody, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # https://www.django-rest-framework.org/tutorial/2-requests-and-responses/
@@ -162,7 +177,12 @@ class CommentHandler(APIView):
     def get(self, request, postid, format=None):
         post = Post.objects.get(pk=postid)
         if (not verify_current_user_to_post(post, request)):
-            return Response("Post coudn't find or you don't have the access to the post: %s"%postid, status=404)
+            responsBody={
+                "query": "addComment",
+                "success":False,
+                "message":"Comment not allowed"
+                }
+            return Response(responsBody, status=403)
         else:
             current_user_uuid = get_current_user_uuid(request)
             comments_list = get_list_or_404(Comment,postid=postid)
@@ -174,7 +194,12 @@ class CommentHandler(APIView):
     def post(self, request, postid, format=None):
         post = Post.objects.get(pk=postid)
         if (not verify_current_user_to_post(post, request)):
-            return Response("Post coudn't find or you don't have the access to the post: %s"%postid, status=404)
+            responsBody={
+                "query": "addComment",
+                "success":False,
+                "message":"Comment not allowed"
+                }
+            return Response(responsBody, status=404)
         else:
             current_user_uuid = get_current_user_uuid(request)
             author = get_author_or_not_exits(current_user_uuid)
@@ -182,7 +207,12 @@ class CommentHandler(APIView):
             serializer = CommentSerializer(data=data, context={'author': author, 'postid':postid})
             if serializer.is_valid():
                 serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
+                responsBody={
+                "query": "addComment",
+                "success":True,
+                "message":"Comment Added"
+                }
+                return Response(responsBody, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -214,7 +244,7 @@ class PostToUserIDHandler(APIView):
 
 class AuthorProfileHandler(APIView):
     def get(self, request, user_id, format=None):
-        author = get_author_or_not_exits(current_user_uuid)
+        author = get_author_or_not_exits(user_id)
         serializer = AuthorSerializer(author)
         return JsonResponse(serializer.data)
 
@@ -243,13 +273,41 @@ class AuthorProfileHandler(APIView):
             return HttpResponse(status=404)
 
 
+class FriendRequestHandler(APIView):
+
+    def get(self, request, format=None):
+        current_user_uuid = get_current_user_uuid(request)
+        author_object = Author.objects.get(id=current_user_uuid)
+        friendrequests = Friend.objects.filter(friend=author_object, status='Pending')
+        serializer = FriendSerializer(friendrequests, many=True)
+        return JsonResponse(serializer.data, safe=False)
+
+    def post(self, request, format=None):
+        data = request.data
+        if data['query'] == 'friendrequest':
+            try:
+                author_id = data['author']['id'].replace(data['author']['host']+'author/', "")
+                friend_id = data['friend']['id'].replace(data['friend']['host']+'author/', "")
+                author_object = Author.objects.get(id=author_id)
+                friend_object = Author.objects.get(id=friend_id)
+                friend = Friend.objects.create(author=author_object, friend=friend_object)
+                friend.save()
+                return Response(status=status.HTTP_200_OK)  
+            except:
+                return Response(status=status.HTTP_400_BAD_REQUEST)  
+        else:
+            return Response("You are not sending the friendrequest with the correct format.",status=status.HTTP_400_BAD_REQUEST)  
 
 
-@login_required(login_url="home")
-@api_view(['POST'])
-def FriendRequestHandler(request):
-    if request.method == 'POST':
-        return Response({"message": "POST method", "data": post})    
+    def put(self, request, format=None):
+        current_user_uuid = get_current_user_uuid(request)
+        author_object = Author.objects.get(id=current_user_uuid)
+        friendrequests = Friend.objects.filter(friend=author_object, status='Pending')
+        serializer = FriendSerializer(friendrequests, many=True)
+        return JsonResponse(serializer.data, safe=False)
+
+
+
 
 @login_required(login_url="home")
 @api_view(['POST'])
