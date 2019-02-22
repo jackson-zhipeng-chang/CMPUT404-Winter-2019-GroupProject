@@ -35,4 +35,7 @@ urlpatterns = [
     path('author/<uuid:user_id>/posts/', views.PostToUserIDHandler.as_view(), name='posttouserid'),
     path('author/<uuid:user_id>/', views.AuthorProfileHandler.as_view(), name='authorprofile'),
     path('author/<uuid:user_id1>/friends/<uuid:user_id2>/', views.Friend2FriendHandler, name='friend2friend'),
+    path('login/', views.LoginView.as_view(), name='login'),
+    path('logout/', views.logout_user, name='logout'),
+    path('signup/', views.SignupView.as_view(), name='signup'),
 ]
