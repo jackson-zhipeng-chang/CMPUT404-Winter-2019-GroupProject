@@ -6,7 +6,7 @@
 {% block content %}
 {% if user.is_authenticated %}
   <div>
-    <h1 class="secondary-color">Hi {{ user.username }}!</h1>
+    <meta http-equiv = "refresh" content = "0; url=./myBlog/author/posts/" />
   </div>
   <br>
   <a href="{% url 'logout' %}" class="w3-button w3-theme-d1 w3-margin-bottom"><i class="fa fa-sign-out-alt"></i>  Logout</a>
