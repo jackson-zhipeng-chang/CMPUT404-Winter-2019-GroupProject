@@ -142,5 +142,5 @@ except ImportError:
     pass
 
 REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'myBlog.serializers.PostPagination',
+    'DEFAULT_PAGINATION_CLASS': 'myBlog.serializers.CustomPagination',
 }
