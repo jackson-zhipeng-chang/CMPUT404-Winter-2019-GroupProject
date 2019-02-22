@@ -86,7 +86,7 @@ class FriendSerializer(serializers.ModelSerializer):
     class Meta:
         model = Friend
         fields = ('id','author','friend', 'status', 'last_modified_time')
-
+        
 
 class PostSerializer(serializers.ModelSerializer):
     comments = serializers.SerializerMethodField()

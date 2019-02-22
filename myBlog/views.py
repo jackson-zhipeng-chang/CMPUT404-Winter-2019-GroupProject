@@ -18,59 +18,6 @@ from django.views.generic.edit import FormView
 from django.db.models import Q
 from urllib.parse import urlparse
 
-# https://stackoverflow.com/questions/37752440/relative-redirect-using-meta-http-equiv-refresh-with-gh-pages
-# https://www.tutorialspoint.com/How-to-automatically-redirect-a-Web-Page-to-another-URL for redirecting
-
-class SignupView(FormView):
-    template_name = 'signup.html'
-    form_class = UserCreationForm  # The Form class the FormView should use
-    success_url = '/'  # Go here after successful POST
-
-    def form_valid(self, form):
-        username = form.cleaned_data.get('username')
-        password = form.cleaned_data.get('password1')
-
-        # is_active should equal true so user can login
-        User.objects.create_user(username=username, password=password, is_active=True)
-        return super().form_valid(form)
-
-    def form_invalid(self, form):
-        return super().form_invalid(form)
-
-
-class LoginView(FormView):
-    template_name = 'login.html'
-    form_class = AuthenticationForm # The Form class the FormView should use
-    success_url = '/'  # Go here after successful POST
-
-    def form_valid(self, form):
-        username = form.cleaned_data.get('username')
-        password = form.cleaned_data.get('password')
-        user = authenticate(username=username, password=password)
-
-        if user is not None:
-            login(self.request, user)
-        else:
-            raise Exception  # TODO: better error checking?
-        return super().form_valid(form)
-
-    def form_invalid(self, form):
-        return super().form_invalid(form)
-
-
-def logout_user(request):
-    logout(request)
-    return redirect("home")
-
-
-'''
-# Code from: Reference: https://simpleisbetterthancomplex.com/tutorial/2017/02/18/how-to-create-user-sign-up-view.html
-# https://docs.djangoproject.com/en/2.1/topics/auth/default/
-
-
-
-
-
 # ---------------------------------------------------------------------Helper functions---------------------------------------------------------------------
 def get_author_or_not_exits(current_user_uuid):
     if (not Author.objects.filter(id=current_user_uuid).exists()):
@@ -131,14 +78,83 @@ def verify_current_user_to_post(post, request):
         else:
             return False
 
-def get_friends(self):
-    connections = Friend.objects.filter(user=self.user)
-    return connections
+def get_friends():
+    return True
           
-def get_followings(self):
-    followings = Friend.objects.filter(friend=self.user)
-    return followings
+def get_followings():
+    return True
+
+def check_two_users_friends(author1_id,author2_id):
+    author1_object = Author.objects.get(id=author1_id)
+    author2_object = Author.objects.get(id=author2_id)
+    friend1To2 = Friend.objects.filter(author=author1_object, friend=author2_object, status="Accept").exists()
+    friend2To1 = Friend.objects.filter(author=author2_object, friend=author1_object, status="Accept").exists()
+    if friend1To2 or friend2To1:
+        return True
+    else:
+        return False
+
+def check_author1_follow_author2(author1_id,author2_id):
+    author1_object = Author.objects.get(id=author1_id)
+    author2_object = Author.objects.get(id=author2_id)
+    declined = Friend.objects.filter(author=author1_object, friend=author2_object, status="Decline").exists()
+    pending = Friend.objects.filter(author=author1_object, friend=author2_object, status="Pending").exists()
+
+    if declined or pending:
+        return True
+    else:
+        return False
+
 # ---------------------------------------------------------------------End of helper functions---------------------------------------------------------------------
+# https://stackoverflow.com/questions/37752440/relative-redirect-using-meta-http-equiv-refresh-with-gh-pages
+# https://www.tutorialspoint.com/How-to-automatically-redirect-a-Web-Page-to-another-URL for redirecting
+# Code from: Reference: https://simpleisbetterthancomplex.com/tutorial/2017/02/18/how-to-create-user-sign-up-view.html
+# https://docs.djangoproject.com/en/2.1/topics/auth/default/
+
+class SignupView(FormView):
+    template_name = 'signup.html'
+    form_class = UserCreationForm  # The Form class the FormView should use
+    success_url = '/myBlog/author/posts/'  # Go here after successful POST
+
+    def form_valid(self, form):
+        username = form.cleaned_data.get('username')
+        password = form.cleaned_data.get('password1')
+        user = User.objects.create_user(username=username, password=password, is_active=False)
+        try:
+            host = get_host_from_request(self.request)
+            author = Author.objects.create(displayName=username,user=user, host=host)
+            author.save()
+        except:
+            user.delete()
+            return Response("User coudn't create", status=400)
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        return super().form_invalid(form)
+
+
+class LoginView(FormView):
+    template_name = 'login.html'
+    form_class = AuthenticationForm # The Form class the FormView should use
+    success_url = '/myBlog/author/posts/'  # Go here after successful POST
+
+    def form_valid(self, form):
+        username = form.cleaned_data.get('username')
+        password = form.cleaned_data.get('password')
+        user = authenticate(username=username, password=password)
+        if user is not None:
+            login(self.request, user)
+        else:
+            return Response("User coudn't find", status=404)
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        return super().form_invalid(form)
+
+
+def logout_user(request):
+    logout(request)
+    return redirect("home")
 
 # https://www.django-rest-framework.org/api-guide/views/
 # https://www.django-rest-framework.org/tutorial/2-requests-and-responses/
@@ -235,28 +251,34 @@ class CommentHandler(APIView):
             return paginator.get_paginated_response(serializer.data)
 
     def post(self, request, postid, format=None):
-        post = Post.objects.get(pk=postid)
-        if (not verify_current_user_to_post(post, request)):
-            responsBody={
-                "query": "addComment",
-                "success":False,
-                "message":"Comment not allowed"
-                }
-            return Response(responsBody, status=404)
-        else:
-            current_user_uuid = get_current_user_uuid(request)
-            author = get_author_or_not_exits(current_user_uuid)
-            data = request.data
-            serializer = CommentSerializer(data=data, context={'author': author, 'postid':postid})
-            if serializer.is_valid():
-                serializer.save()
+        data = request.data
+        if data['query'] == 'addComment':
+            post = Post.objects.get(pk=postid)
+            if (not verify_current_user_to_post(post, request)):
                 responsBody={
-                "query": "addComment",
-                "success":True,
-                "message":"Comment Added"
-                }
-                return Response(responsBody, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                    "query": "addComment",
+                    "success":False,
+                    "message":"Comment not allowed"
+                    }
+                return Response(responsBody, status=403)
+            else:
+                current_user_uuid = get_current_user_uuid(request)
+                author = get_author_or_not_exits(current_user_uuid)
+                data = request.data
+                serializer = CommentSerializer(data=data, context={'author': author, 'postid':postid})
+                if serializer.is_valid():
+                    serializer.save()
+                    responsBody={
+                    "query": "addComment",
+                    "success":True,
+                    "message":"Comment Added"
+                    }
+                    return Response(responsBody, status=status.HTTP_200_OK)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        else:
+            return Response("You are not sending the friendrequest with the correct format. Missing 'query': 'addComment'",status=status.HTTP_400_BAD_REQUEST)  
+
 
 
 # https://stackoverflow.com/questions/12615154/how-to-get-the-currently-logged-in-users-user-id-in-django
@@ -278,7 +300,7 @@ class PostToUserHandlerView(APIView):
 class PostToUserIDHandler(APIView):
     def get(self, request, user_id, format=None):
         current_user_uuid = get_current_user_uuid(request)
-        posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(author_id=user_id) | Q(visibility='PUBLIC'))
+        posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(author_id=user_id), Q(visibility='PUBLIC'))
         paginator = CustomPagination()
         results = paginator.paginate_queryset(posts_list, request)
         serializer=PostSerializer(results, many=True)
@@ -327,28 +349,41 @@ class FriendRequestHandler(APIView):
     def post(self, request, format=None):
         data = request.data
         if data['query'] == 'friendrequest':
+            current_user_uuid = get_current_user_uuid(request)
             author_id = data['author']['id'].replace(data['author']['host']+'author/', "")
             friend_id = data['friend']['id'].replace(data['friend']['host']+'author/', "")
-            author_object = Author.objects.get(id=author_id)
-            friend_object = Author.objects.get(id=friend_id)
-            if (not Friend.objects.filter(author=author_object, friend=friend_object, status="Accept").exists()):
-                if (Friend.objects.filter(author=author_object, friend=friend_object, status="Decline").exists()):
-                    friendrequest = Friend.objects.get(author=author_object, friend=friend_object)
-                    friendrequest.status="Pending"
-                    friendrequest.save()
-                    return Response("Friend request sent", status=status.HTTP_400_BAD_REQUEST) 
+            sender_object = Author.objects.get(id=author_id)
+            reciver_object = Author.objects.get(id=friend_id)
+            friend_already = check_two_users_friends(author_id,friend_id)
 
-                elif (Friend.objects.filter(author=author_object, friend=friend_object, status="Pending").exists()): 
-                    return Response("Friend request already sent", status=status.HTTP_400_BAD_REQUEST)  
+            if (current_user_uuid == author_id):
+                if (not friend_already):
+                    if (Friend.objects.filter(author=sender_object, friend=reciver_object, status="Decline").exists()):
+                        friendrequest = Friend.objects.get(author=sender_object, friend=reciver_object)
+                        friendrequest.status="Pending"
+                        friendrequest.save()
+                        return Response("Friend request sent", status=status.HTTP_200_OK) 
 
+                    elif (Friend.objects.filter(author=reciver_object, friend=sender_object, status="Decline").exists()):
+                        friendrequest = Friend.objects.get(author=reciver_object, friend=sender_object)
+                        friendrequest.status="Accept"
+                        friendrequest.save()
+                        return Response("You are now friend with %s"%author_id, status=status.HTTP_200_OK) 
+
+                    elif (Friend.objects.filter(author=sender_object, friend=reciver_object, status="Pending").exists()): 
+                        return Response("Friend request already sent", status=status.HTTP_400_BAD_REQUEST)  
+
+                    else:
+                        friendrequest = Friend.objects.create(author=sender_object, friend=reciver_object)
+                        friendrequest.save()
+                        return Response("Friend request sent", status=status.HTTP_200_OK)  
                 else:
-                    friendrequest = Friend.objects.create(author=author_object, friend=friend_object)
-                    friendrequest.save()
-                    return Response("Friend request sent", status=status.HTTP_200_OK)  
+                    return Response("You are already friends", status=status.HTTP_400_BAD_REQUEST)
             else:
-                return Response("You are already friends", status=status.HTTP_400_BAD_REQUEST)  
+                return Response("Please login to correct account", status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response("You are not sending the friendrequest with the correct format.",status=status.HTTP_400_BAD_REQUEST)  
+            return Response("You are not sending the friendrequest with the correct format. Missing 'query': 'friendrequest'",status=status.HTTP_400_BAD_REQUEST)  
+
 
     def put(self, request, format=None):
         data = request.data
@@ -381,43 +416,61 @@ class FriendRequestHandler(APIView):
                 return Response("Opreation not allowed.", status=status.HTTP_400_BAD_REQUEST)
 
 
-    def delete(self, request, format=None):
+    def delete(self, request, format=None): #TODO: We actually don't need this function
         data = request.data
-        try:
-            requestid = data['id']
-        except:
-            return Response('No request id', status=404)
-
-        if (not Friend.objects.filter(id=requestid).exists()):
-            responsBody={
-                "query": "friendrequestRespons",
-                "success":False,
-                "message":"Request not found"
-                }
-            return Response(responsBody, status=404)
-
-        else:
+        if data['query'] == 'unfriend':
             current_user_uuid = get_current_user_uuid(request)
-            friendrequests=Friend.objects.get(id=requestid)
-            current_status = friendrequests.status
+            author_id = data['author']['id'].replace(data['author']['host']+'author/', "")
+            friend_id = data['friend']['id'].replace(data['friend']['host']+'author/', "")
+            sender_object = Author.objects.get(id=author_id)
+            reciver_object = Author.objects.get(id=friend_id)
+            friendship = Friend.objects.get_object_or_404(author=sender_object, friend=reciver_object)
+            current_status = friendship.status
 
             if (current_user_uuid == friendrequests.author.id and (current_status == 'Pending' or current_status == 'Decline')):
                 friendrequests.delete()
-                return Response("Success unfriended", status=status.HTTP_200_OK)
+                return Response("Success unfriend, you have stopped following your friend", status=status.HTTP_200_OK)
 
             elif (current_user_uuid == friendrequests.friend.id and current_status == 'Accept'):
                 friendrequests.status='Decline'
                 friendrequests.save()
-                return Response("Success unfriended, your friend is still following you", status=status.HTTP_200_OK)
+                return Response("Success unfriend, your friend is still following you", status=status.HTTP_200_OK)
                 
             else:
                 return Response("Opreation not allowed.", status=status.HTTP_400_BAD_REQUEST)
 
-@login_required(login_url="home")
-@api_view(['POST'])
-def FriendQueryHandler(request, user_id):
-    if request.method == 'POST':
-        return Response({"message": "POST method", "data": post})
+        else:
+            return Response("You are not sending the friendrequest with the correct format. Missing 'query': 'unfriend'",status=status.HTTP_400_BAD_REQUEST)  
+
+
+
+class FriendQueryHandler(APIView):
+    def get(self, request, user_id, format=None):
+        if (not Author.objects.filter(id=user_id).exists()):
+            return Response("Author coudn't find", status=404)
+
+        else:
+            author_object = Author.objects.get(id=user_id)
+            friendsDirect = Friend.objects.filter(Q(author=author_object), Q(status='Accept'))
+            friendsIndirect = Friend.objects.filter(Q(friend=author_object), Q(status='Accept'))
+            friends_list = []
+
+            for friend in friendsDirect:
+                url = friend.friend.host+"/myBlog/author/"+str(friend.friend.id)
+                if url not in friends_list:
+                    friends_list.append(url)
+
+            for friend in friendsIndirect:
+                url = friend.author.host+"/myBlog/author/"+str(friend.author.id)
+                if url not in friends_list:
+                    friends_list.append(url)
+
+            responsBody = { 
+            "query":"friends",
+            "authors":friends_list,
+            "friends": True
+            }
+            return Response(responsBody, status=status.HTTP_200_OK)
 
 @login_required(login_url="home")
 @api_view(['GET'])
