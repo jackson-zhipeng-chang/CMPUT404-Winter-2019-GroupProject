@@ -15,3 +15,6 @@ Copyright 2019 CMPUT 404 Team 4. All Rights Reserved. You may use, distribute, o
 
 ## [Dev log](https://github.com/Zhipeng-Chang/CMPUT404-Winter-2019-GroupProject/wiki/DevLog)
 Checkout our current progress!
+
+## [API Documentation](https://github.com/Zhipeng-Chang/CMPUT404-Winter-2019-GroupProject/blob/master/docs/APIsDoc.pdf)
+
