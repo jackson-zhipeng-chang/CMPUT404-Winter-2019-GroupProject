@@ -163,7 +163,9 @@ def logout_user(request):
 # https://stackoverflow.com/questions/4093999/how-to-use-django-to-get-the-name-for-the-host-server
 class NewPostHandler(APIView):
     def post(self, request, format=None):
+
         current_user_uuid = get_current_user_uuid(request)
+
         author = get_author_or_not_exits(current_user_uuid)
         data = request.data
         origin=get_host_from_request(request)
