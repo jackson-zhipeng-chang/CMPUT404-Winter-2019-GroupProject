@@ -1,5 +1,4 @@
 # CMPUT404-Winter-2019-GroupProject
-
 ### Team members: <br />
 Zhipeng Chang (zchang@ualberta.ca) <br />
 Taijie Yang (taijie@ualberta.ca)<br />
@@ -13,3 +12,6 @@ Copyright 2019 CMPUT 404 Team 4. All Rights Reserved. You may use, distribute, o
 ## Build servers
 
 [![Build Status](https://travis-ci.org/Zhipeng-Chang/CMPUT404-Winter-2019-GroupProject.svg?branch=master)](https://travis-ci.org/Zhipeng-Chang/CMPUT404-Winter-2019-GroupProject)
+
+## [Dev log](https://github.com/Zhipeng-Chang/CMPUT404-Winter-2019-GroupProject/wiki/DevLog)
+Checkout our current progress!
