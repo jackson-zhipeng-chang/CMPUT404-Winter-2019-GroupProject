@@ -4,6 +4,8 @@ import uuid
 import json
 from myBlog.models import Author,Post,Comment,Friend
 from django.contrib.auth.models import User
+import datetime
+
 
 
 class TestViews(TestCase):
@@ -83,7 +85,7 @@ class TestViews(TestCase):
         # test other user cannot visit my post
         other_response = self.other_client.get(modify_post_url)
         self.assertEquals(other_response.status_code,404)
-        print(other_response.content.decode('utf-8'))
+        #print(other_response.content.decode('utf-8'))
 
     def test_Post_Handler_PUT_API(self):
         # first create a public post, test other user can see it or not
@@ -148,3 +150,42 @@ class TestViews(TestCase):
 
         # test if the post still exist or not
         self.assertFalse(Post.objects.filter(pk=post_id).exists())
+
+    def test_Comment_Handler_POST_API(self):
+        # create a public post first , then test if user can add comment on it
+        # then create a private post, then test if user can add comment on it.
+
+        # create a public post
+        self.other_client.post(self.new_post_url,{
+            'title': 'comment this post!',
+            'content': 'please make some comments',
+            'categories': 'test',
+            'contentType': 'text/plain',
+            'author': self.other_author,
+            'visibility': 'PUBLIC',
+            'description': 'test description'
+        })
+        post = Post.objects.get(title='comment this post!')
+        post_id = post.postid
+
+        # create a comment on this post
+        # get the reverse url
+        comment_url = reverse('comment',args=[post_id])
+        response=self.client.post(comment_url,{
+            'query': 'addComment',
+            'post': 'testserver',
+            'comment': {
+                'author': {
+                    'id': self.author.id,
+                    'host': 'xxx',
+                    'displayName': self.author.displayName,
+                    'url': 'xxx',
+                    'github': self.author.github
+                },
+                'comment': 'this is my first comment',
+                'contentType': 'text/plain',
+                'published': datetime.datetime.now(),
+                'id': uuid.uuid4()
+            }
+        })
+        self.assertEquals(response.status_code,200)
