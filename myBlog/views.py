@@ -48,6 +48,7 @@ def signup(request):
     return render(request, 'signup.html', {'form': form})
     
 def get_current_user_uuid(request):
+
     if (not User.objects.filter(pk=request.user.id).exists()):
         return Response("User coudn't find", status=404)
     else:
@@ -163,6 +164,7 @@ def logout_user(request):
 # https://stackoverflow.com/questions/4093999/how-to-use-django-to-get-the-name-for-the-host-server
 class NewPostHandler(APIView):
     def post(self, request, format=None):
+
         current_user_uuid = get_current_user_uuid(request)
         author = get_author_or_not_exits(current_user_uuid)
         data = request.data
@@ -182,8 +184,10 @@ class NewPostHandler(APIView):
 # https://www.django-rest-framework.org/tutorial/1-serialization/
 class PostHandler(APIView):
     def get(self, request,postid, format=None):
+
         if (not Post.objects.filter(pk=postid).exists()):
-            return Response("Post coudn't find", status=404)
+
+            return Response("Post couldn't find", status=404)
 
         else:
             post = Post.objects.get(pk=postid)
@@ -211,6 +215,7 @@ class PostHandler(APIView):
             if current_user_uuid==post.author_id:
                 data = request.data
                 serializer = PostSerializer(post, data=data)
+
                 if serializer.is_valid():
                     serializer.save()
                     return JsonResponse(serializer.data)
@@ -277,7 +282,7 @@ class CommentHandler(APIView):
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         else:
-            return Response("You are not sending the friendrequest with the correct format. Missing 'query': 'addComment'",status=status.HTTP_400_BAD_REQUEST)  
+            return Response("You are not sending the friendrequest with the correct format. Missing 'query': 'addComment'",status=status.HTTP_400_BAD_REQUEST)
 
 
 
