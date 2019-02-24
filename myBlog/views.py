@@ -54,7 +54,6 @@ def get_current_user_uuid(request):
     else:
         current_user = User.objects.get(pk=request.user.id)
         author = get_object_or_404(Author, user=current_user)
-
         return author.id
 
 def verify_current_user_to_post(post, request):
@@ -185,7 +184,9 @@ class NewPostHandler(APIView):
 # https://www.django-rest-framework.org/tutorial/1-serialization/
 class PostHandler(APIView):
     def get(self, request,postid, format=None):
+
         if (not Post.objects.filter(pk=postid).exists()):
+
             return Response("Post couldn't find", status=404)
 
         else:
@@ -214,6 +215,7 @@ class PostHandler(APIView):
             if current_user_uuid==post.author_id:
                 data = request.data
                 serializer = PostSerializer(post, data=data)
+
                 if serializer.is_valid():
                     serializer.save()
                     return JsonResponse(serializer.data)
@@ -280,7 +282,7 @@ class CommentHandler(APIView):
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         else:
-            return Response("You are not sending the friendrequest with the correct format. Missing 'query': 'addComment'",status=status.HTTP_400_BAD_REQUEST)  
+            return Response("You are not sending the friendrequest with the correct format. Missing 'query': 'addComment'",status=status.HTTP_400_BAD_REQUEST)
 
 
 
