@@ -22,6 +22,7 @@ from django.urls import path, include
 from . import views
 from rest_framework_swagger.views import get_swagger_view
 from django.contrib.auth.decorators import login_required
+from django.views.generic.base import TemplateView 
 
 
 urlpatterns = [
@@ -38,4 +39,5 @@ urlpatterns = [
     path('login/', views.LoginView.as_view(), name='login'),
     path('logout/', views.logout_user, name='logout'),
     path('signup/', views.SignupView.as_view(), name='signup'),
+    path('', TemplateView.as_view(template_name='home.html'), name='home'),
 ]
