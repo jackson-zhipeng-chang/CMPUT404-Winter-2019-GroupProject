@@ -1,7 +1,8 @@
 # CMPUT404-Winter-2019-GroupProject
 
 ## [Dev log](https://github.com/Zhipeng-Chang/CMPUT404-Winter-2019-GroupProject/wiki/DevLog)
-Checkout our current progress!
+Checkout our current progress!<br>
+Checkout view.py [History!](https://github-history.netlify.com/Zhipeng-Chang/CMPUT404-Winter-2019-GroupProject/blob/master/myBlog/views.py)
 
 ## [API Documentation](https://github.com/Zhipeng-Chang/CMPUT404-Winter-2019-GroupProject/blob/master/docs/APIsDoc.pdf)
 
