@@ -188,3 +188,53 @@ class TestViews(TestCase):
             }
         })
         self.assertEquals(response.status_code,200)
+
+        # create a private post
+        self.other_client(self.new_post_url,{
+            'title': 'comment this private post',
+            'content': 'please make some comments',
+            'categories': 'test',
+            'contentType': 'text/plain',
+            'author': self.other_author,
+            'visibility': 'PRIVATE',
+            'description': 'test description'
+        })
+        post1 = Post.objects.get(titile='comment this private post')
+        post1_id = post1.postid
+
+        comment_url_private = reverse('comment',args=[post1_id])
+        response1=self.client.post(comment_url_private,{
+            'query': 'addComment',
+            'post': 'testserver',
+            'comment': {
+                'author': {
+                    'id': self.author.id,
+                    'host': 'xxx',
+                    'displayName': self.author.displayName,
+                    'url': 'xxx',
+                    'github': self.author.github
+                },
+                'comment': 'this is comment from author1',
+                'contentType': 'text/plain',
+                'published': datetime.datetime.now(),
+            }
+        })
+        self.assertEquals(response1.status_code,403)
+
+        response2 = self.client.post(comment_url_private, {
+            'query': 'addComment',
+            'post': 'testserver',
+            'comment': {
+                'author': {
+                    'id': self.other_author.id,
+                    'host': 'xxx',
+                    'displayName': self.other_author.displayName,
+                    'url': 'xxx',
+                    'github': self.other_author.github
+                },
+                'comment': 'this is comment from author2',
+                'contentType': 'text/plain',
+                'published': datetime.datetime.now(),
+            }
+        })
+        self.assertEquals(response2.status_code,200)
