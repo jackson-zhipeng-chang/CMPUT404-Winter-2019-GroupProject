@@ -48,11 +48,13 @@ def signup(request):
     return render(request, 'signup.html', {'form': form})
     
 def get_current_user_uuid(request):
+
     if (not User.objects.filter(pk=request.user.id).exists()):
         return Response("User coudn't find", status=404)
     else:
         current_user = User.objects.get(pk=request.user.id)
         author = get_object_or_404(Author, user=current_user)
+
         return author.id
 
 def verify_current_user_to_post(post, request):
@@ -165,7 +167,6 @@ class NewPostHandler(APIView):
     def post(self, request, format=None):
 
         current_user_uuid = get_current_user_uuid(request)
-
         author = get_author_or_not_exits(current_user_uuid)
         data = request.data
         origin=get_host_from_request(request)
@@ -185,7 +186,7 @@ class NewPostHandler(APIView):
 class PostHandler(APIView):
     def get(self, request,postid, format=None):
         if (not Post.objects.filter(pk=postid).exists()):
-            return Response("Post coudn't find", status=404)
+            return Response("Post couldn't find", status=404)
 
         else:
             post = Post.objects.get(pk=postid)
