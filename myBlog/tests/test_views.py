@@ -185,7 +185,6 @@ class TestViews(TestCase):
                 'comment': 'this is my first comment',
                 'contentType': 'text/plain',
                 'published': datetime.datetime.now(),
-                'id': uuid.uuid4()
             }
         })
         self.assertEquals(response.status_code,200)
