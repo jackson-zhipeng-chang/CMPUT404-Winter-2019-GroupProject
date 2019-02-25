@@ -143,4 +143,8 @@ except ImportError:
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'myBlog.serializers.CustomPagination',
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    )
 }
