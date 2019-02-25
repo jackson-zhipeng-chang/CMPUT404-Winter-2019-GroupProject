@@ -14,10 +14,6 @@ Malcolm MacArthur (mimacart@ualberta.ca) <br />
 ## License
 Copyright 2019 CMPUT 404 Team 4. All Rights Reserved. You may use, distribute, or modify this code under terms and conditions of the Code of Student Behavior at the University of Alberta. You may find a copy of the license in this project. Otherwise please contact us directly.
 
-## Build servers
-[![Build Status](https://travis-ci.org/Zhipeng-Chang/CMPUT404-Winter-2019-GroupProject.svg?branch=master)](https://travis-ci.org/Zhipeng-Chang/CMPUT404-Winter-2019-GroupProject)
-[![Documentation Status](https://img.shields.io/badge/docs-stable-brightgreen.svg)](https://github.com/Zhipeng-Chang/CMPUT404-Winter-2019-GroupProject/blob/master/docs/APIsDoc.pdf)
-[![Coverage Status](https://coveralls.io/repos/github/Zhipeng-Chang/CMPUT404-Winter-2019-GroupProject/badge.svg?branch=master)](https://coveralls.io/github/Zhipeng-Chang/CMPUT404-Winter-2019-GroupProject?branch=master)
-
-
-## [API Documentation](https://github.com/Zhipeng-Chang/CMPUT404-Winter-2019-GroupProject/blob/master/docs/APIsDoc.pdf)
+| Build Status | Coverage Status | Documentation Status | 
+| ------------ | ----------- | --------------- | 
+|[![Build Status](https://travis-ci.org/Zhipeng-Chang/CMPUT404-Winter-2019-GroupProject.svg?branch=master)](https://travis-ci.org/Zhipeng-Chang/CMPUT404-Winter-2019-GroupProject)|[![Coverage Status](https://coveralls.io/repos/github/Zhipeng-Chang/CMPUT404-Winter-2019-GroupProject/badge.svg?branch=master)](https://coveralls.io/github/Zhipeng-Chang/CMPUT404-Winter-2019-GroupProject?branch=master)|[![Documentation Status](https://img.shields.io/badge/docs-stable-brightgreen.svg)](https://github.com/Zhipeng-Chang/CMPUT404-Winter-2019-GroupProject/blob/master/docs/APIsDoc.pdf)
