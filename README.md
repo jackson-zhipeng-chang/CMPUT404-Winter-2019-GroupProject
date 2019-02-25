@@ -17,6 +17,7 @@ Copyright 2019 CMPUT 404 Team 4. All Rights Reserved. You may use, distribute, o
 ## Build servers
 [![Build Status](https://travis-ci.org/Zhipeng-Chang/CMPUT404-Winter-2019-GroupProject.svg?branch=master)](https://travis-ci.org/Zhipeng-Chang/CMPUT404-Winter-2019-GroupProject)
 [![Documentation Status](https://img.shields.io/badge/docs-stable-brightgreen.svg)](https://github.com/Zhipeng-Chang/CMPUT404-Winter-2019-GroupProject/blob/master/docs/APIsDoc.pdf)
+[![Coverage Status](https://coveralls.io/repos/github/Zhipeng-Chang/CMPUT404-Winter-2019-GroupProject/badge.svg?branch=master)](https://coveralls.io/github/Zhipeng-Chang/CMPUT404-Winter-2019-GroupProject?branch=master)
 
 
 ## [API Documentation](https://github.com/Zhipeng-Chang/CMPUT404-Winter-2019-GroupProject/blob/master/docs/APIsDoc.pdf)
