@@ -191,7 +191,7 @@ class TestViews(TestCase):
         self.assertEquals(response.status_code,400)
 
         # create a private post
-        self.other_client(self.new_post_url,{
+        self.other_client.post(self.new_post_url,{
             'title': 'comment this private post',
             'content': 'please make some comments',
             'categories': 'test',
@@ -200,7 +200,7 @@ class TestViews(TestCase):
             'visibility': 'PRIVATE',
             'description': 'test description'
         })
-        post1 = Post.objects.get(titile='comment this private post')
+        post1 = Post.objects.get(title='comment this private post')
         post1_id = post1.postid
 
         comment_url_private = reverse('comment',args=[post1_id])
