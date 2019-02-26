@@ -270,7 +270,10 @@ class CommentHandler(APIView):
                 current_user_uuid = get_current_user_uuid(request)
                 author = get_author_or_not_exits(current_user_uuid)
                 data = request.data
+
                 serializer = CommentSerializer(data=data, context={'author': author, 'postid':postid})
+                serializer.is_valid()
+                print(serializer.errors)
                 if serializer.is_valid():
                     serializer.save()
                     responsBody={
