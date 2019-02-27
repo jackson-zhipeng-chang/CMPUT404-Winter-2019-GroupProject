@@ -4,9 +4,10 @@ python:
 install:
   - pip install -r requirements_CI.txt
   - pip install coveralls
+before_script:
+  - cp .env.example .env
   - python manage.py migrate
 script:
   coverage run manage.py test myBlog
-  
 after_success:
   coveralls
