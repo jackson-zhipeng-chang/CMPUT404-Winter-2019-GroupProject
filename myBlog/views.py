@@ -18,6 +18,7 @@ from django.views.generic.edit import FormView
 from django.db.models import Q
 from urllib.parse import urlparse
 
+
 # ---------------------------------------------------------------------Helper functions---------------------------------------------------------------------
 def get_author_or_not_exits(current_user_uuid):
     if (not Author.objects.filter(id=current_user_uuid).exists()):

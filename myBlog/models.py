@@ -75,8 +75,6 @@ class Post(models.Model):
 #https://stackoverflow.com/questions/5190313/django-booleanfield-how-to-set-the-default-value-to-true
     unlisted = models.BooleanField(default=False)
     published = models.DateTimeField(auto_now_add=True, blank=True)
-# https://simpleisbetterthancomplex.com/tutorial/2016/08/01/how-to-upload-files-with-django.html
-    image = models.ImageField(null=True, blank=True)
 
     def __str__(self):
     	return self.title
