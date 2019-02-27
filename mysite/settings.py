@@ -169,5 +169,9 @@ STATICFILES_DIRS = [
 STATIC_URL = 'https://%s/%s/' % (AWS_S3_CUSTOM_DOMAIN, AWS_LOCATION)
 STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
-MEDIA_URL = '/myBlog/static/images/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'myBlog/static/images')
+MEDIA_URL = '/media/images/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/images')
+
+if not DEBUG:
+    DEFAULT_FILE_STORAGE = 'mysite.storage_backends.MediaStorage' 
+

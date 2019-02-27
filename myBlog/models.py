@@ -76,8 +76,8 @@ class Post(models.Model):
     unlisted = models.BooleanField(default=False)
     published = models.DateTimeField(auto_now_add=True, blank=True)
 # https://simpleisbetterthancomplex.com/tutorial/2016/08/01/how-to-upload-files-with-django.html
-    image = models.ImageField(upload_to='images/', null=True, blank=True)
-    
+    image = models.ImageField(null=True, blank=True)
+
     def __str__(self):
     	return self.title
 
