@@ -34,3 +34,6 @@ urlpatterns = [
     path('accounts/signup/', views.SignupView.as_view(), name='signup'),
 
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
