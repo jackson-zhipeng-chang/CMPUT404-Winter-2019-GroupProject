@@ -3,6 +3,11 @@ python:
   - "3.6"
 install:
   - pip install -r requirements_CI.txt
+  - pip install coveralls
+before_script:
+  - cp .env.example .env
   - python manage.py migrate
 script:
-  - python manage.py test
+  coverage run manage.py test myBlog
+after_success:
+  coveralls

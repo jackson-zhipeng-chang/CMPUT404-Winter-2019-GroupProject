@@ -147,7 +147,6 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def create(self, validated_data):
-        author = self.context['author']
         postid = self.context['postid']
         comment = Comment.objects.create(author=author, postid=postid, **validated_data)
         comment.save()
