@@ -164,7 +164,6 @@ def logout_user(request):
 # https://stackoverflow.com/questions/4093999/how-to-use-django-to-get-the-name-for-the-host-server
 class NewPostHandler(APIView):
     def post(self, request, format=None):
-
         current_user_uuid = get_current_user_uuid(request)
         author = get_author_or_not_exits(current_user_uuid)
         data = request.data
@@ -257,6 +256,7 @@ class CommentHandler(APIView):
 
     def post(self, request, postid, format=None):
         data = request.data
+        print(data['comment']['comment'])
         if data['query'] == 'addComment':
             post = Post.objects.get(pk=postid)
             if (not verify_current_user_to_post(post, request)):
@@ -270,10 +270,9 @@ class CommentHandler(APIView):
                 current_user_uuid = get_current_user_uuid(request)
                 author = get_author_or_not_exits(current_user_uuid)
                 data = request.data
+                serializer = CommentSerializer(data=data['comment'], context={'author': author, 'postid':postid})
 
-                serializer = CommentSerializer(data=data, context={'author': author, 'postid':postid})
-                serializer.is_valid()
-                print(serializer.errors)
+
                 if serializer.is_valid():
                     serializer.save()
                     responsBody={

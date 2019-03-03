@@ -109,10 +109,10 @@ class TestViews(TestCase):
         self.assertEquals(response_get.status_code,200)
 
         response = self.client.put(modify_post_url,json.dumps({
-            'title':'modified my title',
-            'visibility':'PRIVATE',
-            'description':'test description',
-            'contentType' : 'text/plain',
+            'title': 'modified my title',
+            'visibility': 'PRIVATE',
+            'description': 'test description',
+            'contentType': 'text/plain',
             'content': 'This is a test post'
         }),content_type='application/json')
         self.assertEquals(response.status_code,200)
@@ -138,15 +138,15 @@ class TestViews(TestCase):
         })
         post = Post.objects.get(title='need delete')
         post_id = post.postid
-        modify_post_url = reverse('modify_post',args=[post_id])
+        modify_post_url = reverse('modify_post', args=[post_id])
 
         # test if other user can delete it or not
         response = self.other_client.delete(modify_post_url)
-        self.assertEquals(response.status_code,404)
+        self.assertEquals(response.status_code, 404)
 
         # test if current user can delete it or not
         response1 = self.client.delete(modify_post_url)
-        self.assertEquals(response1.status_code,204)
+        self.assertEquals(response1.status_code, 204)
 
         # test if the post still exist or not
         self.assertFalse(Post.objects.filter(pk=post_id).exists())
@@ -170,8 +170,8 @@ class TestViews(TestCase):
 
         # create a comment on this post
         # get the reverse url
-        comment_url = reverse('comment',args=[post_id])
-        response=self.client.post(comment_url,{
+        comment_url = reverse('comment', args=[post_id])
+        response=self.client.post(comment_url, {
             'query': 'addComment',
             'post': 'testserver',
             'comment': {
@@ -186,11 +186,11 @@ class TestViews(TestCase):
                 'contentType': 'text/plain',
                 'published': datetime.datetime.now(),
             }
-        })
+        },'application/json')
         self.assertEquals(response.status_code,200)
 
         # create a private post
-        self.other_client(self.new_post_url,{
+        self.other_client.post(self.new_post_url,{
             'title': 'comment this private post',
             'content': 'please make some comments',
             'categories': 'test',
@@ -199,7 +199,7 @@ class TestViews(TestCase):
             'visibility': 'PRIVATE',
             'description': 'test description'
         })
-        post1 = Post.objects.get(titile='comment this private post')
+        post1 = Post.objects.get(title='comment this private post')
         post1_id = post1.postid
 
         comment_url_private = reverse('comment',args=[post1_id])
@@ -219,10 +219,10 @@ class TestViews(TestCase):
                 'contentType': 'text/plain',
                 'published': datetime.datetime.now(),
             }
-        })
+        },'application/json')
         self.assertEquals(response1.status_code,403)
 
-        response2 = self.client.post(comment_url_private, {
+        response2 = self.other_client.post(comment_url_private, {
             'query': 'addComment',
             'post': 'testserver',
             'comment': {
@@ -237,7 +237,7 @@ class TestViews(TestCase):
                 'contentType': 'text/plain',
                 'published': datetime.datetime.now(),
             }
-        })
+        },'application/json')
         self.assertEquals(response2.status_code,200)
 
     def test_Comment_Handler_GET_API(self):
@@ -277,7 +277,7 @@ class TestViews(TestCase):
                 'published': datetime.datetime.now(),
             }
 
-        })
+        },'application/json')
 
         # test if user can get this comment
         response = self.client.get(comment_url)
