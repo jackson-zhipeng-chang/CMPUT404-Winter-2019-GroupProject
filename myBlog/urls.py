@@ -19,7 +19,7 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
-from . import views
+from . import Helpers, NewPostHandler,PostHandler, CommentHandler, FriendRequestHandler, FriendQueryHandler, PostToUserHandlerView, PostToUserIDHandler, AuthorProfileHandler, Friend2FriendHandler,SignupView, LoginView 
 from rest_framework_swagger.views import get_swagger_view
 from django.contrib.auth.decorators import login_required
 from django.views.generic.base import TemplateView 
@@ -27,17 +27,17 @@ from django.views.generic.base import TemplateView
 
 urlpatterns = [
     path('api-docs/',login_required(get_swagger_view(title='Welcome to myBlog APIs Documentation!')), name='apiDocs'),
-    path('posts/', views.NewPostHandler.as_view(), name='new_post'),
-    path('posts/<uuid:postid>/', views.PostHandler.as_view(), name='modify_post'),
-    path('posts/<uuid:postid>/comments/', views.CommentHandler.as_view(), name='comment'),
-    path('friendrequest/', views.FriendRequestHandler.as_view(), name='friendrequest'),
-    path('friends/<uuid:user_id>/', views.FriendQueryHandler.as_view(), name='friendquery'),
-    path('author/posts/', login_required(views.PostToUserHandlerView.as_view()), name='posttouser'),
-    path('author/<uuid:user_id>/posts/', views.PostToUserIDHandler.as_view(), name='posttouserid'),
-    path('author/<uuid:user_id>/', views.AuthorProfileHandler.as_view(), name='authorprofile'),
-    path('author/<uuid:user_id1>/friends/<uuid:user_id2>/', views.Friend2FriendHandler, name='friend2friend'),
-    path('login/', views.LoginView.as_view(), name='login'),
-    path('logout/', views.logout_user, name='logout'),
-    path('signup/', views.SignupView.as_view(), name='signup'),
+    path('posts/', NewPostHandler.NewPostHandler.as_view(), name='new_post'),
+    path('posts/<uuid:postid>/', PostHandler.PostHandler.as_view(), name='modify_post'),
+    path('posts/<uuid:postid>/comments/', CommentHandler.CommentHandler.as_view(), name='comment'),
+    path('friendrequest/', FriendRequestHandler.FriendRequestHandler.as_view(), name='friendrequest'),
+    path('friends/<uuid:user_id>/', FriendQueryHandler.FriendQueryHandler.as_view(), name='friendquery'),
+    path('author/posts/', login_required(PostToUserHandlerView.PostToUserHandlerView.as_view()), name='posttouser'),
+    path('author/<uuid:user_id>/posts/', PostToUserIDHandler.PostToUserIDHandler.as_view(), name='posttouserid'),
+    path('author/<uuid:user_id>/', AuthorProfileHandler.AuthorProfileHandler.as_view(), name='authorprofile'),
+    path('author/<uuid:user_id1>/friends/<uuid:user_id2>/', Friend2FriendHandler.Friend2FriendHandler, name='friend2friend'),
+    path('login/', LoginView.LoginView.as_view(), name='login'),
+    path('logout/', Helpers.logout_user, name='logout'),
+    path('signup/', SignupView.SignupView.as_view(), name='signup'),
     path('', TemplateView.as_view(template_name='home.html'), name='home'),
 ]
