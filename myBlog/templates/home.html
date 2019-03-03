@@ -9,11 +9,44 @@
     <h1 class="secondary-color">Hi {{ user.username }}!</h1>
     <div class="w3-card w3-round w3-white">
     <div class="w3-container w3-padding">
+        <form action="" method="POST" >Post type</br>
+        <select name="content-type" id=post-contenttype>
+          <option value="text/plain" selected>Plain text</option>
+          <option value="text/markdown">Markdonw</option>
+          <option value="image/png;base64">image/png</option>
+          <option value="image/jpeg;base64">image/jpeg</option>
+        </select>
+
         <h4>Post title</h4>
         <input class="w3-border w3-padding" type="text" name="Title" placeholder="My title" id=post-title><br>
         <h4>Post content</h4>
-        <textarea style="width: 100%; height:10em;"class="w3-border w3-padding" type="text" name="Title" placeholder="What's on your mind?" id=post-content></textarea><br><br>
-        <button type="button" class="w3-button w3-theme" onclick="post()"><i class="fa fa-pencil"></i>  Post</button> 
+        <textarea style="width: 100%; height:10em;"class="w3-border w3-padding" type="text" name="Title" placeholder="What's on your mind?" id=post-content></textarea>
+        <h4>Description</h4>
+        <input class="w3-border w3-padding" type="text" name="Title" placeholder="Description" id=post-description><br>
+        <h4>Categories</h4>
+        <input class="w3-border w3-padding" type="text" name="Title" placeholder="Categories" id=post-categories><br>
+        <br>
+        <form>Who do you want to share with?</br>
+        <select name="visibility" id=post-visibility>
+          <option value="PUBLIC" selected>PUBLIC</option>
+          <option value="FOAF">FOAF</option>
+          <option value="FRIENDS">FRIENDS</option>
+          <option value="PRIVATE">PRIVATE</option>
+          <option value="SERVERONLY">SERVERONLY</option>
+        </select>
+        </form>
+        <br>
+        <!-- Reference: https://simpleisbetterthancomplex.com/tutorial/2016/08/01/how-to-upload-files-with-django.html-->
+        <form action="/myBlog/posts/" method="post"  enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" id=post-image>
+        </form>
+        <br>
+        Unlisted? 
+        Yes:<input name="unlisted" value="Yes" type="radio"/>
+        No: <input name="unlisted" value="No" type="radio"/>
+        <br><br>
+        <button type="button" class="w3-button w3-theme" onclick="post()"><i class="fa fa-pencil"></i>Post</button> 
       </div>
     </div>
   </div>

@@ -7,10 +7,13 @@ from rest_framework import status
 from django.contrib.auth.models import User
 from django.http import HttpResponse, JsonResponse
 from django.db.models import Q
+from rest_framework.parsers import JSONParser, MultiPartParser
 from . import Helpers
 
 class NewPostHandler(APIView):
     def post(self, request, format=None):
+        print(request.FILES)
+        print(request.data)
         current_user_uuid = Helpers.get_current_user_uuid(request)
         author = Helpers.get_author_or_not_exits(current_user_uuid)
         data = request.data

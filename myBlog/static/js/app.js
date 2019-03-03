@@ -1,15 +1,34 @@
 var form = {
-    post_title: "",
-    post_content: "",
-    post_type: "text/plain",
-    open_to: "me",
-    unlisted: false
+    title: "",
+    content: "",
+    contentType:"",
+    categories: "",
+    visibility: "",
+    description:"",
+    unlisted:""
+
 }
-
 function post() {
-    form.post_title = document.getElementById("post-title").value;
-    form.post_content = document.getElementById("post-content").value;
-
+    form.title = document.getElementById("post-title").value;
+    form.contentType = document.getElementById("post-contenttype").value;
+    form.categories = document.getElementById("post-categories").value;
+    form.content = document.getElementById("post-content").value;
+    form.visibility = document.getElementById("post-visibility").value;
+    form.description = document.getElementById("post-description").value;
+    form.unlisted = document.getElementById("post-content").value;
+    // Reference: https://stackoverflow.com/questions/9618504/how-to-get-the-selected-radio-button-s-value
+    var radios = document.getElementsByName('unlisted');
+    for (var i = 0, length = radios.length; i < length; i++){
+        if (radios[i].checked){
+            if (radios[i].value == "Yes"){
+                form.unlisted = true;
+            }
+            else{
+                form.unlisted = false;
+            }
+            break;
+        }
+    }
     var xhr = new XMLHttpRequest();
     console.log("Posting...")
     xhr.open("POST", "myBlog/posts/", true);
@@ -19,6 +38,10 @@ function post() {
     console.log("Finished Posting!")
 
     //resetting fields
+    document.getElementById("post-title").value = "";
+    document.getElementById("post-content").value = "";
+    document.getElementById("post-title").value = "";
+    document.getElementById("post-content").value = "";
     document.getElementById("post-title").value = "";
     document.getElementById("post-content").value = "";
   }
