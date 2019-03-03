@@ -1,10 +1,58 @@
-<div class="w3-container w3-card w3-white w3-round w3-margin"><br>
-    <i class="fa fa-user"class="w3-left w3-circle w3-margin-right" style="width:60px"></i>
-    <h4>{{post.username}}</h4><br>
+<div id="holder">
+  <!-- <div class="w3-container w3-card w3-white w3-round w3-margin"><br>
+    <i class="fa fa-user" class="w3-left w3-circle w3-margin-right" style="width:60px"></i>
+    <h4 id="title">test </h4>
     <hr class="w3-clear">
-    <p>post.content</p>
-      <div class="w3-row-padding" style="margin:0 -16px">
+    <div class="w3-row-padding" style="margin:0 -16px">
+      <p id="content">content</p>
     </div>
-    <button type="button" class="w3-button w3-theme-d1 w3-margin-bottom"><i class="fa fa-thumbs-up"></i>  Like</button> 
-    <button type="button" class="w3-button w3-theme-d2 w3-margin-bottom"><i class="fa fa-comment"></i>  Comment</button> 
-  </div>
+    <button class="w3-button w3-theme-d1 w3-margin-bottom"><i class="fa fa-thumbs-up"></i>  Like</button>
+    <button class="w3-button w3-theme-d2 w3-margin-bottom"><i class="fa fa-comment"></i>  Comment</button>
+  </div> -->
+</div>
+<script>
+  getAllPosts().then(function (data) {
+    var holder = document.getElementById("holder");
+    for (var i = 0; i < data.length; i++) {
+      var post = document.createElement("div");
+      post.classList.add("w3-container", "w3-card", "w3-white", "w3-round", "w3-margin");
+      
+      holder.appendChild(post);
+      var userLogo = document.createElement("i");
+      userLogo.classList.add("fa", "fa-user");
+      userLogo.classList.add("w3-left", "w3-circle", "w3-margin-right");
+      userLogo.style.width = "20px";
+      userLogo.style.margin = "20px";
+      post.appendChild(userLogo);
+
+      var title = document.createElement("h4");
+      title.innerHTML = data[i].post_title;
+      post.appendChild(title);
+    
+      var line = document.createElement("hr");
+      line.classList.add("w3-clear");
+      post.appendChild(line);
+
+      var divDescription = document.createElement("div");
+      divDescription.classList.add("w3-row-padding");
+      divDescription.style.margin = "0 20px";
+      post.appendChild(divDescription);
+
+      var content = document.createElement("p");
+      content.innerHTML = data[i].post_content;
+      divDescription.appendChild(content);
+
+      var likeButton = document.createElement("button");
+      likeButton.classList.add("w3-button", "w3-theme-d1", "w3-margin-bottom");
+      likeButton.insertAdjacentHTML("beforeend", "<i class='fa fa-thumbs-up'></i>  Like");
+      likeButton.style.margin = "2px";
+      post.appendChild(likeButton);
+
+      var commentButton = document.createElement("button");
+      commentButton.classList.add("w3-button", "w3-theme-d1", "w3-margin-bottom");
+      commentButton.insertAdjacentHTML("beforeend", "<i class='fa fa-comment'></i>  Comment");
+      commentButton.style.margin = "2px";
+      post.appendChild(commentButton);
+    }
+  })
+</script>
