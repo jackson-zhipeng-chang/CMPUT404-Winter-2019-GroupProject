@@ -186,9 +186,9 @@ class TestViews(TestCase):
                 'contentType': 'text/plain',
                 'published': datetime.datetime.now(),
             }
-        })
-        #self.assertEquals(response.status_code,200)
-        self.assertEquals(response.status_code,400)
+        },'application/json')
+        self.assertEquals(response.status_code,200)
+        #self.assertEquals(response.status_code,400)
 
         # create a private post
         self.other_client.post(self.new_post_url,{
@@ -220,10 +220,10 @@ class TestViews(TestCase):
                 'contentType': 'text/plain',
                 'published': datetime.datetime.now(),
             }
-        })
+        },'application/json')
         self.assertEquals(response1.status_code,403)
 
-        response2 = self.client.post(comment_url_private, {
+        response2 = self.other_client.post(comment_url_private, {
             'query': 'addComment',
             'post': 'testserver',
             'comment': {
@@ -238,7 +238,7 @@ class TestViews(TestCase):
                 'contentType': 'text/plain',
                 'published': datetime.datetime.now(),
             }
-        })
+        },'application/json')
         self.assertEquals(response2.status_code,200)
 
     def test_Comment_Handler_GET_API(self):
@@ -278,8 +278,9 @@ class TestViews(TestCase):
                 'published': datetime.datetime.now(),
             }
 
-        })
+        },'application/json')
 
         # test if user can get this comment
         response = self.client.get(comment_url)
-        print(response)
+        self.assertEquals(response.status_code,200)
+        self.assertEquals(response.body['comment']['comment'],'this is comment from author2')
