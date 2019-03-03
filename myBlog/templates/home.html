@@ -8,7 +8,7 @@
   <div>
     <h1 class="secondary-color">Hi {{ user.username }}!</h1>
     <div class="w3-card w3-round w3-white">
-    <div class="w3-container w3-padding">
+      <div class="w3-container w3-padding">
         <h4>Post title</h4>
         <input class="w3-border w3-padding" type="text" name="Title" placeholder="My title" id=post-title><br>
         <h4>Post content</h4>
@@ -17,6 +17,12 @@
       </div>
     </div>
   </div>
+  <div>
+    {% include "posts.html" %}
+  </div>
+  <script>
+  // console.log(getAllPosts())
+  </script>
   <br>
   <a href="{% url 'logout' %}" class="w3-button w3-theme-d1 w3-margin-bottom"><i class="fa fa-sign-out-alt"></i>  Logout</a>
 
@@ -32,7 +38,3 @@
   </div>
 {% endif %}
 {% endblock %}
-
-<script>
-    var csrf_token = '{{ csrf_token }}';
-</script>
