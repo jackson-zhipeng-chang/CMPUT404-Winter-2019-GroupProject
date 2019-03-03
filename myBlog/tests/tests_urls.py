@@ -1,6 +1,5 @@
 from django.test import SimpleTestCase
-from myBlog.NewPostHandler import NewPostHandler
-from myBlog.PostHandler import PostHandler
+from myBlog.PostHandler import PostHandler, NewPostHandler
 from myBlog.CommentHandler import CommentHandler
 
 from django.urls import reverse,resolve
