@@ -19,7 +19,7 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
-from . import Helpers,PostHandler, CommentHandler, FriendRequestHandler, FriendQueryHandler, AuthorProfileHandler, Friend2FriendHandler,SignupView, LoginView 
+from . import Helpers,PostHandler, CommentHandler, FriendRequestHandler, FriendQueryHandler, AuthorProfileHandler, Friend2FriendHandler,Accounts 
 from rest_framework_swagger.views import get_swagger_view
 from django.contrib.auth.decorators import login_required
 from django.views.generic.base import TemplateView 
@@ -36,8 +36,8 @@ urlpatterns = [
     path('author/<uuid:user_id>/posts/', PostHandler.PostToUserIDHandler.as_view(), name='posttouserid'),
     path('author/<uuid:user_id>/', AuthorProfileHandler.AuthorProfileHandler.as_view(), name='authorprofile'),
     path('author/<uuid:user_id1>/friends/<uuid:user_id2>/', Friend2FriendHandler.Friend2FriendHandler, name='friend2friend'),
-    path('login/', LoginView.LoginView.as_view(), name='login'),
-    path('logout/', Helpers.logout_user, name='logout'),
-    path('signup/', SignupView.SignupView.as_view(), name='signup'),
+    path('login/', Accounts.LoginView.as_view(), name='login'),
+    path('logout/', Accounts.logout_user, name='logout'),
+    path('signup/', Accounts.signup, name='signup'),
     path('', TemplateView.as_view(template_name='home.html'), name='home'),
 ]

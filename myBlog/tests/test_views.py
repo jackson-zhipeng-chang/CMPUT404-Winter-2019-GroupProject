@@ -395,4 +395,3 @@ class TestViews(TestCase):
     #     login_url = reverse('login')
     #     response = client.post(login_url)
     #     print(response.content)
-

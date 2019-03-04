@@ -5,9 +5,31 @@ var form = {
     categories: "",
     visibility: "",
     description:"",
+    visibleTo:"",
     unlisted:""
 
 }
+
+//https://stackoverflow.com/questions/22087076/how-to-make-a-simple-image-upload-using-javascript-html
+
+var encoded="";
+
+function previewFile(){
+    var preview = document.querySelector('img'); //selects the query named img
+    var file= document.querySelector('input[type=file]').files[0]; //sames as here
+    var reader  = new FileReader();
+    reader.onloadend = function () {
+        preview.src = reader.result;
+        encoded = preview.src;
+        console.log(encoded);
+    }
+    if (file) {
+        reader.readAsDataURL(file); //reads the data as a URL
+    } else {
+        preview.src = "";
+    }
+}
+
 function post() {
     form.title = document.getElementById("post-title").value;
     form.contentType = document.getElementById("post-contenttype").value;
@@ -16,6 +38,7 @@ function post() {
     form.visibility = document.getElementById("post-visibility").value;
     form.description = document.getElementById("post-description").value;
     form.unlisted = document.getElementById("post-content").value;
+    form.visibleTo = document.getElementById("post-visibleto").value;
     // Reference: https://stackoverflow.com/questions/9618504/how-to-get-the-selected-radio-button-s-value
     var radios = document.getElementsByName('unlisted');
     for (var i = 0, length = radios.length; i < length; i++){
@@ -29,7 +52,10 @@ function post() {
             break;
         }
     }
+    form.content = form.content + encoded;
+
     var xhr = new XMLHttpRequest();
+    console.log(xhr)
     console.log("Posting...")
     xhr.open("POST", "myBlog/posts/", true);
     xhr.setRequestHeader('Content-Type', 'application/json');
