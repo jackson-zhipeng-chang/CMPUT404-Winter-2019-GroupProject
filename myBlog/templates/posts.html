@@ -12,8 +12,10 @@
 </div>
 <script>
   getAllPosts().then(function (data) {
+    // console.log(data.posts);
     var holder = document.getElementById("holder");
-    for (var i = 0; i < data.length; i++) {
+    for (var i = 0; i < data.posts.length; i++) {
+      console.log(data.posts[i]);
       var post = document.createElement("div");
       post.classList.add("w3-container", "w3-card", "w3-white", "w3-round", "w3-margin");
       
@@ -26,7 +28,7 @@
       post.appendChild(userLogo);
 
       var title = document.createElement("h4");
-      title.innerHTML = data[i].post_title;
+      title.innerHTML = data.posts[i].title;
       post.appendChild(title);
     
       var line = document.createElement("hr");
@@ -39,7 +41,7 @@
       post.appendChild(divDescription);
 
       var content = document.createElement("p");
-      content.innerHTML = data[i].post_content;
+      content.innerHTML = data.posts[i].content;
       divDescription.appendChild(content);
 
       var likeButton = document.createElement("button");
