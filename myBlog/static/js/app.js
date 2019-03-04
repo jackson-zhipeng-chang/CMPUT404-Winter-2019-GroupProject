@@ -27,6 +27,21 @@ function previewFile(){
         preview.src = "";
     }
 }
+// https://www.w3schools.com/jsref/prop_style_visibility.asp
+function enableInput(){
+    var selectedType = document.getElementById("post-contenttype").value;
+    console.log(selectedType)
+    if (selectedType=="image/png;base64" || selectedType=="image/jpeg;base64"){
+        alert("Since you selected img, you will not be able to add content");
+        document.getElementById("post-content").readOnly  = true;
+        document.getElementById("post-image").style.visibility = "visible";
+    }
+    else{
+        document.getElementById("post-content").readOnly  = false;
+        document.getElementById("post-image").style.visibility = "hidden";
+
+    }
+}
 
 // https://stackoverflow.com/questions/6941533/get-protocol-domain-and-port-from-url
 function get_host(){

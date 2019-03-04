@@ -54,6 +54,10 @@
           content.innerHTML = data.posts[i].content;
       }
       divDescription.appendChild(content);
+      
+      var line = document.createElement("hr");
+      line.classList.add("w3-clear");
+      post.appendChild(line);
 
       var likeButton = document.createElement("button");
       likeButton.classList.add("w3-button", "w3-theme-d1", "w3-margin-bottom");
