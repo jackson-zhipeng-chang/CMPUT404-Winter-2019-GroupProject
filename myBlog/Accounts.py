@@ -17,28 +17,47 @@ from django.http import HttpResponse, JsonResponse
 from django.views.generic.edit import FormView
 from django.db.models import Q
 from urllib.parse import urlparse
+from . import Helpers
 
 # https://stackoverflow.com/questions/37752440/relative-redirect-using-meta-http-equiv-refresh-with-gh-pages
 # https://www.tutorialspoint.com/How-to-automatically-redirect-a-Web-Page-to-another-URL for redirecting
 # Code from: Reference: https://simpleisbetterthancomplex.com/tutorial/2017/02/18/how-to-create-user-sign-up-view.html
 # https://docs.djangoproject.com/en/2.1/topics/auth/default/
-class SignupView(FormView):
-    template_name = 'signup.html'
-    form_class = UserCreationForm  # The Form class the FormView should use
+class LoginView(FormView):
+    template_name = 'login.html'
+    form_class = AuthenticationForm # The Form class the FormView should use
     success_url = '/myBlog/author/posts/'  # Go here after successful POST
 
     def form_valid(self, form):
         username = form.cleaned_data.get('username')
-        password = form.cleaned_data.get('password1')
-        user = User.objects.create_user(username=username, password=password, is_active=False)
-        try:
-            host = get_host_from_request(self.request)
-            author = Author.objects.create(displayName=username,user=user, host=host)
-            author.save()
-        except:
-            user.delete()
-            return Response("User coudn't create", status=400)
+        password = form.cleaned_data.get('password')
+        user = authenticate(username=username, password=password)
+        if user is not None:
+            login(self.request, user)
+        else:
+            return Response("User coudn't find", status=404)
         return super().form_valid(form)
 
     def form_invalid(self, form):
-        return super().form_invalid(form) 
+        return super().form_invalid(form)
+
+# https://stackoverflow.com/questions/9626535/get-protocol-host-name-from-url
+def signup(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password1')
+            user = User.objects.create_user(username=username,password=password, is_active=False)
+            userObj = get_object_or_404(User, username=username)
+            host = Helpers.get_host_from_request(request)
+            author = Author.objects.create(displayName=username,user=userObj, host=host)
+            author.save()
+            return redirect('home')
+    else:
+        form = UserCreationForm()
+    return render(request, 'signup.html', {'form': form})
+
+def logout_user(request):
+    logout(request)
+    return redirect("home") 
