@@ -1,5 +1,7 @@
 from django.test import SimpleTestCase
-from myBlog.views import NewPostHandler,PostHandler,CommentHandler
+from myBlog.PostHandler import PostHandler, NewPostHandler
+from myBlog.CommentHandler import CommentHandler
+
 from django.urls import reverse,resolve
 import uuid
 

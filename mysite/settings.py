@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
-from decouple import config
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -21,7 +21,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config('SECRET_KEY')
+SECRET_KEY = '5)gq4f=0b&%jp%80yw$xc@-v&hinop9vut$^i976dup_)q2&3e'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 #DEBUG = True
@@ -136,7 +136,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = 'myBlog/static/'
 try:
     import django_heroku
     django_heroku.settings(locals())
@@ -152,26 +152,4 @@ REST_FRAMEWORK = {
     )
 }
 
-
-# https://simpleisbetterthancomplex.com/tutorial/2017/08/01/how-to-setup-amazon-s3-in-a-django-project.html
-AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
-AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
-AWS_STORAGE_BUCKET_NAME = 'myblog-cool'
-AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
-AWS_S3_OBJECT_PARAMETERS = {
-    'CacheControl': 'max-age=86400',
-}
-AWS_LOCATION = 'static'
-
-#STATICFILES_DIRS = [
-#   os.path.join(BASE_DIR, 'myBlog/static'),
-#]
-#STATIC_URL = 'https://%s/%s/' % (AWS_S3_CUSTOM_DOMAIN, AWS_LOCATION)
-#STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-
-MEDIA_URL = '/media/images/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media/images')
-
-if not DEBUG:
-    DEFAULT_FILE_STORAGE = 'mysite.storage_backends.MediaStorage' 
 

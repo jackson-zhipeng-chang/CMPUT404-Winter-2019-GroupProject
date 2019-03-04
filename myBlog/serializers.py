@@ -143,7 +143,7 @@ class PostSerializer(serializers.ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
     author = AuthorSerializer(read_only=True)
     class Meta:
-        model =Comment
+        model = Comment
         fields = '__all__'
 
     def create(self, validated_data):
