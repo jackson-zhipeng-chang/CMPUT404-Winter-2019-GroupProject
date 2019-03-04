@@ -99,4 +99,4 @@ def posts_list(request):
     return render(request, 'posts.html')
 
 def new_post(request):
-    return render(request, 'home.html')
+    return render(request, 'newpost.html')
