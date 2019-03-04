@@ -95,9 +95,8 @@ def check_author1_follow_author2(author1_id,author2_id):
     else:
         return False
 
-def logout_user(request):
-    logout(request)
-    return redirect("home") 
-
 def posts_list(request):
     return render(request, 'posts.html')
+
+def new_post(request):
+    return render(request, 'home.html')

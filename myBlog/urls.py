@@ -40,5 +40,6 @@ urlpatterns = [
     path('logout/', Accounts.logout_user, name='logout'),
     path('signup/', Accounts.signup, name='signup'),
     path('all/', Helpers.posts_list, name='postslist'),
+    path('newpost/', Helpers.new_post, name='newpost'),
     path('', TemplateView.as_view(template_name='post.html'), name='home'),
 ]
