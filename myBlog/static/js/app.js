@@ -71,20 +71,22 @@ function post() {
     document.getElementById("post-title").value = "";
     document.getElementById("post-content").value = "";
   }
+
 function getAllPosts() {
-    var xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function () {
-        if (this.readyState == 4 && this.status == 200) {
-            
-            var data = JSON.parse(this.responseText);
-            console.log(data);
-            // we get the returned data
-        }
-    };
-    xhr.open("GET", "/myBlog/author/posts/", true);
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.setRequestHeader("Accept", "application/json");
-    xhr.setRequestHeader("x-csrf-token", csrf_token);
-    xhr.send();
-    
-}
+    // Default options are marked with *
+      return fetch("/myBlog/author/posts/", {
+          method: "GET", // *GET, POST, PUT, DELETE, etc.
+          mode: "cors", // no-cors, cors, *same-origin
+          cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+          credentials: "same-origin", // include, *same-origin, omit
+          headers: {
+              "Content-Type": "application/json",
+              "x-csrf-token": csrf_token
+              // "Content-Type": "application/x-www-form-urlencoded",
+          },
+          redirect: "follow", // manual, *follow, error
+          referrer: "no-referrer", // no-referrer, *client
+        //   body: JSON.stringify(data), // body data type must match "Content-Type" header
+      })
+      .then(response => response.json()); // parses response to JSON
+  }
