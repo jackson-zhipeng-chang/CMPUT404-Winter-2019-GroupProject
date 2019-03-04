@@ -12,22 +12,58 @@ from . import Helpers
 
 class NewPostHandler(APIView):
     def post(self, request, format=None):
-        print(request.FILES)
-        print(request.data)
         current_user_uuid = Helpers.get_current_user_uuid(request)
         author = Helpers.get_author_or_not_exits(current_user_uuid)
-        data = request.data
         origin = Helpers.get_host_from_request(request)
-        serializer = PostSerializer(data=data, context={'author': author, 'origin': origin})
-        if serializer.is_valid():
-            serializer.save()
-            responsBody={
-                "query": "addPost",
-                "success":True,
-                "message":"Post Added"
-                }
-            return Response(responsBody, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
+        data = request.data
+        content = data["content"]
+        with_img = False
+        if ("image/png;base64" in content) or ("image/jpeg;base64" in content):
+            with_img = True
+            content_list = content.split("data:image/")
+            text_content = content_list[0]
+            encoded_img = "data:image/"+content_list[1]
+
+        if not with_img:
+            data['content']=content
+            serializer = PostSerializer(data=data, context={'author': author,'origin': origin})
+            if serializer.is_valid():
+                serializer.save()
+                responsBody={
+                    "query": "addPost",
+                    "success":True,
+                    "message":"Post Added"
+                    }
+                return Response(responsBody, status=status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
+
+        elif with_img:
+            data['content']=text_content
+            text_post_serializer = PostSerializer(data=data, context={'author': author,'origin': origin})
+            if text_post_serializer.is_valid():
+                text_post = text_post_serializer.save()
+            else:
+                return Response("Something wrong with post data", status=status.HTTP_400_BAD_REQUEST) 
+
+            if "image/jpeg;base64" in encoded_img:
+                contentType="image/jpeg;base64"
+            if "image/png;base64" in encoded_img:
+                contentType="image/png;base64"
+            img_data = {'postid':text_post.postid, "content": encoded_img, "contentType":contentType, "description": data['description'], "title":data['title'], "visibility":data['visibility']}
+            img_post_serializer = PostSerializer(data=img_data, context={'author': author, 'origin': origin})
+            if img_post_serializer.is_valid():
+                img_post_serializer.save()
+                responsBody={
+                    "query": "addPost",
+                    "success":True,
+                    "message":"Post Added"
+                    }
+                return Response(responsBody, status=status.HTTP_200_OK)
+            else:
+                return Response(img_post_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
 
 
 # https://www.django-rest-framework.org/tutorial/2-requests-and-responses/

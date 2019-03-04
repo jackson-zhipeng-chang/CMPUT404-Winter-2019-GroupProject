@@ -240,6 +240,7 @@ class TestViews(TestCase):
                 'published': datetime.datetime.now(),
             }
         },'application/json')
+
         self.assertEquals(response2.status_code,200)
 
     def test_Comment_Handler_GET_API(self):
@@ -340,5 +341,3 @@ class TestViews(TestCase):
         response1 = self.other_client.get(post_to_userid_url)
         content = json.loads(response1.content)
         self.assertEquals(response1.status_code,200)
-
-
