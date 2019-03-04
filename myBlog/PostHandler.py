@@ -18,7 +18,7 @@ class NewPostHandler(APIView):
         data = request.data
         content = data["content"]
         with_img = False
-        if "image/png;base64" or "image/jpeg;base64" in content:
+        if ("image/png;base64" in content) or ("image/jpeg;base64" in content):
             with_img = True
             content_list = content.split("data:image/")
             text_content = content_list[0]
