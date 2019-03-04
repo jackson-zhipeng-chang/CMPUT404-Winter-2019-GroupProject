@@ -33,14 +33,19 @@ class TestViews(TestCase):
         self.post_to_user_url = reverse('posttouser')
 
     def test_New_Post_Handler_POST_API(self):
-
         response = self.client.post(self.new_post_url,{
             'title': 'POST1',
             'description': 'post for testing',
             'contentType': 'text/plain',
+            'author':{
+                'id':self.author.id,
+                'host':self.author.host,
+                'displayName':self.author.displayName,
+                'github':self.author.github
+            },
             'visibility': 'PUBLIC',
             'content': 'test'
-        })
+        },'application/json')
         self.assertEquals(response.status_code, 200)
 
     def test_Post_Handler_GET_OTHER_AUTHOR_POST_API(self):
@@ -51,11 +56,16 @@ class TestViews(TestCase):
                 'content': 'This is a test post',
                 'categories': 'test',
                 'contentType': 'text/plain',
-                'author': self.other_author,
+                'author': {
+                    'id':self.other_author.id,
+                    'host':self.other_author.host,
+                    'displayName':self.other_author.displayName,
+                    'github':self.other_author.github
+                },
                 'visibility': 'PUBLIC',
                 'description': 'test description'
 
-        })
+        },'application/json')
 
         post1 = Post.objects.get(title='original post1')
         post1_postid = post1.postid
@@ -72,10 +82,15 @@ class TestViews(TestCase):
             'content': 'This is my post',
             'categories': 'test',
             'contentType': 'text/plain',
-            'author': self.author,
+            'author':{
+                'id':self.author.id,
+                'host':self.author.host,
+                'displayName':self.author.displayName,
+                'github':self.author.github
+            },
             'visibility': 'PRIVATE',
             'description': 'test description'
-        })
+        },'application/json')
 
         post1 = Post.objects.get(title='my post')
         post1_postid = post1.postid
@@ -99,10 +114,15 @@ class TestViews(TestCase):
             'content': 'This is a test post',
             'categories': 'test',
             'contentType': 'text/plain',
-            'author': self.author,
+            'author':{
+                'id':self.author.id,
+                'host':self.author.host,
+                'displayName':self.author.displayName,
+                'github':self.author.github
+            },
             'visibility': 'PUBLIC',
             'description': 'test description'
-        })
+        },'application/json')
         obj = Post.objects.get(title='original post2')
         post1_postid = obj.postid
         modify_post_url = reverse('modify_post',args=[post1_postid])
@@ -133,10 +153,15 @@ class TestViews(TestCase):
             'content': 'This is my post',
             'categories': 'test',
             'contentType': 'text/plain',
-            'author': self.author,
+            'author':{
+                'id':self.author.id,
+                'host':self.author.host,
+                'displayName':self.author.displayName,
+                'github':self.author.github
+            },
             'visibility': 'PUBLIC',
             'description': 'test description'
-        })
+        },'application/json')
         post = Post.objects.get(title='need delete')
         post_id = post.postid
         modify_post_url = reverse('modify_post', args=[post_id])
@@ -162,10 +187,15 @@ class TestViews(TestCase):
             'content': 'please make some comments',
             'categories': 'test',
             'contentType': 'text/plain',
-            'author': self.other_author,
+            'author':{
+                'id':self.other_author.id,
+                'host':self.other_author.host,
+                'displayName':self.other_author.displayName,
+                'github':self.other_author.github
+            },
             'visibility': 'PUBLIC',
             'description': 'test description'
-        })
+        },'application/json')
         post = Post.objects.get(title='comment this post!')
         post_id = post.postid
 
@@ -197,10 +227,15 @@ class TestViews(TestCase):
             'content': 'please make some comments',
             'categories': 'test',
             'contentType': 'text/plain',
-            'author': self.other_author,
+            'author':{
+                'id':self.other_author.id,
+                'host':self.other_author.host,
+                'displayName':self.other_author.displayName,
+                'github':self.other_author.github
+            },
             'visibility': 'PRIVATE',
             'description': 'test description'
-        })
+        },'application/json')
         post1 = Post.objects.get(title='comment this private post')
         post1_id = post1.postid
 
@@ -253,10 +288,15 @@ class TestViews(TestCase):
             'content': 'please make some comments',
             'categories': 'test',
             'contentType': 'text/plain',
-            'author': self.author,
+            'author':{
+                'id':self.author.id,
+                'host':self.author.host,
+                'displayName':self.author.displayName,
+                'github':self.author.github
+            },
             'visibility': 'PUBLIC',
             'description': 'test description'
-        })
+        },'application/json')
 
         # get the post id for this post
         post = Post.objects.get(title='make some comments')
@@ -302,10 +342,15 @@ class TestViews(TestCase):
                 'content': 'please make some comments on post'+str(i),
                 'categories': 'test',
                 'contentType': 'text/plain',
-                'author': self.author,
+                'author':{
+                'id':self.author.id,
+                'host':self.author.host,
+                'displayName':self.author.displayName,
+                'github':self.author.github
+            },
                 'visibility': 'PUBLIC',
                 'description': 'test description'
-            })
+            },'application/json')
 
             post = Post.objects.get(title='post'+str(i))
             post_id = post.postid
@@ -341,3 +386,12 @@ class TestViews(TestCase):
         response1 = self.other_client.get(post_to_userid_url)
         content = json.loads(response1.content)
         self.assertEquals(response1.status_code,200)
+
+    # def test_login_view(self):
+    #     client = Client()
+    #     usr = User.objects.create(username='login_tester')
+    #     usr.set_password('myblogiscool')
+    #     usr.save()
+    #     login_url = reverse('login')
+    #     response = client.post(login_url)
+    #     print(response.content)

@@ -1,6 +1,7 @@
 from django.test import SimpleTestCase
 from myBlog.PostHandler import PostHandler, NewPostHandler,PostToUserHandlerView,PostToUserIDHandler
 from myBlog.CommentHandler import CommentHandler
+from myBlog.LoginView import LoginView
 
 from django.urls import reverse,resolve
 import uuid
@@ -29,3 +30,7 @@ class TestUrls(SimpleTestCase):
         user_id = uuid.uuid4()
         url = reverse('posttouserid',args=[user_id])
         self.assertEquals(resolve(url).func.view_class,PostToUserIDHandler)
+
+    # def test_url_login(self):
+    #     url = reverse('login')
+    #     self.assertEquals(reverse(url).func.view_class,LoginView)
