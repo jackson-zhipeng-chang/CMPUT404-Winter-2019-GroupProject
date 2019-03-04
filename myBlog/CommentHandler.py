@@ -35,7 +35,7 @@ class CommentHandler(APIView):
             post = Post.objects.get(pk=postid)
             if (not Helpers.verify_current_user_to_post(post, request)):
                 responsBody={
-                    "query": "addComment",
+                    "query": "addCoemment",
                     "success":False,
                     "message":"Comment not allowed"
                     }
