@@ -30,6 +30,7 @@ class CommentHandler(APIView):
 
     def post(self, request, postid, format=None):
         data = request.data
+
         if data['query'] == 'addComment':
             post = Post.objects.get(pk=postid)
             if (not Helpers.verify_current_user_to_post(post, request)):
@@ -41,8 +42,9 @@ class CommentHandler(APIView):
                 return Response(responsBody, status=403)
             else:
                 current_user_uuid = Helpers.get_current_user_uuid(request)
-                data = {'comment':request.data['comment']['comment'], 'contentType':request.data['comment']['contentType']}
-                serializer = CommentSerializer(data=data, context={'author': request.data['comment']['author'], 'postid':postid})
+                author = Helpers.get_author_or_not_exits(current_user_uuid)
+                # data = {'comment':request.data['comment']['comment'], 'contentType':request.data['comment']['contentType']}
+                serializer = CommentSerializer(data=data['comment'], context={'author': author, 'postid':postid})
                 if serializer.is_valid():
                     serializer.save()
                     responsBody={

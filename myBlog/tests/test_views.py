@@ -283,4 +283,6 @@ class TestViews(TestCase):
         # test if user can get this comment
         response = self.client.get(comment_url)
         self.assertEquals(response.status_code,200)
-        self.assertEquals(response.body['comment']['comment'],'this is comment from author2')
+        content = json.loads(response.content)
+        print(content)
+        self.assertEquals(content['comments'][0]['comment'],'this is comment from author2')
