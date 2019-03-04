@@ -18,6 +18,7 @@ from django.views.generic.edit import FormView
 from django.db.models import Q
 from urllib.parse import urlparse
 from . import Helpers
+import uuid
 
 class FriendRequestHandler(APIView):
     def get(self, request, format=None):
@@ -36,8 +37,7 @@ class FriendRequestHandler(APIView):
             sender_object = Author.objects.get(id=author_id)
             reciver_object = Author.objects.get(id=friend_id)
             friend_already = Helpers.check_two_users_friends(author_id,friend_id)
-
-            if (current_user_uuid == author_id):
+            if (str(current_user_uuid) == author_id):
                 if (not friend_already):
                     if (Friend.objects.filter(author=sender_object, friend=reciver_object, status="Decline").exists()):
                         friendrequest = Friend.objects.get(author=sender_object, friend=reciver_object)

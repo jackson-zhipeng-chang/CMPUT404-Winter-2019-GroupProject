@@ -5,13 +5,14 @@ var form = {
     categories: "",
     visibility: "",
     description:"",
+    visibleTo:"",
     unlisted:""
 
 }
 
 //https://stackoverflow.com/questions/22087076/how-to-make-a-simple-image-upload-using-javascript-html
 
-var encoded;
+var encoded="";
 
 function previewFile(){
     var preview = document.querySelector('img'); //selects the query named img
@@ -37,6 +38,7 @@ function post() {
     form.visibility = document.getElementById("post-visibility").value;
     form.description = document.getElementById("post-description").value;
     form.unlisted = document.getElementById("post-content").value;
+    form.visibleTo = document.getElementById("post-visibleto").value;
     // Reference: https://stackoverflow.com/questions/9618504/how-to-get-the-selected-radio-button-s-value
     var radios = document.getElementsByName('unlisted');
     for (var i = 0, length = radios.length; i < length; i++){
@@ -50,9 +52,7 @@ function post() {
             break;
         }
     }
-    if (form.contentType=="image/png;base64" || form.contentType=="image/jpeg;base64"){
-        form.content = encoded;
-    }
+    form.content = form.content + encoded;
 
     var xhr = new XMLHttpRequest();
     console.log(xhr)

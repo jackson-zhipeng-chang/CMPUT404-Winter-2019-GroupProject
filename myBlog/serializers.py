@@ -120,7 +120,7 @@ class PostSerializer(serializers.ModelSerializer):
             return None
 # https://www.django-rest-framework.org/api-guide/serializers/#saving-instances
     def create(self, validated_data):
-        author = self.context['author']
+        author=self.context['author']
         origin=self.context['origin']
         post = Post.objects.create(author=author, origin=origin, source=origin, **validated_data)
         newPost = Post.objects.get(postid=post.postid)
