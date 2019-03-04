@@ -10,7 +10,7 @@
     <div class="w3-card w3-round w3-white">
     <div class="w3-container w3-padding">
         <form action="" method="POST" >Post type</br>
-        <select name="content-type" id=post-contenttype>
+        <select name="content-type" id=post-contenttype onchange="enableInput()">
           <option value="text/plain" selected>Plain text</option>
           <option value="text/markdown">Markdonw</option>
           <option value="image/png;base64">image/png</option>
@@ -39,8 +39,9 @@
         <input class="w3-border w3-padding" type="text" name="VisibleTo" placeholder="VisibleTo" id=post-visibleto>
         <br>
         <br>
-        <!-- Reference: https://simpleisbetterthancomplex.com/tutorial/2016/08/01/how-to-upload-files-with-django.html-->
-        <form method="post"  enctype="multipart/form-data">
+        <!-- Reference: https://simpleisbetterthancomplex.com/tutorial/2016/08/01/how-to-upload-files-with-django.html  
+        https://stackoverflow.com/questions/14007629/document-getelementbyidremember-visibility-hidden-not-working-on-a-chec-->
+        <form method="post" enctype="multipart/form-data" id = "post-image" style="visibility:hidden;">
         {% csrf_token %}
         <input type="file" name="myfile" id="my-file" onchange="previewFile()">
         <img src="" height="200" alt="Image preview...">
@@ -48,16 +49,13 @@
         </form>
         <br>
         Unlisted? 
-        Yes:<input name="unlisted" value="Yes" type="radio"/>
-        No: <input name="unlisted" value="No" type="radio"/>
+        Yes: <input name="unlisted" value="Yes" type="radio"/>
+        No: <input name="unlisted" value="No" type="radio" checked/>
         <br><br>
         <button type="button" class="w3-button w3-theme" onclick="post()"><i class="fa fa-pencil"></i>Post</button> 
       </div>
     </div>
   </div>
-  <br>
-  <a href="{% url 'logout' %}" class="w3-button w3-theme-d1 w3-margin-bottom"><i class="fa fa-sign-out-alt"></i>  Logout</a>
-
   {% else %}
   <div class="w3-card w3-round w3-white" style="width:30%;margin:auto;margin-top: 5%;">
     <div class="w3-container w3-padding">
