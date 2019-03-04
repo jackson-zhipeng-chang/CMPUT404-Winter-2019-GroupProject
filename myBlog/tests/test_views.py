@@ -188,6 +188,7 @@ class TestViews(TestCase):
             }
         },'application/json')
         self.assertEquals(response.status_code,200)
+        #self.assertEquals(response.status_code,400)
 
         # create a private post
         self.other_client.post(self.new_post_url,{
@@ -281,4 +282,7 @@ class TestViews(TestCase):
 
         # test if user can get this comment
         response = self.client.get(comment_url)
-        print(response)
+        self.assertEquals(response.status_code,200)
+        content = json.loads(response.content)
+        print(content)
+        self.assertEquals(content['comments'][0]['comment'],'this is comment from author2')

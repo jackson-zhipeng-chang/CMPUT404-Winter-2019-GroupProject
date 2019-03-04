@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
+
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -39,7 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'myBlog',
     'rest_framework_swagger',
-    'rest_framework'
+    'rest_framework',
+    'storages'
 ]
 
 MIDDLEWARE = [
@@ -133,7 +136,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = 'myBlog/static/'
 try:
     import django_heroku
     django_heroku.settings(locals())
@@ -142,5 +145,11 @@ except ImportError:
     pass
 
 REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'myBlog.serializers.PostPagination',
+    'DEFAULT_PAGINATION_CLASS': 'myBlog.serializers.CustomPagination',
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    )
 }
+
+
