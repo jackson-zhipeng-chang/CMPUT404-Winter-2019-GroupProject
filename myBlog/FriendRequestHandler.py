@@ -18,7 +18,6 @@ from django.views.generic.edit import FormView
 from django.db.models import Q
 from urllib.parse import urlparse
 from . import Helpers
-import uuid
 
 class FriendRequestHandler(APIView):
     def get(self, request, format=None):
