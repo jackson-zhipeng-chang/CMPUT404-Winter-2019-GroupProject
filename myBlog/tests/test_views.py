@@ -30,6 +30,7 @@ class TestViews(TestCase):
                                                   github='https://github.com/terrence85561')
 
         self.new_post_url = reverse('new_post')
+        self.post_to_user_url = reverse('posttouser')
 
     def test_New_Post_Handler_POST_API(self):
 
@@ -286,3 +287,58 @@ class TestViews(TestCase):
         content = json.loads(response.content)
         print(content)
         self.assertEquals(content['comments'][0]['comment'],'this is comment from author2')
+
+    def test_Post_To_User_HandlerView(self):
+        # one author creates some posts and adds some comments on them.
+        # another author tries to visit all these posts
+
+        posts_num = 10
+        # TODO: change author data structure; may need to modify. what does size means?
+        # post ten posts and get a list of these posts' ids.
+        for i in range(posts_num):
+            self.client.post(self.new_post_url, {
+                'title': 'post'+str(i),
+                'content': 'please make some comments on post'+str(i),
+                'categories': 'test',
+                'contentType': 'text/plain',
+                'author': self.author,
+                'visibility': 'PUBLIC',
+                'description': 'test description'
+            })
+
+            post = Post.objects.get(title='post'+str(i))
+            post_id = post.postid
+            comment_url = reverse('comment', args=[post_id])
+            # add five comments on this post
+            for j in range(5):
+                self.client.post(comment_url,{
+                    'query': 'addComment',
+                    'post': 'testserver',
+                    'comment': {
+                        'author': {
+                            'id': self.author.id,
+                            'host': 'xxx',
+                            'displayName': self.author.displayName,
+                            'url': 'xxx',
+                            'github': self.author.github
+                        },
+                        'comment': 'comment on post'+str(i),
+                        'contentType': 'text/plain',
+                        'published': datetime.datetime.now(),
+                    }
+
+                }, 'application/json')
+
+        # another author tries to visit all posts
+        response = self.other_client.get(self.post_to_user_url,{'page':2,'size':1})
+        content = json.loads(response.content)
+
+        self.assertEquals(response.status_code,200)
+
+        # test another author visit all posts created by a userid
+        post_to_userid_url = reverse('posttouserid',args=[self.author.id])
+        response1 = self.other_client.get(post_to_userid_url)
+        content = json.loads(response1.content)
+        self.assertEquals(response1.status_code,200)
+
+
