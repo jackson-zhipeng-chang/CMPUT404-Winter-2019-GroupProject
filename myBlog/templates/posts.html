@@ -1,3 +1,6 @@
+{% extends 'base.html' %}
+{% block content %}
+
 <div id="holder">
   <!-- <div class="w3-container w3-card w3-white w3-round w3-margin"><br>
     <i class="fa fa-user" class="w3-left w3-circle w3-margin-right" style="width:60px"></i>
@@ -15,7 +18,8 @@
     // console.log(data.posts);
     var holder = document.getElementById("holder");
     for (var i = 0; i < data.posts.length; i++) {
-      console.log(data.posts[i]);
+      if (data.posts[i].contentType != "image/png;base64" && data.posts[i].contentType != "image/jpeg;base64")
+      {
       var post = document.createElement("div");
       post.classList.add("w3-container", "w3-card", "w3-white", "w3-round", "w3-margin");
       
@@ -42,6 +46,7 @@
 
       var content = document.createElement("p");
       content.innerHTML = data.posts[i].content;
+      console.log(data.posts[i].contentType)
       divDescription.appendChild(content);
 
       var likeButton = document.createElement("button");
@@ -56,5 +61,7 @@
       commentButton.style.margin = "2px";
       post.appendChild(commentButton);
     }
+    }
   })
 </script>
+{% endblock %}
