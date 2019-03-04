@@ -10,18 +10,16 @@ var form = {
 
 }
 
+var encoded_img="";
+
 //https://stackoverflow.com/questions/22087076/how-to-make-a-simple-image-upload-using-javascript-html
-
-var encoded="";
-
 function previewFile(){
-    var preview = document.querySelector('img'); //selects the query named img
-    var file= document.querySelector('input[type=file]').files[0]; //sames as here
+    var preview = document.querySelector('img'); 
+    var file= document.querySelector('input[type=file]').files[0]; 
     var reader  = new FileReader();
     reader.onloadend = function () {
         preview.src = reader.result;
-        encoded = preview.src;
-        console.log(encoded);
+        encoded_img = preview.src;
     }
     if (file) {
         reader.readAsDataURL(file); //reads the data as a URL
@@ -30,46 +28,61 @@ function previewFile(){
     }
 }
 
+// https://stackoverflow.com/questions/6941533/get-protocol-domain-and-port-from-url
+function get_host(){
+    var url = window.location.href
+    var arr = url.split("/");
+    var result = arr[0] + "//" + arr[2]
+    return result
+}
+
+// Reference: https://stackoverflow.com/questions/9618504/how-to-get-the-selected-radio-button-s-value
+var radios = document.getElementsByName('unlisted');
+for (var i = 0, length = radios.length; i < length; i++){
+    if (radios[i].checked){
+        if (radios[i].value == "Yes"){
+            form.unlisted = true;
+        }
+        else{
+            form.unlisted = false;
+        }
+        break;
+    }
+}
 function post() {
     form.title = document.getElementById("post-title").value;
     form.contentType = document.getElementById("post-contenttype").value;
     form.categories = document.getElementById("post-categories").value;
     form.content = document.getElementById("post-content").value;
     form.visibility = document.getElementById("post-visibility").value;
-    form.description = document.getElementById("post-description").value;
     form.unlisted = document.getElementById("post-content").value;
     form.visibleTo = document.getElementById("post-visibleto").value;
-    // Reference: https://stackoverflow.com/questions/9618504/how-to-get-the-selected-radio-button-s-value
-    var radios = document.getElementsByName('unlisted');
-    for (var i = 0, length = radios.length; i < length; i++){
-        if (radios[i].checked){
-            if (radios[i].value == "Yes"){
-                form.unlisted = true;
-            }
-            else{
-                form.unlisted = false;
-            }
-            break;
-        }
+    form.description = document.getElementById("post-description").value;
+    if (form.contentType == "image/png;base64" || form.contentType =="image/jepg;base64") {
+        form.content = encoded_img;
     }
-    form.content = form.content + encoded;
 
+// Reference: https://stackoverflow.com/questions/9618504/how-to-get-the-selected-radio-button-s-value
+var radios = document.getElementsByName('unlisted');
+for (var i = 0, length = radios.length; i < length; i++){
+    if (radios[i].checked){
+        if (radios[i].value == "Yes"){
+            form.unlisted = true;
+        }
+        else{
+            form.unlisted = false;
+        }
+        break;
+    }
+}
     var xhr = new XMLHttpRequest();
-    console.log(xhr)
-    console.log("Posting...")
-    xhr.open("POST", "myBlog/posts/", true);
+    console.log("Posting")
+    xhr.open("POST",  get_host()+"/myBlog/posts/", true);
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.setRequestHeader("X-CSRFToken", csrf_token);
     xhr.send(JSON.stringify(form));
-    console.log("Finished Posting!")
-
-    //resetting fields
-    document.getElementById("post-title").value = "";
-    document.getElementById("post-content").value = "";
-    document.getElementById("post-title").value = "";
-    document.getElementById("post-content").value = "";
-    document.getElementById("post-title").value = "";
-    document.getElementById("post-content").value = "";
+    console.log(JSON.stringify(form))
+    window.location.replace(get_host()+"/myBlog/all/");
   }
 
 function getAllPosts() {
