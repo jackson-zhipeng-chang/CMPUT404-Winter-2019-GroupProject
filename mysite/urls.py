@@ -21,7 +21,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.views.generic.base import TemplateView 
 from rest_framework_swagger.views import get_swagger_view
-from myBlog import views
+from myBlog import Accounts, Helpers
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -29,8 +29,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('myBlog/', include('myBlog.urls'), name='myBlog'),
     path('', TemplateView.as_view(template_name='home.html'), name='home'),
-    path('accounts/login/', views.LoginView.as_view(), name='login'),
-    path('accounts/logout/', views.logout_user, name='logout'),
-    path('accounts/signup/', views.SignupView.as_view(), name='signup'),
+    path('accounts/login/', Accounts.LoginView.as_view(), name='login'),
+    path('accounts/logout/', Accounts.logout_user, name='logout'),
+    path('accounts/signup/', Accounts.signup, name='signup'),
+    
 
 ]

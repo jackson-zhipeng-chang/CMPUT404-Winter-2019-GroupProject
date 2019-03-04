@@ -20,8 +20,9 @@ def get_host_from_request(request):
     return host
     
 def get_current_user_uuid(request):
-
     if (not User.objects.filter(pk=request.user.id).exists()):
+        print(request.user.id)
+        print("User coudn't find")
         return Response("User coudn't find", status=404)
     else:
         current_user = User.objects.get(pk=request.user.id)

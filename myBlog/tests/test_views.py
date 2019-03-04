@@ -30,6 +30,7 @@ class TestViews(TestCase):
                                                   github='https://github.com/terrence85561')
 
         self.new_post_url = reverse('new_post')
+        self.post_to_user_url = reverse('posttouser')
 
     def test_New_Post_Handler_POST_API(self):
 
@@ -109,10 +110,10 @@ class TestViews(TestCase):
         self.assertEquals(response_get.status_code,200)
 
         response = self.client.put(modify_post_url,json.dumps({
-            'title':'modified my title',
-            'visibility':'PRIVATE',
-            'description':'test description',
-            'contentType' : 'text/plain',
+            'title': 'modified my title',
+            'visibility': 'PRIVATE',
+            'description': 'test description',
+            'contentType': 'text/plain',
             'content': 'This is a test post'
         }),content_type='application/json')
         self.assertEquals(response.status_code,200)
@@ -138,15 +139,15 @@ class TestViews(TestCase):
         })
         post = Post.objects.get(title='need delete')
         post_id = post.postid
-        modify_post_url = reverse('modify_post',args=[post_id])
+        modify_post_url = reverse('modify_post', args=[post_id])
 
         # test if other user can delete it or not
         response = self.other_client.delete(modify_post_url)
-        self.assertEquals(response.status_code,404)
+        self.assertEquals(response.status_code, 404)
 
         # test if current user can delete it or not
         response1 = self.client.delete(modify_post_url)
-        self.assertEquals(response1.status_code,204)
+        self.assertEquals(response1.status_code, 204)
 
         # test if the post still exist or not
         self.assertFalse(Post.objects.filter(pk=post_id).exists())
@@ -170,8 +171,8 @@ class TestViews(TestCase):
 
         # create a comment on this post
         # get the reverse url
-        comment_url = reverse('comment',args=[post_id])
-        response=self.client.post(comment_url,{
+        comment_url = reverse('comment', args=[post_id])
+        response=self.client.post(comment_url, {
             'query': 'addComment',
             'post': 'testserver',
             'comment': {
@@ -186,9 +187,9 @@ class TestViews(TestCase):
                 'contentType': 'text/plain',
                 'published': datetime.datetime.now(),
             }
-        })
-        #self.assertEquals(response.status_code,200)
-        self.assertEquals(response.status_code,400)
+        },'application/json')
+        self.assertEquals(response.status_code,200)
+        #self.assertEquals(response.status_code,400)
 
         # create a private post
         self.other_client.post(self.new_post_url,{
@@ -204,6 +205,7 @@ class TestViews(TestCase):
         post1_id = post1.postid
 
         comment_url_private = reverse('comment',args=[post1_id])
+        # TODO: look for structure in how to post comments data
         response1=self.client.post(comment_url_private,{
             'query': 'addComment',
             'post': 'testserver',
@@ -219,10 +221,10 @@ class TestViews(TestCase):
                 'contentType': 'text/plain',
                 'published': datetime.datetime.now(),
             }
-        })
+        },'application/json')
         self.assertEquals(response1.status_code,403)
 
-        response2 = self.client.post(comment_url_private, {
+        response2 = self.other_client.post(comment_url_private, {
             'query': 'addComment',
             'post': 'testserver',
             'comment': {
@@ -237,6 +239,106 @@ class TestViews(TestCase):
                 'contentType': 'text/plain',
                 'published': datetime.datetime.now(),
             }
+        },'application/json')
+        self.assertEquals(response2.status_code,200)
+
+    def test_Comment_Handler_GET_API(self):
+        # TODO: search how to do get request with query in url in django
+        # first, post a post, add comments on it, then test if we can get the comments
+
+        # create a post
+        self.client.post(self.new_post_url,{
+            'title': 'make some comments',
+            'content': 'please make some comments',
+            'categories': 'test',
+            'contentType': 'text/plain',
+            'author': self.author,
+            'visibility': 'PUBLIC',
+            'description': 'test description'
         })
-        #self.assertEquals(response.status_code,200)
-        self.assertEquals(response.status_code,400)
+
+        # get the post id for this post
+        post = Post.objects.get(title='make some comments')
+        post_id = post.postid
+
+        # add comments on this post
+        comment_url = reverse('comment',args=[post_id])
+        self.other_client.post(comment_url,{
+            'query': 'addComment',
+            'post': 'testserver',
+            'comment': {
+                'author': {
+                    'id': self.other_author.id,
+                    'host': 'xxx',
+                    'displayName': self.other_author.displayName,
+                    'url': 'xxx',
+                    'github': self.other_author.github
+                },
+                'comment': 'this is comment from author2',
+                'contentType': 'text/plain',
+                'published': datetime.datetime.now(),
+            }
+
+        },'application/json')
+
+        # test if user can get this comment
+        response = self.client.get(comment_url)
+        self.assertEquals(response.status_code,200)
+        content = json.loads(response.content)
+        print(content)
+        self.assertEquals(content['comments'][0]['comment'],'this is comment from author2')
+
+    def test_Post_To_User_HandlerView(self):
+        # one author creates some posts and adds some comments on them.
+        # another author tries to visit all these posts
+
+        posts_num = 10
+        # TODO: change author data structure; may need to modify. what does size means?
+        # post ten posts and get a list of these posts' ids.
+        for i in range(posts_num):
+            self.client.post(self.new_post_url, {
+                'title': 'post'+str(i),
+                'content': 'please make some comments on post'+str(i),
+                'categories': 'test',
+                'contentType': 'text/plain',
+                'author': self.author,
+                'visibility': 'PUBLIC',
+                'description': 'test description'
+            })
+
+            post = Post.objects.get(title='post'+str(i))
+            post_id = post.postid
+            comment_url = reverse('comment', args=[post_id])
+            # add five comments on this post
+            for j in range(5):
+                self.client.post(comment_url,{
+                    'query': 'addComment',
+                    'post': 'testserver',
+                    'comment': {
+                        'author': {
+                            'id': self.author.id,
+                            'host': 'xxx',
+                            'displayName': self.author.displayName,
+                            'url': 'xxx',
+                            'github': self.author.github
+                        },
+                        'comment': 'comment on post'+str(i),
+                        'contentType': 'text/plain',
+                        'published': datetime.datetime.now(),
+                    }
+
+                }, 'application/json')
+
+        # another author tries to visit all posts
+        response = self.other_client.get(self.post_to_user_url,{'page':2,'size':1})
+        content = json.loads(response.content)
+
+        self.assertEquals(response.status_code,200)
+
+        # test another author visit all posts created by a userid
+        post_to_userid_url = reverse('posttouserid',args=[self.author.id])
+        response1 = self.other_client.get(post_to_userid_url)
+        content = json.loads(response1.content)
+        self.assertEquals(response1.status_code,200)
+
+
