@@ -37,9 +37,11 @@
         </form>
         <br>
         <!-- Reference: https://simpleisbetterthancomplex.com/tutorial/2016/08/01/how-to-upload-files-with-django.html-->
-        <form action="/myBlog/posts/" method="post"  enctype="multipart/form-data">
+        <form method="post"  enctype="multipart/form-data">
         {% csrf_token %}
-        <input type="file" id=post-image>
+        <input type="file" name="myfile" id="my-file" onchange="previewFile()">
+        <img src="" height="200" alt="Image preview...">
+
         </form>
         <br>
         Unlisted? 

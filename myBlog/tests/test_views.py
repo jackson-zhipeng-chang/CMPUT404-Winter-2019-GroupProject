@@ -219,7 +219,7 @@ class TestViews(TestCase):
                 'contentType': 'text/plain',
                 'published': datetime.datetime.now(),
             }
-        })
+        },'application/json')
         self.assertEquals(response1.status_code,403)
 
         response2 = self.client.post(comment_url_private, {
@@ -237,6 +237,6 @@ class TestViews(TestCase):
                 'contentType': 'text/plain',
                 'published': datetime.datetime.now(),
             }
-        })
+        },'application/json')
         #self.assertEquals(response.status_code,200)
         self.assertEquals(response.status_code,400)

@@ -12,7 +12,6 @@ from . import Helpers
 
 class NewPostHandler(APIView):
     def post(self, request, format=None):
-        print(request.FILES)
         print(request.data)
         current_user_uuid = Helpers.get_current_user_uuid(request)
         author = Helpers.get_author_or_not_exits(current_user_uuid)
