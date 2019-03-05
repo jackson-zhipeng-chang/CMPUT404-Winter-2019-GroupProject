@@ -14,6 +14,31 @@ var form = {
 
 var encoded="";
 
+//function to make a get request every 30s to get current pending friend request
+//https://makitweb.com/how-to-fire-ajax-request-on-regular-interval/
+function getFriendReuqest(){
+    $.ajax({
+        url:"myBlog/friendrequest/",
+        type:"get",
+        success:function(data){
+            console.log(data);
+        },
+        complete:function(data){
+            setTimeout(getFriendReuqest,5000);
+        },
+        error:function(){
+            console.log('error');
+        }
+    });
+}
+
+$(document).ready(function(){
+    setTimeout(getFriendReuqest,5000)
+});
+
+
+
+
 function previewFile(){
     var preview = document.querySelector('img'); //selects the query named img
     var file= document.querySelector('input[type=file]').files[0]; //sames as here

@@ -26,7 +26,9 @@ def get_current_user_uuid(request):
         return Response("User coudn't find", status=404)
     else:
         current_user = User.objects.get(pk=request.user.id)
+        print(current_user)
         author = get_object_or_404(Author, user=current_user)
+        print(author)
         return author.id
 
 def verify_current_user_to_post(post, request):

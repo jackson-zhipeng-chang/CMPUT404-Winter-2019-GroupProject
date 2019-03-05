@@ -21,7 +21,12 @@ from . import Helpers
 
 class FriendRequestHandler(APIView):
     def get(self, request, format=None):
+
         current_user_uuid = Helpers.get_current_user_uuid(request)
+        print('----------------------')
+        print(current_user_uuid)
+        print('----------------------')
+
         author_object = Author.objects.get(id=current_user_uuid)
         friendrequests = Friend.objects.filter(friend=author_object, status='Pending')
         serializer = FriendSerializer(friendrequests, many=True)
