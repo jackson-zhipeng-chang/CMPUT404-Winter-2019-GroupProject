@@ -75,6 +75,7 @@ function display(data) {
       commentButton.insertAdjacentHTML("beforeend", "<i class='fa fa-comment'></i>  Comment");
       commentButton.style.margin = "2px";
       post.appendChild(commentButton);
+      
     }
     if (data.next != null){
       var nextButton = document.createElement("button");
@@ -87,8 +88,7 @@ function display(data) {
     if (data.previous != null){
       var nextButton = document.createElement("button");
       nextButton.classList.add("w3-button", "w3-theme-d1", "w3-margin-bottom", "w3-right");
-      nextButton.insertAdjacentHTML("beforeend", "<i class='fa fa-arrow-left	'></i>Previous Page");
-      commentButton.style.margin = "100px";
+      nextButton.insertAdjacentHTML("beforeend", "<i class='fa fa-arrow-left	'></i> Previous Page");
       nextButton.onclick=function(){getAllPosts(data.previous).then(display)} ;
       holder.appendChild(nextButton);
     }
