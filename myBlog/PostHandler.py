@@ -34,7 +34,6 @@ class NewPostHandler(APIView):
 class PostHandler(APIView):
     def get(self, request,postid, format=None):
         if (not Post.objects.filter(pk=postid).exists()):
-
             return Response("Post couldn't find", status=404)
 
         else:
