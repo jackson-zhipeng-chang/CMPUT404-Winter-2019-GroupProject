@@ -48,3 +48,11 @@ class AuthorProfileHandler(APIView):
             return HttpResponse(status=204)
         else:
             return HttpResponse(status=404)   
+
+
+class MyProfileHandler(APIView):
+    def get(self, request, format=None):
+        current_user_uuid = Helpers.get_current_user_uuid(request)
+        author = Helpers.get_author_or_not_exits(current_user_uuid)
+        serializer = AuthorSerializer(author)
+        return JsonResponse(serializer.data)

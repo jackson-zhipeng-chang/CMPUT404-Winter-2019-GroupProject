@@ -12,48 +12,53 @@ from . import Helpers
 
 class CommentHandler(APIView):
     def get(self, request, postid, format=None):
-        post = Post.objects.get(pk=postid)
-        if (not Helpers.verify_current_user_to_post(post, request)):
-            responsBody={
-                "query": "addComment",
-                "success":False,
-                "message":"Comment not allowed"
-                }
-            return Response(responsBody, status=403)
+        if (not Post.objects.filter(pk=postid).exists()):
+            return Response("Post couldn't find", status=404)
         else:
-            current_user_uuid = Helpers.get_current_user_uuid(request)
-            comments_list = get_list_or_404(Comment,postid=postid)
-            paginator = CustomPagination()
-            results = paginator.paginate_queryset(comments_list, request)
-            serializer=CommentSerializer(results, many=True)
-            return paginator.get_paginated_response(serializer.data)
-
-    def post(self, request, postid, format=None):
-        data = request.data
-
-        if data['query'] == 'addComment':
             post = Post.objects.get(pk=postid)
             if (not Helpers.verify_current_user_to_post(post, request)):
                 responsBody={
-                    "query": "addCoemment",
+                    "query": "getComment",
                     "success":False,
                     "message":"Comment not allowed"
                     }
                 return Response(responsBody, status=403)
             else:
                 current_user_uuid = Helpers.get_current_user_uuid(request)
-                author = Helpers.get_author_or_not_exits(current_user_uuid)
-                # data = {'comment':request.data['comment']['comment'], 'contentType':request.data['comment']['contentType']}
-                serializer = CommentSerializer(data=data['comment'], context={'author': author, 'postid':postid})
-                if serializer.is_valid():
-                    serializer.save()
-                    responsBody={
-                    "query": "addComment",
-                    "success":True,
-                    "message":"Comment Added"
-                    }
-                    return Response(responsBody, status=status.HTTP_200_OK)
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                comments_list = get_list_or_404(Comment,postid=postid)
+                paginator = CustomPagination()
+                results = paginator.paginate_queryset(comments_list, request)
+                serializer=CommentSerializer(results, many=True)
+                return paginator.get_paginated_response(serializer.data)
+
+    def post(self, request, postid, format=None):
+        if (not Post.objects.filter(pk=postid).exists()):
+            return Response("Post couldn't find", status=404)
         else:
-            return Response("You are not sending the new comment with the correct format. Missing 'query': 'addComment'",status=status.HTTP_400_BAD_REQUEST)
- 
+            data = request.data
+            if data['query'] == 'addComment':
+                post = Post.objects.get(pk=postid)
+                if (not Helpers.verify_current_user_to_post(post, request)):
+                    responsBody={
+                        "query": "addCoemment",
+                        "success":False,
+                        "message":"Comment not allowed"
+                        }
+                    return Response(responsBody, status=403)
+                else:
+                    current_user_uuid = Helpers.get_current_user_uuid(request)
+                    author = Helpers.get_author_or_not_exits(current_user_uuid)
+                    # data = {'comment':request.data['comment']['comment'], 'contentType':request.data['comment']['contentType']}
+                    serializer = CommentSerializer(data=data['comment'], context={'author': author, 'postid':postid})
+                    if serializer.is_valid():
+                        serializer.save()
+                        responsBody={
+                        "query": "addComment",
+                        "success":True,
+                        "message":"Comment Added"
+                        }
+                        return Response(responsBody, status=status.HTTP_200_OK)
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response("You are not sending the new comment with the correct format. Missing 'query': 'addComment'",status=status.HTTP_400_BAD_REQUEST)
+    

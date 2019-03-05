@@ -100,9 +100,9 @@ for (var i = 0, length = radios.length; i < length; i++){
     window.location.replace(get_host()+"/myBlog/all/");
   }
 
-function getAllPosts() {
+function getAllPosts(url) {
     // Default options are marked with *
-      return fetch("/myBlog/author/posts/", {
+      return fetch(url, {
           method: "GET", // *GET, POST, PUT, DELETE, etc.
           mode: "cors", // no-cors, cors, *same-origin
           cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached

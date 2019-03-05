@@ -18,7 +18,7 @@ from django.views.generic.edit import FormView
 from django.db.models import Q
 from urllib.parse import urlparse
 
-@login_required(login_url="home")
+@login_required(login_url="post")
 @api_view(['GET'])
 def Friend2FriendHandler(request, user_id1, user_id2):
     if request.method == 'GET':

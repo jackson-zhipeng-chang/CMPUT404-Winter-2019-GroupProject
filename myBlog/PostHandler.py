@@ -1,3 +1,4 @@
+import markdown
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404, render,get_list_or_404
@@ -16,6 +17,8 @@ class NewPostHandler(APIView):
         author = Helpers.get_author_or_not_exits(current_user_uuid)
         origin = Helpers.get_host_from_request(request)
         data = request.data
+        if (data["contentType"] == "text/markdown"):
+            data["content"] = markdown.markdown(data["content"])
         serializer = PostSerializer(data=data, context={'author': author,'origin': origin})
         if serializer.is_valid():
             serializer.save()
@@ -34,9 +37,7 @@ class NewPostHandler(APIView):
 class PostHandler(APIView):
     def get(self, request,postid, format=None):
         if (not Post.objects.filter(pk=postid).exists()):
-
             return Response("Post couldn't find", status=404)
-
         else:
             post = Post.objects.get(pk=postid)
             serializer = PostSerializer(post)

@@ -6,7 +6,6 @@
 
 ## Dev log
 Checkout our [current project progress](https://github.com/Zhipeng-Chang/CMPUT404-Winter-2019-GroupProject/wiki/DevLog)!<br>
-Checkout backend [history!](https://github-history.netlify.com/Zhipeng-Chang/CMPUT404-Winter-2019-GroupProject/blob/master/myBlog/views.py)
 
 ## Team members: <br />
 Zhipeng Chang (zchang@ualberta.ca) <br />

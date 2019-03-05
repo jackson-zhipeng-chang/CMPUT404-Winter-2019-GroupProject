@@ -54,7 +54,7 @@ def signup(request):
             host = Helpers.get_host_from_request(request)
             author = Author.objects.create(displayName=username,user=userObj, host=host)
             author.save()
-            return redirect('home')
+            return redirect(settings.LOGIN_REDIRECT_URL)
     else:
         form = UserCreationForm()
     return render(request, 'signup.html', {'form': form})
