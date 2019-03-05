@@ -32,6 +32,7 @@ function display(data) {
 
       var author = document.createElement("h4");
       author.innerHTML = data.posts[i].author.displayName;
+      console.log(data.posts[i].author.url);
       author.setAttribute("href", data.posts[i].author.url);
       post.appendChild(author);
 
@@ -94,7 +95,7 @@ function display(data) {
     }
 
   }
-  getAllPosts("/myBlog/author/posts/?size=10").then(display)
+  getAllPosts("{{url}}").then(display);
 
 </script>
   {% else %}
