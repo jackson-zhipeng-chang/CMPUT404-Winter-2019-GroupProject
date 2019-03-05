@@ -18,6 +18,7 @@ from django.views.generic.edit import FormView
 from django.db.models import Q
 from urllib.parse import urlparse
 from . import Helpers
+from django.conf import settings
 
 # https://stackoverflow.com/questions/37752440/relative-redirect-using-meta-http-equiv-refresh-with-gh-pages
 # https://www.tutorialspoint.com/How-to-automatically-redirect-a-Web-Page-to-another-URL for redirecting
@@ -26,7 +27,7 @@ from . import Helpers
 class LoginView(FormView):
     template_name = 'login.html'
     form_class = AuthenticationForm # The Form class the FormView should use
-    success_url = '/myBlog/author/posts/'  # Go here after successful POST
+    success_url = settings.LOGIN_REDIRECT_URL  # Go here after successful POST
 
     def form_valid(self, form):
         username = form.cleaned_data.get('username')
@@ -53,11 +54,11 @@ def signup(request):
             host = Helpers.get_host_from_request(request)
             author = Author.objects.create(displayName=username,user=userObj, host=host)
             author.save()
-            return redirect('home')
+            return redirect(settings.LOGIN_REDIRECT_URL)
     else:
         form = UserCreationForm()
     return render(request, 'signup.html', {'form': form})
 
 def logout_user(request):
     logout(request)
-    return redirect("home") 
+    return redirect(settings.LOGOUT_REDIRECT_URL) 

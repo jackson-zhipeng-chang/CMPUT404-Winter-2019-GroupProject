@@ -7,6 +7,7 @@ from django.shortcuts import redirect
 from django.contrib.auth.models import User
 from django.views import generic
 from django.db.models import Q
+from django.shortcuts import render
 
 def get_author_or_not_exits(current_user_uuid):
     if (not Author.objects.filter(id=current_user_uuid).exists()):
@@ -96,6 +97,8 @@ def check_author1_follow_author2(author1_id,author2_id):
     else:
         return False
 
-def logout_user(request):
-    logout(request)
-    return redirect("home") 
+def posts_list(request):
+    return render(request, 'posts.html')
+
+def new_post(request):
+    return render(request, 'newpost.html')
