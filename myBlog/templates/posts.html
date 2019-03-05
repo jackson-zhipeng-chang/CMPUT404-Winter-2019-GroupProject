@@ -27,20 +27,19 @@ function display(data) {
       userLogo.classList.add("fa", "fa-user");
       userLogo.classList.add("w3-left", "w3-circle", "w3-margin-right");
       userLogo.style.width = "20px";
-      userLogo.style.margin = "20px";
+      userLogo.style.margin = "25px";
       post.appendChild(userLogo);
 
-      var author = document.createElement("h4");
+      var author = document.createElement("h3");
       author.innerHTML = data.posts[i].author.displayName;
-      console.log(data.posts[i].author.url);
-      author.setAttribute("href", data.posts[i].author.url);
+      author.style.margin = "14px";
       post.appendChild(author);
 
       var line = document.createElement("hr");
       line.classList.add("w3-clear");
       post.appendChild(line);
           
-      var title = document.createElement("h5");
+      var title = document.createElement("h3");
       title.innerHTML = data.posts[i].title;
       title.classList.add("w3-row-padding");
       title.style.margin = "0 20px";
