@@ -54,7 +54,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'mysite.urls'
 
-LOGIN_REDIRECT_URL = '/myBlog/all'
+LOGIN_REDIRECT_URL = '/myBlog/'
 LOGOUT_REDIRECT_URL = 'post'
 
 TEMPLATES = [

@@ -21,12 +21,7 @@ from . import Helpers
 
 class FriendRequestHandler(APIView):
     def get(self, request, format=None):
-
         current_user_uuid = Helpers.get_current_user_uuid(request)
-        print('----------------------')
-        print(current_user_uuid)
-        print('----------------------')
-
         author_object = Author.objects.get(id=current_user_uuid)
         friendrequests = Friend.objects.filter(friend=author_object, status='Pending')
         serializer = FriendSerializer(friendrequests, many=True)
@@ -65,6 +60,8 @@ class FriendRequestHandler(APIView):
                 else:
                     return Response("You are already friends", status=status.HTTP_400_BAD_REQUEST)
             else:
+                print(current_user_uuid)
+                print(author_id)
                 return Response("Please login to correct account", status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response("You are not sending the friendrequest with the correct format. Missing 'query': 'friendrequest'",status=status.HTTP_400_BAD_REQUEST)  
