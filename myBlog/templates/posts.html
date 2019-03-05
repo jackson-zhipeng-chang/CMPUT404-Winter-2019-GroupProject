@@ -47,8 +47,8 @@
       if (data.posts[i].contentType == "image/png;base64" || data.posts[i].contentType == "image/jepg;base64"){
         var content = document.createElement("img");
         content.src = data.posts[i].content;
-        content.width = "200";
-        content.height = "400";
+        content.style.width = "20%";
+        content.style.height = "20%";
       }
       else if( data.posts[i].contentType == "text/markdown"){
 
