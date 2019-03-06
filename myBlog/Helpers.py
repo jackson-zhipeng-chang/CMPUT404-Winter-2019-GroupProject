@@ -97,7 +97,7 @@ def check_author1_follow_author2(author1_id,author2_id):
 
 def posts_list(request):
     url = "/myBlog/author/posts/?size=10"
-    return render(request, 'posts.html', {"url":url})
+    return render(request, 'posts.html', {"url":url, "trashable":"false"})
 
 def new_post(request):
     return render(request, 'newpost.html')
@@ -105,4 +105,4 @@ def new_post(request):
 def my_posts(request):
     my_uuid = get_current_user_uuid(request)
     url = "/myBlog/author/%s/posts/?size=10"%my_uuid
-    return render(request, 'posts.html', {"url":url})
+    return render(request, 'posts.html', {"url":url, "trashable":"true"})

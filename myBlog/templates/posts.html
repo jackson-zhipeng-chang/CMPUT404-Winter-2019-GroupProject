@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
+
 {% if user.is_authenticated %}
 
 <div id="holder">
@@ -30,6 +31,17 @@ function display(data) {
       userLogo.style.margin = "25px";
       post.appendChild(userLogo);
 
+      if ({{trashable}})
+      {
+        var trashLogo = document.createElement("i");
+        trashLogo.classList.add("fa", "fa-trash");
+        trashLogo.classList.add("w3-right","w3-circle", "w3-margin-right");
+        trashLogo.style.width = "20px";
+        trashLogo.style.margin = "25px";
+        let post_id = data.posts[i].postid;
+        trashLogo.onclick=function(){deletePost(post_id)} ;
+        post.appendChild(trashLogo);
+      }
       var author = document.createElement("h3");
       author.innerHTML = data.posts[i].author.displayName;
       author.style.margin = "14px";
@@ -75,7 +87,7 @@ function display(data) {
       commentButton.insertAdjacentHTML("beforeend", "<i class='fa fa-comment'></i>  Comment");
       commentButton.style.margin = "2px";
       post.appendChild(commentButton);
-      
+    
     }
     if (data.next != null){
       var nextButton = document.createElement("button");
