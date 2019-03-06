@@ -21,7 +21,6 @@ function display(data) {
     holder.innerHTML = "";
     for (var i = 0; i < data.posts.length; i++) {
       var post = document.createElement("div");
-      var post_id = data.posts[i].postid;
       post.classList.add("w3-container", "w3-card", "w3-white", "w3-round", "w3-margin");
       
       holder.appendChild(post);
@@ -34,10 +33,10 @@ function display(data) {
 
       if ({{trashable}})
       {
+        let post_id = data.posts[i].postid;
         var trashLogo = document.createElement("i");
-        trashLogo.classList.add("fa", "fa-trash");
-        trashLogo.classList.add("w3-right","w3-circle", "w3-margin-right");
-        trashLogo.style.width = "20px";
+        trashLogo.classList.add("fa", "fa-trash", "w3-right", "w3-margin-right", "w3-button");
+        trashLogo.style.width = "25px";
         trashLogo.style.margin = "25px";
         trashLogo.onclick=function(){deletePost(post_id)} ;
         post.appendChild(trashLogo);
@@ -103,10 +102,11 @@ function display(data) {
       commentInput.style.width ="100%";
       divDescription.appendChild(commentInput); 
 
+
       var commentButton = document.createElement("button");
       commentButton.classList.add("w3-button", "w3-theme-d1", "w3-margin-bottom", "w3-right");
       commentButton.insertAdjacentHTML("beforeend", "<i class='fa fa-comment'></i>  Comment");
-      commentButton.onclick=function(){postComment(post_id, getInput())} ;
+      commentButton.onclick=function(){postComment(data.posts[i], user)} ;
       divDescription.appendChild(commentButton);
     
     }

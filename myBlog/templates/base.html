@@ -1,9 +1,7 @@
 <!-- templates/base.html -->
 <!DOCTYPE html>
 <html>
-<script>
-    var csrf_token = '{{ csrf_token }}';
-</script>
+<script>var csrf_token = '{{ csrf_token }}';</script>
 {% load staticfiles %}
 <script src="{% static "js/new_post.js" %}"></script>
 <script src="{% static "js/posts_list_helper.js" %}"></script>
@@ -46,5 +44,6 @@
     {% block content %}
     {% endblock %}
   </main>
+
 </body>
 </html>
