@@ -43,5 +43,6 @@ urlpatterns = [
     path('all/', Helpers.posts_list, name='postslist'),
     path('newpost/', Helpers.new_post, name='newpost'),
     path('myprofile/', AuthorProfileHandler.MyProfileHandler.as_view(), name='myprofile'),
-    path('', TemplateView.as_view(template_name='posts.html'), name='post'),
+    path('myposts/', Helpers.my_posts, name='myposts'),
+    path('', Helpers.posts_list, name='home'),
 ]

@@ -52,7 +52,6 @@ class PostHandler(APIView):
                     return JsonResponse(serializer.data, status=200)
                 else:
                     return HttpResponse("You don't have the access to the post",status=404)
-  
     def put(self, request, postid, format=None):
         if (not Post.objects.filter(pk=postid).exists()):
             return Response("Post coudn't find", status=404)
