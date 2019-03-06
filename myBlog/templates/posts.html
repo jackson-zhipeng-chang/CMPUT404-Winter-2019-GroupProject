@@ -91,7 +91,7 @@ function display(data) {
     }
     if (data.next != null){
       var nextButton = document.createElement("button");
-      nextButton.classList.add("w3-button", "w3-theme-d1", "w3-margin-bottom");
+      nextButton.classList.add("w3-button", "w3-theme-d1", "w3-margin-bottom", "w3-right");
       nextButton.insertAdjacentHTML("beforeend", "<i class='fa fa-arrow-right	'></i> Next Page");
       nextButton.onclick=function(){getAllPosts(data.next).then(display)} ;
       holder.appendChild(nextButton);
@@ -99,7 +99,7 @@ function display(data) {
 
     if (data.previous != null){
       var nextButton = document.createElement("button");
-      nextButton.classList.add("w3-button", "w3-theme-d1", "w3-margin-bottom", "w3-right");
+      nextButton.classList.add("w3-button", "w3-theme-d1", "w3-margin-bottom", "w3-left");
       nextButton.insertAdjacentHTML("beforeend", "<i class='fa fa-arrow-left	'></i> Previous Page");
       nextButton.onclick=function(){getAllPosts(data.previous).then(display)} ;
       holder.appendChild(nextButton);
