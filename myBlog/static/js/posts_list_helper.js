@@ -35,7 +35,7 @@ function deletePost(id){
         redirect: "follow", 
         referrer: "no-referrer", 
     })
-    .then(document.location.reload(true));
+    .then(document.location.reload(true)); //https://stackoverflow.com/questions/3715047/how-to-reload-a-page-using-javascript
 }
 
 function commentPost(post, user){
