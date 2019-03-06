@@ -8,7 +8,6 @@ function get_host(){
 
 function getAllPosts(url) {
     // Default options are marked with *
-        console.log(csrf_token)
       return fetch(url, {
           method: "GET", // *GET, POST, PUT, DELETE, etc.
           mode: "cors", // no-cors, cors, *same-origin
@@ -27,13 +26,43 @@ function getAllPosts(url) {
   }
 
 function deletePost(id){
-    console.log(csrf_token)
     let url = "/myBlog/posts/"+id;
     return fetch(url, {
             method: "DELETE", // *GET, POST, PUT, DELETE, etc.
             headers: {
                 "x-csrf-token": csrf_token
-            },
+            }
     })
     .then(response => response.json()); // parses response to JSON
+}
+
+
+var form = {
+    title: "",
+    content: "",
+    contentType:"",
+    categories: "",
+    visibility: "",
+    description:"",
+    visibleTo:"",
+    unlisted:""
+
+}
+
+
+function postComment(id, comment){
+    let url = "/myBlog/posts/"+id+"/comments/";
+    return fetch(url, {
+            method: "POST", // *GET, POST, PUT, DELETE, etc.
+            body: JSON.stringify(comment),
+            headers: {
+                "Content-Type": "application/json",
+                "x-csrf-token": csrf_token
+            }
+    })
+    .then(response => response.json()); // parses response to JSON
+}
+
+function getInput(){
+    return document.getElementById("commentInput").value;
 }
