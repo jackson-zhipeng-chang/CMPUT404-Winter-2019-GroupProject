@@ -39,7 +39,6 @@ function deletePost(id){
 }
 
 function commentPost(post, user){
-
     let comment =
     {
         "query": "addComment",
@@ -54,7 +53,7 @@ function commentPost(post, user){
     comment.post=post.origin;
     comment.comment.author= user;
     comment.comment.comment= comment_content;
-    
+    // TODO: Comment a post
     let url = "/myBlog/posts/"+id+"/comments";
     return fetch(url, {
         method: "POST", 
