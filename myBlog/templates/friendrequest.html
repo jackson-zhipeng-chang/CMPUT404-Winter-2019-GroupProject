@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block title %}Friend Request{% endblock %}
+
+{% block content %}
+    {% if user.is_authenticated %}
+        <div id = 'content'>
+
+        </div>
+
+        <script>
+        function getFR_List(url){
+            return fetch(url,{
+                method:"GET",
+                mode:"cors",
+                cache:"no-cache",
+                credentials:"same-origin",
+                headers:{
+                    "Content-Type":"application/json"
+                },
+                redirect:"follow",
+                referrer:"no-referrer",
+            }).then(response => response.json());
+        }
+
+        function getFriendName(id){
+            return fetch("{% url 'authorprofile' %}"+id,{
+                method:'GET',
+                mode: "cors", // no-cors, cors, *same-origin
+                cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+                credentials: "same-origin", // include, *same-origin, omit
+                headers: {
+                    "Content-Type": "application/json",
+                    // "Content-Type": "application/x-www-form-urlencoded",
+                },
+                redirect: "follow",
+                referrer: "no-referrer",
+            }).then(response=>response.json());
+        }
+
+        function sendFRrequest(fr_id,status){
+            let change_status_form = {
+                'id':id,
+                'status':status
+            }
+            let body = JSON.stringify(change_status_form);
+            let url = "{% url 'friendrequest' %}";
+            return fetch(url,{
+                method:"PUT",
+                mode:"cors",
+                cache:"no-cache",
+                credentials: "same-origin",
+                body:body,
+                headers:{
+                    "Content-Type":"application/json",
+                    "x-csrftoken":csrf_token
+                },
+                redirect: "follow",
+                referrer: "no-referrer",
+            }).then(data=>console.log(data)).catch(error=>console.error(error));
+        }
+        function content_page(data){
+            var content = document.getElementById('content');
+            content.ineerHTML='';
+            for(let i = 0; i < data.length;i++ ){
+                var frs = document.createElement('div');
+                frs.classList.add("w3-container","w3-card","w3-white","w3-round","w3-margin");
+                content.appendChild(frs);
+
+                var title = document.createElement("h3");
+                var friend_id = data[i].id
+                var friend_name = getFriendName(friend_id);
+                title.innerHTML = "Friend Request from" + friend_name;
+                title.classList.add("w3-row-padding");
+                title.style.margin = "0 20px";
+                content.appendChild(title);
+                var acceptDiv = document.createElement("div");
+                acceptDiv.classList.add("w3-row-padding");
+                acceptDiv.style.margin = "0 20px";
+                content.appendChild(acceptDiv);
+
+                var acceptBtn = document.createElement("BUTTON");
+                var acceptText = document.createTextNode("Accept");
+                acceptBtn.addEventListener('click',function(friend_id){
+                    sendFRrequest(friend_id,'accept');
+                });
+                acceptBtn.appendChild(acceptText);
+                acceptDiv.appendChild(acceptBtn);
+            }
+        }
+        getFR_List("{% url "friendrequest" %}").then(content_page);
+        </script>
+
+          {% else %}
+          <div class="w3-card w3-round w3-white" style="width:30%;margin:auto;margin-top: 5%;">
+            <div class="w3-container w3-padding">
+              <div class="w3-center">
+                <h3>You are not logged in</h3>
+                <a href="{% url 'login' %}" class="w3-button w3-theme-d1 w3-margin-bottom"><i class="fa fa-sign-in"></i>  Login</a>
+                <a href="{% url 'signup' %}" class="w3-button w3-theme-d1 w3-margin-bottom"><i class="fa fa-angle-double-up"></i> Sign up</a>
+              </div>
+            </div>
+          </div>
+        {% endif %}
+
+
+
+{% endblock %}

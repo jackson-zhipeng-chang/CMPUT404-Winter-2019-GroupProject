@@ -19,10 +19,11 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
-from . import Helpers,PostHandler, CommentHandler, FriendRequestHandler, FriendQueryHandler, AuthorProfileHandler, Friend2FriendHandler,Accounts 
+from . import Helpers,PostHandler, CommentHandler, FriendRequestHandler, FriendQueryHandler, AuthorProfileHandler, Friend2FriendHandler,Accounts
 from rest_framework_swagger.views import get_swagger_view
 from django.contrib.auth.decorators import login_required
-from django.views.generic.base import TemplateView 
+from django.views.generic.base import TemplateView
+
 
 
 urlpatterns = [
@@ -43,5 +44,6 @@ urlpatterns = [
     path('all/', Helpers.posts_list, name='postslist'),
     path('newpost/', Helpers.new_post, name='newpost'),
     path('myprofile/', AuthorProfileHandler.MyProfileHandler.as_view(), name='myprofile'),
+    path('frlist/',Helpers.friend_request,name='requestlist'),
     path('', TemplateView.as_view(template_name='posts.html'), name='post'),
 ]

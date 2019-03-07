@@ -100,3 +100,7 @@ def posts_list(request):
 
 def new_post(request):
     return render(request, 'newpost.html')
+
+def friend_request(request):
+    return render(request,'friendrequest.html')
+

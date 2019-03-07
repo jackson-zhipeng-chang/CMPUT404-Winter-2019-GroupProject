@@ -16,7 +16,7 @@ var encoded_img="";
 //https://makitweb.com/how-to-fire-ajax-request-on-regular-interval/
 function getFriendReuqest(){
     $.ajax({
-        url:"friendrequest/",
+        url:"/myBlog/friendrequest/",
         type:"get",
         success:function(data){
             // console.log(data);
@@ -42,11 +42,26 @@ $(document).ready(function(){
 // when mouse hover on the notification icon, show how many requests coming
 //https://www.w3schools.com/jquery/tryit.asp?filename=tryjquery_event_hover
 $(document).ready(function(){
-    $("#FRdropdown").hover(function(){
+    $("#dropdown-hover").hover(function(){
         let currentRequest = document.querySelector('#FR').innerHTML;
         document.querySelector("#dropdown").innerHTML = currentRequest+ " new friend request!";
     })
 });
+
+function getFR_List(url){
+    $.ajax({
+        url:url,
+        type:'get',
+        success:function(data){
+            return data.json();
+        },
+        error:function(error){
+            console.log(error);
+        }
+
+
+    })
+}
 
 
 
