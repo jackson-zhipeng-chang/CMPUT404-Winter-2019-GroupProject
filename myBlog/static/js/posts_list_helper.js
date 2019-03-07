@@ -35,33 +35,32 @@ function deletePost(id){
         redirect: "follow", 
         referrer: "no-referrer", 
     })
-    .then(document.location.reload(true));
+    .then(document.location.reload(true)); //https://stackoverflow.com/questions/3715047/how-to-reload-a-page-using-javascript
 }
 
-function commentPost(post, user){
-
-    let comment =
+function commentPost(id){
+    let commentForm =
     {
         "query": "addComment",
-        "post":"",
         "comment":
         {
-            "author":"",
             "comment":"",
             "contentType":"text/plain"
         }
     }
-    comment.post=post.origin;
-    comment.comment.author= user;
-    comment.comment.comment= comment_content;
-    
-    let url = "/myBlog/posts/"+id+"/comments";
+    commentForm.comment.comment= document.getElementById("commentInput").value;
+    // TODO: Comment a post
+    let body = JSON.stringify(commentForm);
+    console.log(body)
+    let url = "/myBlog/posts/"+id+"/comments/";
     return fetch(url, {
         method: "POST", 
         mode: "cors", 
         cache: "no-cache", 
         credentials: "same-origin", 
+        body: body,
         headers: {
+            "Content-Type": "application/json",
             "x-csrftoken": csrf_token
         },
         redirect: "follow", 

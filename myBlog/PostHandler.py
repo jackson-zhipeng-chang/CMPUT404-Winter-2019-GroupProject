@@ -73,7 +73,6 @@ class PostHandler(APIView):
     def delete(self, request, postid, format=None):
         if (not Post.objects.filter(pk=postid).exists()):
             return Response("Post coudn't find", status=404)
-            
         else:
             post = Post.objects.get(pk=postid)
             current_user_uuid = Helpers.get_current_user_uuid(request)
@@ -89,10 +88,10 @@ class PostHandler(APIView):
 # https://stackoverflow.com/questions/6567831/how-to-perform-or-condition-in-django-queryset
 # https://github.com/belatrix/BackendAllStars/blob/master/employees/views.py
 # https://github.com/belatrix/BackendAllStars/blob/master/employees/serializers.py
+# https://stackoverflow.com/questions/2658291/get-list-or-404-ordering-in-django
 class PostToUserHandlerView(APIView):
     def get(self, request, format=None):
         current_user_uuid = Helpers.get_current_user_uuid(request)
-# https://stackoverflow.com/questions/2658291/get-list-or-404-ordering-in-django
         posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(author_id=current_user_uuid) | Q(visibility='PUBLIC'))
         paginator = CustomPagination()
         results = paginator.paginate_queryset(posts_list, request)
@@ -104,7 +103,16 @@ class PostToUserHandlerView(APIView):
 class PostToUserIDHandler(APIView):
     def get(self, request, user_id, format=None):
         current_user_uuid = Helpers.get_current_user_uuid(request)
-        posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(author_id=user_id), Q(visibility='PUBLIC'))
+        posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(author_id=user_id)| Q(visibility='PUBLIC'))
+        paginator = CustomPagination()
+        results = paginator.paginate_queryset(posts_list, request)
+        serializer=PostSerializer(results, many=True)
+        return paginator.get_paginated_response(serializer.data)  
+
+class MyPostHandler(APIView):
+    def get(self, request, format=None):
+        current_user_uuid = Helpers.get_current_user_uuid(request)
+        posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(author_id=current_user_uuid))
         paginator = CustomPagination()
         results = paginator.paginate_queryset(posts_list, request)
         serializer=PostSerializer(results, many=True)
