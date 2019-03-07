@@ -22,13 +22,15 @@ def get_host_from_request(request):
     
 def get_current_user_uuid(request):
     if (not User.objects.filter(pk=request.user.id).exists()):
-        print(request.user.id)
-        print("User coudn't find")
         return Response("User coudn't find", status=404)
+
     else:
         current_user = User.objects.get(pk=request.user.id)
-        author = get_object_or_404(Author, user=current_user)
-        return author.id
+        if (not Author.objects.filter(user=current_user).exists()):
+            return Response("Author coudn't find", status=404)
+        else:
+            author = get_object_or_404(Author, user=current_user)
+            return author.id
 
 def verify_current_user_to_post(post, request):
     post_visibility = post.visibility
@@ -69,8 +71,18 @@ def verify_current_user_to_post(post, request):
             else:
                 return False
 
-def get_friends():
-    return True
+def get_friends(current_user_uuid):
+    author_object = Author.objects.get(id=current_user_uuid)
+    friendsDirect = Friend.objects.filter(Q(author=author_object), Q(status='Accept'))
+    friendsIndirect = Friend.objects.filter(Q(friend=author_object), Q(status='Accept'))
+    friends_list = []
+    for friend in friendsDirect:
+        if friend not in friends_list:
+            friends_list.append(friend.friend)
+    for friend in friendsIndirect:
+        if friend not in friends_list:
+            friends_list.append(friend.author)
+    return friends_list
           
 def get_followings():
     return True

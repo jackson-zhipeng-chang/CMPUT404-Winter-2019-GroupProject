@@ -9,6 +9,7 @@ function previewFile()
     {
         preview.src = reader.result;
         encoded_img = preview.src;
+        document.getElementById("post-content").value = encoded_img;
     }
     if (file) 
     {
@@ -60,7 +61,6 @@ function post()
         visibleTo:"",
         unlisted:""
     }
-
     form.title = document.getElementById("post-title").value;
     form.contentType = document.getElementById("post-contenttype").value;
     form.categories = document.getElementById("post-categories").value;
@@ -91,10 +91,20 @@ function post()
             break;
         }
     }
-    var xhr = new XMLHttpRequest();
-    xhr.open("POST",  get_host()+"/myBlog/posts/", true);
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.setRequestHeader("X-CSRFToken", csrf_token);
-    xhr.send(JSON.stringify(form));
-    window.location.replace(get_host()+"/myBlog/all/");
+    let body = JSON.stringify(form);
+    let url =  get_host()+"/myBlog/posts/";
+    return fetch(url, {
+        method: "POST", 
+        mode: "cors", 
+        cache: "no-cache", 
+        credentials: "same-origin", 
+        body: body,
+        headers: {
+            "Content-Type": "application/json",
+            "x-csrftoken": csrf_token
+        },
+        redirect: "follow", 
+        referrer: "no-referrer", 
+    })
+    .then(window.location.replace(get_host()+"/myBlog/all/"));
   }
