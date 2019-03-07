@@ -25,7 +25,7 @@
             <span class="w3-badge w3-right w3-small w3-green" id="FR">0</span>
         </button>
         <div class="w3-dropdown-content w3-card-4 w3-bar-block" id="FRdropdown" style="width:300px">
-          <a href="#" class="w3-bar-item w3-button" id="dropdown">Zero new friend request</a>
+          <a href="/myBlog/frlist/" class="w3-bar-item w3-button" id="dropdown">Zero new friend request</a>
 
         </div>
       </div>
@@ -42,10 +42,12 @@
   </div>
   <main>
     {% block content %}
+
     {% endblock %}
   </main>
   <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
   <script src="{% static "js/app.js" %}"></script>
+  <script src="{% static "js/send_periodic_request_helpers.js" %}"></script>
 
 </body>
 </html>
