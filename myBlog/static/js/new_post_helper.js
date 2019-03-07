@@ -3,13 +3,18 @@ var encoded_img="";
 function previewFile()
 {
     var preview = document.querySelector('img'); 
-    var file= document.querySelector('input[type=file]').files[0]; 
+    var file = document.querySelector('input[type=file]').files[0]; 
     var reader  = new FileReader();
     reader.onloadend = function () 
     {
         preview.src = reader.result;
         encoded_img = preview.src;
         document.getElementById("post-content").value = encoded_img;
+        let selectedType = document.getElementById("post-contenttype").value;
+        if (! encoded_img.includes(selectedType))
+        {
+            alert("Please upload the selected type image!");
+        }
     }
     if (file) 
     {
