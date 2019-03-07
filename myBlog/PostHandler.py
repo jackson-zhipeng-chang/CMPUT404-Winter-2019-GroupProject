@@ -10,6 +10,8 @@ from django.http import HttpResponse, JsonResponse
 from django.db.models import Q
 from rest_framework.parsers import JSONParser, MultiPartParser
 from . import Helpers
+from uuid import UUID
+
 
 class NewPostHandler(APIView):
     def post(self, request, format=None):
@@ -92,28 +94,48 @@ class PostHandler(APIView):
 class PostToUserHandlerView(APIView):
     def get(self, request, format=None):
         current_user_uuid = Helpers.get_current_user_uuid(request)
-        posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(author_id=current_user_uuid) | Q(visibility='PUBLIC'))
-        paginator = CustomPagination()
-        results = paginator.paginate_queryset(posts_list, request)
-        serializer=PostSerializer(results, many=True)
-        return paginator.get_paginated_response(serializer.data) 
+        if type(current_user_uuid) == UUID:
+            public_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(author_id=current_user_uuid)| Q(visibility='PUBLIC'))
+            friends_list = Helpers.get_friends(current_user_uuid)
+            friend_posts_list=[]  
+            print(friends_list)
+            for friend in friends_list:
+                print(friend.displayName)
+                if (Post.objects.filter(author_id=friend.id).exists()):
+                    friend_posts_list+=get_list_or_404(Post.objects.order_by('-published'), Q(author_id=friend.id), Q(visibility='FRIENDS'))
+            print(friend_posts_list)
+            posts_list = public_posts_list+ friend_posts_list
+            posts_list.sort(key=lambda x: x.published, reverse=True) # https://stackoverflow.com/questions/403421/how-to-sort-a-list-of-objects-based-on-an-attribute-of-the-objects answered Dec 31 '08 at 16:42 by Triptych
+            paginator = CustomPagination()
+            results = paginator.paginate_queryset(posts_list, request)
+            serializer=PostSerializer(results, many=True)
+            return paginator.get_paginated_response(serializer.data) 
+        else:
+            return current_user_uuid
 
 
 # https://stackoverflow.com/questions/19360874/pass-url-argument-to-listview-queryset
 class PostToUserIDHandler(APIView):
     def get(self, request, user_id, format=None):
         current_user_uuid = Helpers.get_current_user_uuid(request)
-        posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(author_id=user_id)| Q(visibility='PUBLIC'))
-        paginator = CustomPagination()
-        results = paginator.paginate_queryset(posts_list, request)
-        serializer=PostSerializer(results, many=True)
-        return paginator.get_paginated_response(serializer.data)  
+        if type(current_user_uuid) == UUID:
+            posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(author_id=user_id)| Q(visibility='PUBLIC'))
+            paginator = CustomPagination()
+            results = paginator.paginate_queryset(posts_list, request)
+            serializer=PostSerializer(results, many=True)
+            return paginator.get_paginated_response(serializer.data)  
+        else:
+            return current_user_uuid
 
+# For local using only
 class MyPostHandler(APIView):
     def get(self, request, format=None):
         current_user_uuid = Helpers.get_current_user_uuid(request)
-        posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(author_id=current_user_uuid))
-        paginator = CustomPagination()
-        results = paginator.paginate_queryset(posts_list, request)
-        serializer=PostSerializer(results, many=True)
-        return paginator.get_paginated_response(serializer.data)  
+        if type(current_user_uuid) == UUID:
+            posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(author_id=current_user_uuid))
+            paginator = CustomPagination()
+            results = paginator.paginate_queryset(posts_list, request)
+            serializer=PostSerializer(results, many=True)
+            return paginator.get_paginated_response(serializer.data)  
+        else:
+            return current_user_uuid
