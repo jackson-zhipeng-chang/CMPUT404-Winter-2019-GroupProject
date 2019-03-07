@@ -5,7 +5,7 @@
 |[![Build Status](https://travis-ci.org/Zhipeng-Chang/CMPUT404-Winter-2019-GroupProject.svg?branch=master)](https://travis-ci.org/Zhipeng-Chang/CMPUT404-Winter-2019-GroupProject)|[![Coverage Status](https://coveralls.io/repos/github/Zhipeng-Chang/CMPUT404-Winter-2019-GroupProject/badge.svg?branch=master)](https://coveralls.io/github/Zhipeng-Chang/CMPUT404-Winter-2019-GroupProject?branch=master)|[![Documentation Status](https://img.shields.io/badge/docs-stable-brightgreen.svg)](https://github.com/Zhipeng-Chang/CMPUT404-Winter-2019-GroupProject/blob/master/docs/APIsDoc.pdf)
 
 ## Dev log
-Checkout our [current project progress](https://github.com/Zhipeng-Chang/CMPUT404-Winter-2019-GroupProject/milestones/Project%20part1)!<br>
+Checkout our [current project progress](https://github.com/Zhipeng-Chang/CMPUT404-Winter-2019-GroupProject/milestones/Project%20Part1)!<br>
 
 ## Team members: <br />
 Zhipeng Chang (zchang@ualberta.ca) <br />

@@ -110,7 +110,8 @@ function display(data) {
       divDescription.appendChild(commentButton);
     
     }
-    if (data.next != null){
+    if (data.next != null)
+    {
       var nextButton = document.createElement("button");
       nextButton.classList.add("w3-button", "w3-theme-d1", "w3-margin-bottom", "w3-right");
       nextButton.insertAdjacentHTML("beforeend", "<i class='fa fa-arrow-right	'></i> Next Page");
@@ -118,7 +119,8 @@ function display(data) {
       holder.appendChild(nextButton);
     }
 
-    if (data.previous != null){
+    if (data.previous != null)
+    {
       var nextButton = document.createElement("button");
       nextButton.classList.add("w3-button", "w3-theme-d1", "w3-margin-bottom", "w3-left");
       nextButton.insertAdjacentHTML("beforeend", "<i class='fa fa-arrow-left	'></i> Previous Page");
