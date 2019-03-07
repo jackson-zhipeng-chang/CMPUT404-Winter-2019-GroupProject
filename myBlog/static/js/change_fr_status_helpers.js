@@ -59,6 +59,7 @@ function content_page(data){
         frs.appendChild(acceptDiv);
 
         var acceptBtn = document.createElement("BUTTON");
+        acceptBtn.classList.add('w3-button','w3-theme-d1','w3-margin-bottom');
         var acceptText = document.createTextNode("Accept");
         acceptBtn.addEventListener('click',function(){
             sendFRrequest(request_id,'Accept');
@@ -67,6 +68,7 @@ function content_page(data){
         acceptDiv.appendChild(acceptBtn);
 
         var declineBtn = document.createElement('BUTTON');
+        declineBtn.classList.add('w3-button','w3-theme-d1','w3-margin-bottom');
         var declineText = document.createTextNode('Decline');
         declineBtn.addEventListener('click',function(){
             sendFRrequest(request_id,'Decline');
