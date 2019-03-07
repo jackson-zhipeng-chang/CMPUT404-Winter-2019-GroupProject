@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block title %}Friend Request{% endblock %}
+
+{% block content %}
+    {% if user.is_authenticated %}
+        <div id = 'content'>
+
+        </div>
+
+        <script>
+        function getFR_List(url){
+            console.log(url);
+            return fetch(url,{
+                method:"GET",
+                mode:"cors",
+                cache:"no-cache",
+                credentials:"same-origin",
+                headers:{
+                    "Content-Type":"application/json"
+                },
+                redirect:"follow",
+                referrer:"no-referrer",
+            }).then(response => response.json());
+        }
+        {#TODO: bugs here, causes by url.#}
+        function getFriendName(id){
+            url = "/myBlog/author/"+id;
+            return fetch(url,{
+                method:'GET',
+                mode: "cors", // no-cors, cors, *same-origin
+                cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+                credentials: "same-origin", // include, *same-origin, omit
+                redirect: "follow",
+                referrer: "no-referrer",
+            }).then(response=>response.json());
+        }
+
+        function sendFRrequest(fr_id,status){
+            let change_status_form = {
+                'id':fr_id,
+                'status':status
+            }
+            let body = JSON.stringify(change_status_form);
+            {#let url = "{% url 'friendrequest' %}";#}
+            let url = "/myBlog/friendrequest/";
+            return fetch(url,{
+                method:"PUT",
+                mode:"cors",
+                cache:"no-cache",
+                credentials: "same-origin",
+                body:body,
+                headers:{
+                    "Content-Type":"application/json",
+                    "x-csrftoken":csrf_token
+                },
+                redirect: "follow",
+                referrer: "no-referrer",
+            }).then(data=>console.log(data))
+                .then(document.location.reload(true));
+        }
+        function content_page(data){
+            var content = document.getElementById('content');
+            content.ineerHTML='';
+            for(let i = 0; i < data.length;i++ ){
+                var frs = document.createElement('div');
+                frs.classList.add("w3-container","w3-card","w3-white","w3-round","w3-margin");
+                content.appendChild(frs);
+
+                var title = document.createElement("h3");
+                var request_id = data[i].id; // get request id
+
+                var friend_name = data[i]['author']['displayName']; // get the friend name of the request
+                var friend_info = document.createElement("a"); // create a link to the friend's info
+                // click to see friend's info details
+                friend_info.setAttribute('href','/myBlog/author/'+data[i]['author']['id']);
+                friend_info.innerHTML = friend_name;// set the href text
+
+                title.innerHTML = "Friend Request from " ;
+                title.classList.add("w3-row-padding");
+                title.style.marginTop = "20px";
+                title.appendChild(friend_info);
+                frs.appendChild(title);
+
+                // create two buttons for changing status
+                var acceptDiv = document.createElement("div");
+                acceptDiv.classList.add("w3-row-padding");
+                acceptDiv.style.marginBottom = "20px";
+                frs.appendChild(acceptDiv);
+
+                var acceptBtn = document.createElement("BUTTON");
+                acceptBtn.classList.add("w3-button", "w3-theme-d1", "w3-margin-bottom");
+                var acceptText = document.createTextNode("Accept");
+                acceptBtn.addEventListener('click',function(){
+                    sendFRrequest(request_id,'Accept');
+                });
+                acceptBtn.appendChild(acceptText);
+                acceptDiv.appendChild(acceptBtn);
+
+                var declineBtn = document.createElement('BUTTON');
+                declineBtn.classList.add("w3-button", "w3-theme-d1", "w3-margin-bottom");
+                var declineText = document.createTextNode('Decline');
+                declineBtn.addEventListener('click',function(){
+                    sendFRrequest(request_id,'Decline');
+                });
+                declineBtn.appendChild(declineText);
+                acceptDiv.appendChild(declineBtn);
+            }
+        }
+        // get friend request list then render the page.
+        getFR_List("{% url "friendrequest" %}").then(content_page);
+        </script>
+
+          {% else %}
+          <div class="w3-card w3-round w3-white" style="width:30%;margin:auto;margin-top: 5%;">
+            <div class="w3-container w3-padding">
+              <div class="w3-center">
+                <h3>You are not logged in</h3>
+                <a href="{% url 'login' %}" class="w3-button w3-theme-d1 w3-margin-bottom"><i class="fa fa-sign-in"></i>  Login</a>
+                <a href="{% url 'signup' %}" class="w3-button w3-theme-d1 w3-margin-bottom"><i class="fa fa-angle-double-up"></i> Sign up</a>
+              </div>
+            </div>
+          </div>
+        {% endif %}
+
+
+
+{% endblock %}

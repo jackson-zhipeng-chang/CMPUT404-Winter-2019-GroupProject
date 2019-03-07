@@ -117,3 +117,6 @@ def new_post(request):
 def my_posts(request):
     url = "/myBlog/posts/mine/?size=10"
     return render(request, 'posts.html', {"url":url, "trashable":"true"})
+
+def friend_request(request):
+    return render(request,'friendrequest.html')
