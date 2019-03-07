@@ -48,10 +48,8 @@ function commentPost(id){
             "contentType":"text/plain"
         }
     }
-    commentForm.comment.comment= document.getElementById("commentInput").value;
-    // TODO: Comment a post
+    commentForm.comment.comment= document.getElementById("commentInput"+id).value;
     let body = JSON.stringify(commentForm);
-    console.log(body)
     let url = "/myBlog/posts/"+id+"/comments/";
     return fetch(url, {
         method: "POST", 
