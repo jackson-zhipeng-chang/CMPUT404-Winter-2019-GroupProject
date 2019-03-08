@@ -26,24 +26,6 @@ function previewFile()
     }
 }
 
-function enableVisibleTo()
-{
-    var selectedVisibility = document.getElementById("post-visibility").value;
-
-    if (selectedVisibility == "PRIVATE"){
-        document.getElementById("friendsoptions").disabled = false;
-        set_friends_list();
-    }
-    else{
-        document.getElementById("friendsoptions").disabled = true;
-        document.getElementById("friendsoptions").setAttribute("data-placeholder", "Only avaliable when PRIVATE TO selected ");
-        $('#friendsoptions').empty();
-        $('#friendsoptions').trigger("chosen:updated");
-    }
-}
-
-
-
 // https://www.w3schools.com/jsref/prop_style_visibility.asp
 function enableInput()
 {
@@ -60,50 +42,6 @@ function enableInput()
         document.getElementById("post-image").style.visibility = "hidden";
 
     }
-}
-
-function set_friends_list (){
-    
-    get_friends_list().then(function(response) {
-        if (response.length ==0){
-            document.getElementById("friendsoptions").setAttribute("data-placeholder", "Looks like you don't have any friends...");
-            $('#friendsoptions').trigger("chosen:updated");
-        }
-        else{
-            document.getElementById("friendsoptions").setAttribute("data-placeholder", "Please typing a name to filter... ");
-            for (var i = 0; i < response.length; i++){
-                let value =response[i].id;
-                let innerText=response[i].displayName;
-                let option = '<option value='+value+'>'+innerText+'</option>';
-                var newOption = $(option);
-                $('#friendsoptions').append(newOption);
-                $('#friendsoptions').trigger("chosen:updated");
-            }
-        }
-    })    
-}
-
-function get_friends_list()
-{
-    let url = "/myBlog/myfriends/";
-    return fetch(url, {
-        method: "GET", 
-        mode: "cors", 
-        cache: "no-cache", 
-        credentials: "same-origin", 
-        redirect: "follow", 
-        referrer: "no-referrer", 
-    })
-    .then(response => {
-        if (response.status === 200) 
-        { 
-            return response.json(); 
-        } 
-        else 
-        {
-            alert("Something went wrong: " + response.status);
-        }
-    }); 
 }
 
 // https://stackoverflow.com/questions/6941533/get-protocol-domain-and-port-from-url
@@ -134,7 +72,7 @@ function post()
     form.content = document.getElementById("post-content").value;
     form.visibility = document.getElementById("post-visibility").value;
     form.unlisted = document.getElementById("post-content").value;
-    form.visibleTo = String($(".chosen-select").chosen().val());
+    form.visibleTo = document.getElementById("post-visibleto").value;
     form.description = document.getElementById("post-description").value;
     if (form.contentType == "image/png;base64" || form.contentType =="image/jepg;base64") 
     {
@@ -160,7 +98,6 @@ function post()
     }
     let body = JSON.stringify(form);
     let url =  get_host()+"/myBlog/posts/";
-    console.log(body);
     return fetch(url, {
         method: "POST", 
         mode: "cors", 
@@ -174,15 +111,5 @@ function post()
         redirect: "follow", 
         referrer: "no-referrer", 
     })
-    .then(response => {
-        if (response.status === 200) 
-        { 
-            window.location.replace(get_host()+"/myBlog/all/"); 
-        } 
-        else 
-        {
-            alert("Something went wrong: " + response.status);
-        }
-    }); 
-
+    .then(window.location.replace(get_host()+"/myBlog/all/"));
   }

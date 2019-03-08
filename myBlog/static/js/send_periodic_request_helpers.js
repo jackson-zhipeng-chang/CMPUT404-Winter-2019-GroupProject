@@ -31,6 +31,6 @@ $(document).ready(function(){
 $(document).ready(function(){
     $("#dropdown-hover").hover(function(){
         let currentRequest = document.querySelector('#FR').innerHTML;
-        document.getElementById("dropdown").innerHTML = currentRequest+ " new friend request!";
+        document.querySelector("#dropdown").innerHTML = currentRequest+ " new friend request!";
     })
 });
