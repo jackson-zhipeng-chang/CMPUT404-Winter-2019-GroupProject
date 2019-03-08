@@ -26,10 +26,6 @@ function previewFile()
     }
 }
 
-$(function()
-{
-  $(".chosen-select").chosen({no_results_text: "Oops, nothing found!"})
-});
 function enableVisibleTo()
 {
     var selectedVisibility = document.getElementById("post-visibility").value;
@@ -131,7 +127,7 @@ function post()
     form.content = document.getElementById("post-content").value;
     form.visibility = document.getElementById("post-visibility").value;
     form.unlisted = document.getElementById("post-content").value;
-    form.visibleTo = $(".chosen-select").chosen().val();
+    form.visibleTo = String($(".chosen-select").chosen().val());
     form.description = document.getElementById("post-description").value;
     if (form.contentType == "image/png;base64" || form.contentType =="image/jepg;base64") 
     {
@@ -171,5 +167,5 @@ function post()
         redirect: "follow", 
         referrer: "no-referrer", 
     })
-    //.then(window.location.replace(get_host()+"/myBlog/all/"));
+    .then(window.location.replace(get_host()+"/myBlog/all/"));
   }
