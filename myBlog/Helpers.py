@@ -120,6 +120,3 @@ def my_posts(request):
 
 def friend_request(request):
     return render(request,'friendrequest.html')
-
-def author_details(request,author_id):
-    return render(request,'authordetails.html',{'authorid':author_id})

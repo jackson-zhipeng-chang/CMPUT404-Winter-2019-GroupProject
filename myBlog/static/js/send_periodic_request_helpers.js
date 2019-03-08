@@ -13,7 +13,7 @@ function getFriendReuqest(){
         },
         complete:function(data){
             console.log('complete');
-            setTimeout(getFriendReuqest,15000);
+            setTimeout(getFriendReuqest,5000);
         },
         error:function(){
             console.log('error');
