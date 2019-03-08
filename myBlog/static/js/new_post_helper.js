@@ -174,5 +174,15 @@ function post()
         redirect: "follow", 
         referrer: "no-referrer", 
     })
-    .then(window.location.replace(get_host()+"/myBlog/all/"));
+    .then(response => {
+        if (response.status === 200) 
+        { 
+            window.location.replace(get_host()+"/myBlog/all/"); 
+        } 
+        else 
+        {
+            alert("Something went wrong: " + response.status);
+        }
+    }); 
+
   }
