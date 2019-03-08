@@ -46,6 +46,7 @@ urlpatterns = [
     path('myprofile/', AuthorProfileHandler.MyProfileHandler.as_view(), name='myprofile'),
     path('posts/mine/',  PostHandler.MyPostHandler.as_view(), name='myposts_view'),
     path('myposts/', Helpers.my_posts, name='myposts'),
+    path('myfriends/', FriendRequestHandler.MyFriends.as_view(), name='myfriends'),
     path('frlist/',Helpers.friend_request,name='requestlist'),
     path('', Helpers.posts_list, name='home'),
 ]

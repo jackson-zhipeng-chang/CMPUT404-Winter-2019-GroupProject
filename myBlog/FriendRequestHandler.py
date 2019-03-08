@@ -67,7 +67,6 @@ class FriendRequestHandler(APIView):
                 "message":"Request not found"
                 }
             return Response(responsBody, status=404)
-
         else:
             data = request.data
             current_user_uuid = Helpers.get_current_user_uuid(request)
@@ -118,3 +117,12 @@ class FriendRequestHandler(APIView):
                 
             else:
                 return Response("Opreation not allowed.", status=status.HTTP_400_BAD_REQUEST)
+
+
+class MyFriends(APIView):
+    def get(self, request, format=None):
+        current_user_uuid = Helpers.get_current_user_uuid(request)
+        friends_list = Helpers.get_friends(current_user_uuid)
+        serializer = AuthorSerializer(friends_list, many=True)
+        return JsonResponse(serializer.data, safe=False)
+            

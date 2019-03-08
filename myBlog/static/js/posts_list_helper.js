@@ -7,7 +7,8 @@ function get_host()
     return result
 }
 
-function getAllPosts(url) {
+function getAllPosts(url) 
+{
       return fetch(url, {
           method: "GET", 
           mode: "cors", 
@@ -22,7 +23,8 @@ function getAllPosts(url) {
       .then(response => response.json()); // parses response to JSON
 }
 
-function deletePost(id){
+function deletePost(id)
+{
     let url = "/myBlog/posts/"+id;
     return fetch(url, {
         method: "DELETE", 
@@ -39,7 +41,8 @@ function deletePost(id){
     .then(alert("Successfully deleted!"));
 }
 
-function commentPost(id){
+function commentPost(id)
+{
     let commentForm =
     {
         "query": "addComment",

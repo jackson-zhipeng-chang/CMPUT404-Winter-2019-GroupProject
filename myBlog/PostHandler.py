@@ -98,13 +98,19 @@ class PostToUserHandlerView(APIView):
             public_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(author_id=current_user_uuid)| Q(visibility='PUBLIC'))
             friends_list = Helpers.get_friends(current_user_uuid)
             friend_posts_list=[]  
-            print(friends_list)
+            private_posts_list=[]
             for friend in friends_list:
-                print(friend.displayName)
                 if (Post.objects.filter(author_id=friend.id).exists()):
                     friend_posts_list+=get_list_or_404(Post.objects.order_by('-published'), Q(author_id=friend.id), Q(visibility='FRIENDS'))
-            print(friend_posts_list)
-            posts_list = public_posts_list+ friend_posts_list
+
+            for friend in friends_list:
+                if (Post.objects.filter(Q(author_id=friend.id), Q(visibility='PRIVATE')).exists()):
+                    private_list = get_list_or_404(Post.objects.order_by('-published'), Q(author_id=friend.id), Q(visibility='PRIVATE'))
+                    for post in private_list:
+                        if str(current_user_uuid) in post.visibleTo:
+                            private_posts_list.append(post)
+            
+            posts_list = public_posts_list+ friend_posts_list + private_posts_list
             posts_list.sort(key=lambda x: x.published, reverse=True) # https://stackoverflow.com/questions/403421/how-to-sort-a-list-of-objects-based-on-an-attribute-of-the-objects answered Dec 31 '08 at 16:42 by Triptych
             paginator = CustomPagination()
             results = paginator.paginate_queryset(posts_list, request)
