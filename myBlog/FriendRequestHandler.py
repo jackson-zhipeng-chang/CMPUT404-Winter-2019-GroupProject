@@ -10,14 +10,18 @@ from django.http import HttpResponse, JsonResponse
 from django.db.models import Q
 from urllib.parse import urlparse
 from . import Helpers
+from uuid import UUID
 
 class FriendRequestHandler(APIView):
     def get(self, request, format=None):
         current_user_uuid = Helpers.get_current_user_uuid(request)
-        author_object = Author.objects.get(id=current_user_uuid)
-        friendrequests = Friend.objects.filter(friend=author_object, status='Pending')
-        serializer = FriendSerializer(friendrequests, many=True)
-        return JsonResponse(serializer.data, safe=False)
+        if type(current_user_uuid) == UUID:
+            author_object = Author.objects.get(id=current_user_uuid)
+            friendrequests = Friend.objects.filter(friend=author_object, status='Pending')
+            serializer = FriendSerializer(friendrequests, many=True)
+            return JsonResponse(serializer.data, safe=False)
+        else:
+            return current_user_uuid
 
     def post(self, request, format=None):
         data = request.data
