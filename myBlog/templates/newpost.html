@@ -41,7 +41,6 @@
         <!-- Reference: https://simpleisbetterthancomplex.com/tutorial/2016/08/01/how-to-upload-files-with-django.html  
         https://stackoverflow.com/questions/14007629/document-getelementbyidremember-visibility-hidden-not-working-on-a-chec-->
         <form method="post" enctype="multipart/form-data" id = "post-image" style="visibility:hidden;">
-        {% csrf_token %}
         <input type="file" name="myfile" id="my-file" onchange="previewFile()">
         <img src="" height="200" alt="Image preview...">
 
