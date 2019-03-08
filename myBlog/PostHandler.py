@@ -119,7 +119,7 @@ class PostToUserIDHandler(APIView):
     def get(self, request, user_id, format=None):
         current_user_uuid = Helpers.get_current_user_uuid(request)
         if type(current_user_uuid) == UUID:
-            posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(author_id=user_id)| Q(visibility='PUBLIC'))
+            posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(author_id=user_id)& Q(visibility='PUBLIC'))
             paginator = CustomPagination()
             results = paginator.paginate_queryset(posts_list, request)
             serializer=PostSerializer(results, many=True)
