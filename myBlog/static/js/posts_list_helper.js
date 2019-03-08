@@ -68,5 +68,14 @@ function commentPost(id)
         redirect: "follow", 
         referrer: "no-referrer", 
     })
-    .then(document.location.reload(true));
+    .then(response => {
+        if (response.status === 200) 
+        { 
+            document.location.reload(true); 
+        } 
+        else 
+        {
+            alert("Something went wrong: " +  response.status);
+        }
+    }); 
 }
