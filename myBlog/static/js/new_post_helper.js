@@ -31,9 +31,8 @@ function enableVisibleTo()
     var selectedVisibility = document.getElementById("post-visibility").value;
 
     if (selectedVisibility == "PRIVATE"){
-        set_friends_list();
         document.getElementById("friendsoptions").disabled = false;
-        document.getElementById("friendsoptions").setAttribute("data-placeholder", "Please typing a name to filter... ");
+        set_friends_list();
     }
     else{
         document.getElementById("friendsoptions").disabled = true;
@@ -64,14 +63,22 @@ function enableInput()
 }
 
 function set_friends_list (){
+    
     get_friends_list().then(function(response) {
-        for (var i = 0; i < response.length; i++){
-            let value =response[i].id;
-            let innerText=response[i].displayName;
-            let option = '<option value='+value+'>'+innerText+'</option>';
-            var newOption = $(option);
-            $('#friendsoptions').append(newOption);
+        if (response.length ==0){
+            document.getElementById("friendsoptions").setAttribute("data-placeholder", "Looks like you don't have any friends...");
             $('#friendsoptions').trigger("chosen:updated");
+        }
+        else{
+            document.getElementById("friendsoptions").setAttribute("data-placeholder", "Please typing a name to filter... ");
+            for (var i = 0; i < response.length; i++){
+                let value =response[i].id;
+                let innerText=response[i].displayName;
+                let option = '<option value='+value+'>'+innerText+'</option>';
+                var newOption = $(option);
+                $('#friendsoptions').append(newOption);
+                $('#friendsoptions').trigger("chosen:updated");
+            }
         }
     })    
 }
