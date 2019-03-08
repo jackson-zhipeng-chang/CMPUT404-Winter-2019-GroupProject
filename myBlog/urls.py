@@ -19,7 +19,7 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
-from . import Helpers,PostHandler, CommentHandler, FriendRequestHandler, FriendQueryHandler, AuthorProfileHandler, Friend2FriendHandler,Accounts 
+from . import Helpers,PostHandler, CommentHandler, FriendRequestHandler, FriendQueryHandler, AuthorProfileHandler, Friend2FriendHandler,Accounts,LocalFriendRequestHandler
 from rest_framework_swagger.views import get_swagger_view
 from django.contrib.auth.decorators import login_required
 from django.views.generic.base import TemplateView 
@@ -36,7 +36,8 @@ urlpatterns = [
     path('author/<uuid:user_id>/posts/', PostHandler.PostToUserIDHandler.as_view(), name='posttouserid'),
     path('author/<uuid:user_id>/', AuthorProfileHandler.AuthorProfileHandler.as_view(), name='authorprofile'),
     path('author/<uuid:user_id1>/friends/<uuid:user_id2>/', Friend2FriendHandler.Friend2FriendHandler.as_view(), name='friend2friend'),
-    
+
+    path('localfriendrequest/',LocalFriendRequestHandler.LocalFriendRequestHandler.as_view(),name='localfriendrequest'),
     
     path('login/', Accounts.LoginView.as_view(), name='login'),
     path('logout/', Accounts.logout_user, name='logout'),
@@ -47,5 +48,6 @@ urlpatterns = [
     path('posts/mine/',  PostHandler.MyPostHandler.as_view(), name='myposts_view'),
     path('myposts/', Helpers.my_posts, name='myposts'),
     path('frlist/',Helpers.friend_request,name='requestlist'),
+    path('authordetails/<author_id>/',Helpers.author_details,name='authordetails'),
     path('', Helpers.posts_list, name='home'),
 ]

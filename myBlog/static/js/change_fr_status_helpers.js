@@ -1,3 +1,4 @@
+
 function getFR_List(url){
     return fetch(url,{
         method:"GET",
@@ -19,7 +20,7 @@ function sendFRrequest(fr_id,status){
     }
     let body = JSON.stringify(change_status_form);
 
-    let url = "/myBlog/friendrequest/";
+    let url = "/myBlog/localfriendrequest/";
     return fetch(url,{
         method:"PUT",
         mode:"cors",
@@ -38,7 +39,7 @@ function sendFRrequest(fr_id,status){
 
 function content_page(data){
     var content = document.getElementById('content');
-    content.ineerHTML='';
+    //content.ineerHTML='';
     for(let i = 0; i < data.length;i++ ){
         var frs = document.createElement('div');
         frs.classList.add("w3-container","w3-card","w3-white","w3-round","w3-margin");
@@ -51,7 +52,7 @@ function content_page(data){
         var friend_info = document.createElement('a');//create a link to the friend's info
         var friend_id = data[i]['author']['id'];
         //click to see friend's info details
-        friend_info.setAttribute('href','/myBlog/author/'+ friend_id);
+        friend_info.setAttribute('href','/myBlog/author/'+friend_id);
         friend_info.innerHTML = friend_name;// set the href text
 
         title.innerHTML = "Friend Request from ";

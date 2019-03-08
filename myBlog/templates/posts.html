@@ -41,9 +41,13 @@ function display(data) {
         trashLogo.onclick=function(){deletePost(post_id)} ;
         post.appendChild(trashLogo);
       }
-      var author = document.createElement("h3");
+      //TODO: change position
+      var author = document.createElement("a");
+      var friend_id = data.posts[i]['author']['id'];
+      author.setAttribute('href','/myBlog/authordetails/'+ friend_id+'/');
       author.innerHTML = data.posts[i].author.displayName;
-      author.style.margin = "14px";
+      author.style.fontSize='25px';
+      author.style.marginBottom = "14px";
       post.appendChild(author);
 
       var line = document.createElement("hr");
