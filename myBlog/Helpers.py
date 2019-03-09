@@ -109,7 +109,7 @@ def check_author1_follow_author2(author1_id,author2_id):
 
 def posts_list(request):
     url = "/myBlog/author/posts/?size=10"
-    return render(request, 'posts.html', {"url":url, "trashable":"false"})
+    return render(request, 'homepage.html', {"url":url, "trashable":"false"})
 
 def new_post(request):
     return render(request, 'newpost.html')
