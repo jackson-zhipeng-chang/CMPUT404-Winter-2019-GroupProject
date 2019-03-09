@@ -8,6 +8,7 @@ from django.contrib.auth.models import User
 from django.views import generic
 from django.db.models import Q
 from django.shortcuts import render
+import json
 
 def get_author_or_not_exits(current_user_uuid):
     if (not Author.objects.filter(id=current_user_uuid).exists()):
@@ -31,6 +32,23 @@ def get_current_user_uuid(request):
         else:
             author = get_object_or_404(Author, user=current_user)
             return author.id
+
+# def get_current_user_obj(request):
+#     if not User.objects.filter(pk=request.user.id).exists():
+#         return Response("user couldnt find",status=404)
+#     else:
+#         current_user = User.objects.get(pk=request.user.id)
+#         if (not Author.objects.filter(user=current_user).exists()):
+#             return Response("Author coudn't find", status=404)
+#         else:
+#             author = get_object_or_404(Author, user=current_user)
+#             author_json_object = {
+#                 "id":author.id,
+#                 "host":author.host,
+#                 "displayName":author.displayName,
+#                 "url":author.url
+#             }
+#             return json.dumps(author_json_object)
 
 def verify_current_user_to_post(post, request):
     post_visibility = post.visibility
@@ -108,6 +126,7 @@ def check_author1_follow_author2(author1_id,author2_id):
         return False
 
 def posts_list(request):
+
     url = "/myBlog/author/posts/?size=10"
     return render(request, 'posts.html', {"url":url, "trashable":"false"})
 
@@ -122,4 +141,5 @@ def friend_request(request):
     return render(request,'friendrequest.html')
 
 def author_details(request,author_id):
-    return render(request,'authordetails.html',{'authorid':author_id})
+    current_user_id = get_current_user_uuid(request)
+    return render(request,'authordetails.html',{'authorid':author_id,'current_user_id':current_user_id})

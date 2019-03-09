@@ -19,7 +19,8 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
-from . import Helpers,PostHandler, CommentHandler, FriendRequestHandler, FriendQueryHandler, AuthorProfileHandler, Friend2FriendHandler,Accounts,LocalFriendRequestHandler
+from . import Helpers,PostHandler, CommentHandler, FriendRequestHandler, FriendQueryHandler, \
+    AuthorProfileHandler, Friend2FriendHandler,Accounts,LocalFriendRequestHandler,FriendStatusQueryHandler
 from rest_framework_swagger.views import get_swagger_view
 from django.contrib.auth.decorators import login_required
 from django.views.generic.base import TemplateView
@@ -39,6 +40,7 @@ urlpatterns = [
     path('author/<uuid:user_id1>/friends/<uuid:user_id2>/', Friend2FriendHandler.Friend2FriendHandler.as_view(), name='friend2friend'),
 
     path('localfriendrequest/',LocalFriendRequestHandler.LocalFriendRequestHandler.as_view(),name='localfriendrequest'),
+    path('friends/<author_id>',FriendStatusQueryHandler.FriendStatusQueryHandler.as_view(),name='friendstatusquery'),
 
     path('login/', Accounts.LoginView.as_view(), name='login'),
     path('logout/', Accounts.logout_user, name='logout'),

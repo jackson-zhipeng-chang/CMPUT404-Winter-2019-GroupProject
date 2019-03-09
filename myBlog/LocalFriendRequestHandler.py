@@ -20,7 +20,7 @@ class LocalFriendRequestHandler(APIView):
                     return Response("Friend request already sent",status=status.HTTP_400_BAD_REQUEST)
                 elif Friend.objects.filter(author=reciver_obj,friend=sender_obj,status='Pending').exists():
                     friendrequest = Friend.objects.get(author=reciver_obj,friend=sender_obj)
-                    friendrequest.status="Aceept"
+                    friendrequest.status="Accept"
                     friendrequest.save()
                     return Response("You are now friend with %s" %current_user_uuid,status=status.HTTP_200_OK)
                 else:
@@ -51,7 +51,7 @@ class LocalFriendRequestHandler(APIView):
             data = request.data
             current_user_uuid = Helpers.get_current_user_uuid(request)
             friendrequests=Friend.objects.get(id=requestid)
-            if current_user_uuid==friendrequests.friend.id:
+            if current_user_uuid==friendrequests.friend.id or current_user_uuid == friendrequests.author.id:
                 newStatus = data['status']
                 if newStatus == 'Accept':
                     friendrequests.status=newStatus
@@ -61,6 +61,11 @@ class LocalFriendRequestHandler(APIView):
                     print('decline')
                     friendrequests.delete()
                     return Response("Success decline",status=status.HTTP_200_OK)
+                elif newStatus == 'Pending':
+                    friendrequests.status = newStatus
+                    friendrequests.save()
+                    return Response("Success Unfollowed ", status=status.HTTP_200_OK)
+
                 else:
                     return Response('Status not valid',status=status.HTTP_400_BAD_REQUEST)
             else:

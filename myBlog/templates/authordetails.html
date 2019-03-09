@@ -12,7 +12,7 @@
 
         // get friend request list then render the page.
         // authorid = the id of the author i want to see
-        getAuthorDetials("{{authorid}}").then(renderpage);
+        getAuthorDetials("{{authorid}}","{{ current_user_id }}").then(renderpage);
         </script>
 
           {% else %}

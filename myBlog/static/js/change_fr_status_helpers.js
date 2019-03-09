@@ -20,7 +20,7 @@ function sendFRrequest(fr_id,status){
     }
     let body = JSON.stringify(change_status_form);
 
-    let url = "/myBlog/localfriendrequest/";
+    let url = "/myBlog/friendrequest/";
     return fetch(url,{
         method:"PUT",
         mode:"cors",
