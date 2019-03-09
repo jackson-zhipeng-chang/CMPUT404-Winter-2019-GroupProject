@@ -162,22 +162,30 @@ function renderpage(data){
     // traverse data, render posts
     for (let i=0;i<data['posts'].length;i++){
         let posts = data['posts'][i];
+        console.log(posts);
         let postsDiv = document.createElement('div');
         authorDiv.appendChild(postsDiv);
 
         let contentDiv = document.createElement('div');
         contentDiv.innerHTML = posts['content'];
         postsDiv.appendChild(contentDiv);
-
-        let commentDiv = document.createElement('div');
-        commentDiv.innerHTML = posts['comments'];
-        commentDiv.style.fontSize='0.5em';
-        postsDiv.appendChild(commentDiv);
-
         let public_time = document.createElement('div');
         public_time.innerHTML = posts['published'];
         public_time.style.fontSize='0.8em';
         postsDiv.appendChild(public_time);
+
+        // render all comments
+        var commentContent = posts['comments'];
+        for (let j=0; j<commentContent.length; j++){
+            let commentDiv = document.createElement('div');
+            commentDiv.innerHTML = commentContent[j]['comment'];
+            commentDiv.style.fontSize='0.5em';
+            postsDiv.appendChild(commentDiv);
+
+        }
+
+
+
 
         let line = document.createElement('hr');
         line.classList.add('w3-clear');
