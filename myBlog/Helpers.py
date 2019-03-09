@@ -120,3 +120,7 @@ def my_posts(request):
 
 def friend_request(request):
     return render(request,'friendrequest.html')
+
+
+def my_friends(request):
+    return render(request, 'myfriend.html')
