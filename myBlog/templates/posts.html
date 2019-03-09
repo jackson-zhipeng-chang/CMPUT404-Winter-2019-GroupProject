@@ -1,8 +1,3 @@
-{% extends 'base.html' %}
-{% block content %}
-
-{% if user.is_authenticated %}
-
 <div id="holder">
   <!-- <div class="w3-container w3-card w3-white w3-round w3-margin"><br>
     <i class="fa fa-user" class="w3-left w3-circle w3-margin-right" style="width:60px"></i>
@@ -129,20 +124,7 @@ function display(data) {
       nextButton.onclick=function(){getAllPosts(data.previous).then(display)} ;
       holder.appendChild(nextButton);
     }
-
   }
   getAllPosts("{{url}}").then(display);
 
 </script>
-  {% else %}
-  <div class="w3-card w3-round w3-white" style="width:30%;margin:auto;margin-top: 5%;">
-    <div class="w3-container w3-padding">
-      <div class="w3-center">
-        <h3>You are not logged in</h3>
-        <a href="{% url 'login' %}" class="w3-button w3-theme-d1 w3-margin-bottom"><i class="fa fa-sign-in"></i>  Login</a>
-        <a href="{% url 'signup' %}" class="w3-button w3-theme-d1 w3-margin-bottom"><i class="fa fa-angle-double-up"></i> Sign up</a>
-      </div>
-    </div>
-  </div>
-{% endif %}
-{% endblock %}
