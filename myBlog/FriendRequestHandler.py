@@ -49,6 +49,8 @@ class FriendRequestHandler(APIView):
                 else:
                     return Response("You are already friends", status=status.HTTP_400_BAD_REQUEST)
             else:
+                print(current_user_uuid)
+                print(author_id)
                 return Response("Please login to correct account", status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response("You are not sending the friendrequest with the correct format. Missing 'query': 'friendrequest'",status=status.HTTP_400_BAD_REQUEST)  

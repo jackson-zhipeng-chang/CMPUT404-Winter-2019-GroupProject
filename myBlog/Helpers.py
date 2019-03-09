@@ -19,7 +19,7 @@ def get_host_from_request(request):
 # https://docs.djangoproject.com/en/2.1/ref/request-response/
     host = request.scheme+"://"+request.get_host()
     return host
-    
+
 def get_current_user_uuid(request):
     if (not User.objects.filter(pk=request.user.id).exists()):
         return Response("User coudn't find", status=404)
@@ -41,7 +41,7 @@ def verify_current_user_to_post(post, request):
     else:
         if User.objects.filter(pk=request.user.id).exists():
             current_user_uuid = get_current_user_uuid(request)
-            if current_user_uuid == post_author: 
+            if current_user_uuid == post_author:
                 return True
             else:
                 if post_visibility == 'PUBLIC':
@@ -83,7 +83,7 @@ def get_friends(current_user_uuid):
         if friend not in friends_list:
             friends_list.append(friend.author)
     return friends_list
-          
+
 def get_followings():
     return True
 
