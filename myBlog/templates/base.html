@@ -1,14 +1,21 @@
 <!-- templates/base.html -->
 <!DOCTYPE html>
 <html>
-<script>
-    var csrf_token = '{{ csrf_token }}';
-</script>
+<script>var csrf_token = '{{ csrf_token }}';</script>
 {% load staticfiles %}
+<script src="{% static "js/new_post_helper.js" %}"></script>
+<script src="{% static "js/posts_list_helper.js" %}"></script>
+<script src="{% static "js/change_fr_status_helpers.js" %}"></script>
 <link rel="stylesheet" type="text/css" href="/static/css/stylew3.css" />
 <link rel="stylesheet" href="https://www.w3schools.com/lib/w3-theme-blue-grey.css">
 <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Open+Sans'>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<!-- https://stackoverflow.com/questions/30190588/html-select-multiple-as-dropdown answered Feb 10 '17 at 19:35 mgroat-->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script src="https://cdn.rawgit.com/harvesthq/chosen/gh-pages/chosen.jquery.min.js"></script>
+<link href="https://cdn.rawgit.com/harvesthq/chosen/gh-pages/chosen.min.css" rel="stylesheet"/>
+<!-- https://stackoverflow.com/questions/30190588/html-select-multiple-as-dropdown answered Feb 10 '17 at 19:35 mgroat-->
+
 <head>
   <meta charset="utf-8">
   <title>{% block title %}Login page{% endblock %}</title>
@@ -19,35 +26,34 @@
       <a class="w3-bar-item w3-button w3-hide-medium w3-hide-large w3-right w3-padding-large w3-hover-white w3-large w3-theme-d2" href="javascript:void(0);" onclick="openNav()"><i class="fa fa-bars"></i></a>
       <a href="/myBlog/all" class="w3-bar-item w3-button w3-padding-large w3-theme-d4"><i class="fa fa-home w3-margin-right"></i>myBlog</a>
       <a href="/myBlog/newpost" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" title="News"><i class="fa fa-pencil"></i></a>
+    {% if user.is_authenticated %}
       <div class="w3-dropdown-hover w3-hide-small" id="dropdown-hover">
         <button class="w3-button w3-padding-large" title="Notifications" onclick="window.location.href ='/myBlog/frlist';">
             <i class="fa fa-bell"></i>
             <span class="w3-badge w3-right w3-small w3-green" id="FR">0</span>
         </button>
-        <div class="w3-dropdown-content w3-card-4 w3-bar-block" id="FRdropdown" style="width:300px">
+        <div class="w3-dropdown-content w3-card-4 w3-bar-block " id="FRdropdown" style="width:300px">
           <a href="/myBlog/frlist/" class="w3-bar-item w3-button" id="dropdown">Zero new friend request</a>
 
         </div>
       </div>
-
-
       <div class="w3-dropdown-hover w3-hide-small w3-right">
         <button class="w3-button w3-padding-large" title="Account">{{user.username}}<i class="fa fa-user w3-margin-left"></i></button>
         <div class="w3-dropdown-content w3-card-4 w3-bar-block " style="right:0;width:100px">
+        <a href="/myBlog/myposts" class="w3-bar-item w3-button">My Posts</a>
+        <a href="/myBlog/myposts" class="w3-bar-item w3-button">My Friends</a>
         <a href="/myBlog/myprofile" class="w3-bar-item w3-button">My Profile</a>
-        <a href="/myBlog/logout" class="w3-bar-item w3-button">Log Out</a>
-       </div>
-      </div>
-    </div>
+        <a href="/myBlog/logout" class="w3-bar-item w3-button">Log Out</a></div>
+        </div>
+        <script src="{% static "js/send_periodic_request_helpers.js" %}"></script>
+    {% endif %}
+   </div>
   </div>
   <main>
     {% block content %}
 
     {% endblock %}
   </main>
-  <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-  <script src="{% static "js/app.js" %}"></script>
-  <script src="{% static "js/send_periodic_request_helpers.js" %}"></script>
 
 </body>
 </html>

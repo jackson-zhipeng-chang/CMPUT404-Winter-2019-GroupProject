@@ -23,7 +23,6 @@ class FriendQueryHandler(APIView):
     def get(self, request, user_id, format=None):
         if (not Author.objects.filter(id=user_id).exists()):
             return Response("Author coudn't find", status=404)
-
         else:
             author_object = Author.objects.get(id=user_id)
             friendsDirect = Friend.objects.filter(Q(author=author_object), Q(status='Accept'))
@@ -43,6 +42,5 @@ class FriendQueryHandler(APIView):
             responsBody = { 
             "query":"friends",
             "authors":friends_list,
-            "friends": True
             }
             return Response(responsBody, status=status.HTTP_200_OK)

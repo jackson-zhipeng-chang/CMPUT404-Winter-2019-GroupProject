@@ -19,16 +19,18 @@ def get_host_from_request(request):
 # https://docs.djangoproject.com/en/2.1/ref/request-response/
     host = request.scheme+"://"+request.get_host()
     return host
-    
+
 def get_current_user_uuid(request):
     if (not User.objects.filter(pk=request.user.id).exists()):
-        print(request.user.id)
-        print("User coudn't find")
         return Response("User coudn't find", status=404)
+
     else:
         current_user = User.objects.get(pk=request.user.id)
-        author = get_object_or_404(Author, user=current_user)
-        return author.id
+        if (not Author.objects.filter(user=current_user).exists()):
+            return Response("Author coudn't find", status=404)
+        else:
+            author = get_object_or_404(Author, user=current_user)
+            return author.id
 
 def verify_current_user_to_post(post, request):
     post_visibility = post.visibility
@@ -39,7 +41,7 @@ def verify_current_user_to_post(post, request):
     else:
         if User.objects.filter(pk=request.user.id).exists():
             current_user_uuid = get_current_user_uuid(request)
-            if current_user_uuid == post_author: 
+            if current_user_uuid == post_author:
                 return True
             else:
                 if post_visibility == 'PUBLIC':
@@ -69,9 +71,19 @@ def verify_current_user_to_post(post, request):
             else:
                 return False
 
-def get_friends():
-    return True
-          
+def get_friends(current_user_uuid):
+    author_object = Author.objects.get(id=current_user_uuid)
+    friendsDirect = Friend.objects.filter(Q(author=author_object), Q(status='Accept'))
+    friendsIndirect = Friend.objects.filter(Q(friend=author_object), Q(status='Accept'))
+    friends_list = []
+    for friend in friendsDirect:
+        if friend not in friends_list:
+            friends_list.append(friend.friend)
+    for friend in friendsIndirect:
+        if friend not in friends_list:
+            friends_list.append(friend.author)
+    return friends_list
+
 def get_followings():
     return True
 
@@ -96,11 +108,15 @@ def check_author1_follow_author2(author1_id,author2_id):
         return False
 
 def posts_list(request):
-    return render(request, 'posts.html')
+    url = "/myBlog/author/posts/?size=10"
+    return render(request, 'posts.html', {"url":url, "trashable":"false"})
 
 def new_post(request):
     return render(request, 'newpost.html')
 
+def my_posts(request):
+    url = "/myBlog/posts/mine/?size=10"
+    return render(request, 'posts.html', {"url":url, "trashable":"true"})
+
 def friend_request(request):
     return render(request,'friendrequest.html')
-

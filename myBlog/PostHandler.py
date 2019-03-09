@@ -1,3 +1,4 @@
+import markdown
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404, render,get_list_or_404
@@ -9,6 +10,8 @@ from django.http import HttpResponse, JsonResponse
 from django.db.models import Q
 from rest_framework.parsers import JSONParser, MultiPartParser
 from . import Helpers
+from uuid import UUID
+
 
 class NewPostHandler(APIView):
     def post(self, request, format=None):
@@ -16,6 +19,8 @@ class NewPostHandler(APIView):
         author = Helpers.get_author_or_not_exits(current_user_uuid)
         origin = Helpers.get_host_from_request(request)
         data = request.data
+        if (data["contentType"] == "text/markdown"):
+            data["content"] = markdown.markdown(data["content"])
         serializer = PostSerializer(data=data, context={'author': author,'origin': origin})
         if serializer.is_valid():
             serializer.save()
@@ -34,9 +39,7 @@ class NewPostHandler(APIView):
 class PostHandler(APIView):
     def get(self, request,postid, format=None):
         if (not Post.objects.filter(pk=postid).exists()):
-
             return Response("Post couldn't find", status=404)
-
         else:
             post = Post.objects.get(pk=postid)
             serializer = PostSerializer(post)
@@ -51,7 +54,6 @@ class PostHandler(APIView):
                     return JsonResponse(serializer.data, status=200)
                 else:
                     return HttpResponse("You don't have the access to the post",status=404)
-  
     def put(self, request, postid, format=None):
         if (not Post.objects.filter(pk=postid).exists()):
             return Response("Post coudn't find", status=404)
@@ -73,7 +75,6 @@ class PostHandler(APIView):
     def delete(self, request, postid, format=None):
         if (not Post.objects.filter(pk=postid).exists()):
             return Response("Post coudn't find", status=404)
-            
         else:
             post = Post.objects.get(pk=postid)
             current_user_uuid = Helpers.get_current_user_uuid(request)
@@ -89,23 +90,58 @@ class PostHandler(APIView):
 # https://stackoverflow.com/questions/6567831/how-to-perform-or-condition-in-django-queryset
 # https://github.com/belatrix/BackendAllStars/blob/master/employees/views.py
 # https://github.com/belatrix/BackendAllStars/blob/master/employees/serializers.py
+# https://stackoverflow.com/questions/2658291/get-list-or-404-ordering-in-django
 class PostToUserHandlerView(APIView):
     def get(self, request, format=None):
         current_user_uuid = Helpers.get_current_user_uuid(request)
-# https://stackoverflow.com/questions/2658291/get-list-or-404-ordering-in-django
-        posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(author_id=current_user_uuid) | Q(visibility='PUBLIC'))
-        paginator = CustomPagination()
-        results = paginator.paginate_queryset(posts_list, request)
-        serializer=PostSerializer(results, many=True)
-        return paginator.get_paginated_response(serializer.data) 
+        if type(current_user_uuid) == UUID:
+            public_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(author_id=current_user_uuid)| Q(visibility='PUBLIC'))
+            friends_list = Helpers.get_friends(current_user_uuid)
+            friend_posts_list=[]  
+            private_posts_list=[]
+            for friend in friends_list:
+                if (Post.objects.filter(author_id=friend.id).exists()):
+                    friend_posts_list+=get_list_or_404(Post.objects.order_by('-published'), Q(author_id=friend.id), Q(visibility='FRIENDS'))
+
+            for friend in friends_list:
+                if (Post.objects.filter(Q(author_id=friend.id), Q(visibility='PRIVATE')).exists()):
+                    private_list = get_list_or_404(Post.objects.order_by('-published'), Q(author_id=friend.id), Q(visibility='PRIVATE'))
+                    for post in private_list:
+                        if str(current_user_uuid) in post.visibleTo:
+                            private_posts_list.append(post)
+            
+            posts_list = public_posts_list+ friend_posts_list + private_posts_list
+            posts_list.sort(key=lambda x: x.published, reverse=True) # https://stackoverflow.com/questions/403421/how-to-sort-a-list-of-objects-based-on-an-attribute-of-the-objects answered Dec 31 '08 at 16:42 by Triptych
+            paginator = CustomPagination()
+            results = paginator.paginate_queryset(posts_list, request)
+            serializer=PostSerializer(results, many=True)
+            return paginator.get_paginated_response(serializer.data) 
+        else:
+            return current_user_uuid
 
 
 # https://stackoverflow.com/questions/19360874/pass-url-argument-to-listview-queryset
 class PostToUserIDHandler(APIView):
     def get(self, request, user_id, format=None):
         current_user_uuid = Helpers.get_current_user_uuid(request)
-        posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(author_id=user_id), Q(visibility='PUBLIC'))
-        paginator = CustomPagination()
-        results = paginator.paginate_queryset(posts_list, request)
-        serializer=PostSerializer(results, many=True)
-        return paginator.get_paginated_response(serializer.data)  
+        if type(current_user_uuid) == UUID:
+            posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(author_id=user_id)| Q(visibility='PUBLIC'))
+            paginator = CustomPagination()
+            results = paginator.paginate_queryset(posts_list, request)
+            serializer=PostSerializer(results, many=True)
+            return paginator.get_paginated_response(serializer.data)  
+        else:
+            return current_user_uuid
+
+# For local using only
+class MyPostHandler(APIView):
+    def get(self, request, format=None):
+        current_user_uuid = Helpers.get_current_user_uuid(request)
+        if type(current_user_uuid) == UUID:
+            posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(author_id=current_user_uuid))
+            paginator = CustomPagination()
+            results = paginator.paginate_queryset(posts_list, request)
+            serializer=PostSerializer(results, many=True)
+            return paginator.get_paginated_response(serializer.data)  
+        else:
+            return current_user_uuid

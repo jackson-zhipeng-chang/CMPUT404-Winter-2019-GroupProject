@@ -5,10 +5,10 @@
 {% block content %}
 {% if user.is_authenticated %}
   <div>
-    <h1 class="secondary-color">Hi {{ user.username }}!</h1>
+    <h1 class="secondary-color">Hi {{ user.username }}! What's on your mind today?</h1>
     <div class="w3-card w3-round w3-white">
     <div class="w3-container w3-padding">
-        <form action="" method="POST" >Post type</br>
+        <form action="" method="POST" >Post type<br>
         <select name="content-type" id=post-contenttype onchange="enableInput()">
           <option value="text/plain" selected>Plain text</option>
           <option value="text/markdown">Markdonw</option>
@@ -25,26 +25,33 @@
         <h4>Categories</h4>
         <input class="w3-border w3-padding" type="text" name="Title" placeholder="Categories" id=post-categories><br>
         <br>
-        <form>Who do you want to share with?</br>
-        <select name="visibility" id=post-visibility>
+        <form>Who do you want to share with?<br>
+        <select name="visibility" id="post-visibility" onchange="enableVisibleTo()">
           <option value="PUBLIC" selected>PUBLIC</option>
           <option value="FOAF">FOAF</option>
           <option value="FRIENDS">FRIENDS</option>
-          <option value="PRIVATE">PRIVATE</option>
+          <option value="PRIVATE">PRIVATE TO</option>
           <option value="SERVERONLY">SERVERONLY</option>
         </select>
         </form>
-        <h4>VisibleTo</h4>
-        <input class="w3-border w3-padding" type="text" name="VisibleTo" placeholder="VisibleTo" id=post-visibleto>
+        <br>
+        <!-- Reference: https://stackoverflow.com/questions/30190588/html-select-multiple-as-dropdown answered Feb 10 '17 at 19:35 mgroat-->
+      <form method="post" enctype="multipart/form-data">
+        <select id= "friendsoptions" data-placeholder="Only avaliable when PRIVATE TO selected" multiple="true" class="chosen-select" name="friends" disabled="true">
+        </select>
+        <script>$(".chosen-select").chosen({width: "35%"});</script>
+      </form>          
+        <!-- Reference:
+        https://harvesthq.github.io/chosen/#change-update-events 
+        https://stackoverflow.com/questions/30190588/html-select-multiple-as-dropdown answered Feb 10 '17 at 19:35 mgroat
+        -->
         <br>
         <br>
         <!-- Reference: https://simpleisbetterthancomplex.com/tutorial/2016/08/01/how-to-upload-files-with-django.html  
         https://stackoverflow.com/questions/14007629/document-getelementbyidremember-visibility-hidden-not-working-on-a-chec-->
         <form method="post" enctype="multipart/form-data" id = "post-image" style="visibility:hidden;">
-        {% csrf_token %}
         <input type="file" name="myfile" id="my-file" onchange="previewFile()">
         <img src="" height="200" alt="Image preview...">
-
         </form>
         <br>
         Unlisted? 

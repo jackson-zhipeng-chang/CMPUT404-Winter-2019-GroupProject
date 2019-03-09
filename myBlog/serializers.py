@@ -65,7 +65,6 @@ class CustomPagination(PageNumberPagination):
 
 class AuthorSerializer(serializers.ModelSerializer):
     url = serializers.SerializerMethodField()
-
     class Meta:
         model = Author
         fields = ('id','displayName', 'url','host', 'github')
@@ -152,3 +151,19 @@ class CommentSerializer(serializers.ModelSerializer):
         comment = Comment.objects.create(author=author, postid=postid, **validated_data)
         comment.save()
         return comment
+
+class AuthorProfileSerializer(serializers.ModelSerializer):
+    url = serializers.SerializerMethodField()
+    friends = serializers.SerializerMethodField()
+    class Meta:
+        model = Author
+        fields = ('id','host','displayName', 'url', 'github', 'friends')
+
+    def get_url(self, obj):
+        url = obj.host+"/myBlog/author/"+str(obj.id)
+        return url
+
+    def get_friends(self, obj):
+        friends = Author.objects.filter(id=obj.id)
+        serializer = AuthorSerializer(friends, many=True)
+        return serializer.data
