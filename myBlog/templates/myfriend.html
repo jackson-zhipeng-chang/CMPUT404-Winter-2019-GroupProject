@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block content %}
+
+{% if user.is_authenticated %}
+<div id="holder">
+
+</div>
+
+
+<script>
+
+	function display(data) {
+		for (var i = 0; i < data.length; i++) {
+      		var friend = document.createElement("div");
+      		friend.classList.add("w3-container", "w3-card", "w3-white", "w3-round", "w3-margin");
+      		holder.appendChild(friend);
+      		var userLogo = document.createElement("i");
+      		userLogo.classList.add("fa", "fa-user");
+      		userLogo.classList.add("w3-left", "w3-circle", "w3-margin-right");
+      		userLogo.style.width = "20px";
+      		userLogo.style.margin = "25px";
+      		friend.appendChild(userLogo);
+
+      		var name = document.createElement("h3");
+      		name.innerHTML = "Name: " + data[i].displayName;
+      		name.style.margin = "14px";
+      		friend.appendChild(name);
+
+      		var id = document.createElement("p");
+      		id.innerHTML = "Id: " + data[i].id;
+                  id.style.margin = "14px";
+      		friend.appendChild(id);
+
+      		var line = document.createElement("hr");
+      		line.classList.add("w3-clear");
+      		friend.appendChild(line);
+
+      		var divDescription = document.createElement("div");
+      		//divDescription.classList.add("w3-row-padding");
+      		//divDescription.style.margin = "0 20px";
+                  divDescription.style.margin = "14px"
+      		friend.appendChild(divDescription);
+
+      		var url = document.createElement("p");
+      		url.innerHTML ="url: " + data[i].url;
+      		//url.classList.add("w3-row-padding");
+                  url.style.marginLeft = "48px";
+      		divDescription.appendChild(url);
+
+      		var github = document.createElement("p");
+      		github.innerHTML = data[i].github;
+      		divDescription.appendChild(github);
+
+
+            }
+      }
+
+getAllFriends("/myBlog/myfriends/").then(display);
+
+</script>
+
+{% else %}
+<div class="w3-card w3-round w3-white" style="width:30%;margin:auto;margin-top: 5%;">
+	<div class="w3-container w3-padding">
+		<div class="w3-center">
+			<h3>You are not logged in</h3>
+			<a href="{% url 'login' %}" class="w3-button w3-theme-d1 w3-margin-bottom"><i class="fa fa-sign-in"></i>  Login</a>
+			<a href="{% url 'signup' %}" class="w3-button w3-theme-d1 w3-margin-bottom"><i class="fa fa-angle-double-up"></i> Sign up</a>
+		</div>
+	</div>
+</div>
+{% endif %}
+{% endblock %}
+
+

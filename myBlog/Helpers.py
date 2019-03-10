@@ -143,3 +143,6 @@ def friend_request(request):
 def author_details(request,author_id):
     current_user_id = get_current_user_uuid(request)
     return render(request,'authordetails.html',{'authorid':author_id,'current_user_id':current_user_id})
+
+def my_friends(request):
+    return render(request, 'myfriend.html')
