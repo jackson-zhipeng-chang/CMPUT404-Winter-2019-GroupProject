@@ -102,7 +102,8 @@ class PostToUserHandlerView(APIView):
             for friend in friends_list:
                 print(friend.displayName)
                 if (Post.objects.filter(author_id=friend.id).exists()):
-                    friend_posts_list+=get_list_or_404(Post.objects.order_by('-published'), Q(author_id=friend.id), Q(visibility='FRIENDS'))
+                    # it is | here, not a comma.
+                    friend_posts_list+=get_list_or_404(Post.objects.order_by('-published'), Q(author_id=friend.id) | Q(visibility='FRIENDS'))
             print(friend_posts_list)
             posts_list = public_posts_list+ friend_posts_list
             posts_list.sort(key=lambda x: x.published, reverse=True) # https://stackoverflow.com/questions/403421/how-to-sort-a-list-of-objects-based-on-an-attribute-of-the-objects answered Dec 31 '08 at 16:42 by Triptych

@@ -13,8 +13,10 @@ class FriendStatusQueryHandler(APIView):
         current_user_uuid = Helpers.get_current_user_uuid(request)
         current_user_object = Author.objects.get(id=current_user_uuid)
         friend_object = Author.objects.get(id=author_id)
-        relation_author_to_friend = Friend.objects.filter(Q(author=current_user_object) & Q(friend=friend_object) & Q(status='Aceept'))
-        relation_friend_to_author = Friend.objects.filter(Q(author=friend_object) & Q(friend=current_user_object) & Q(status='Aceept'))
+
+        relation_author_to_friend = Friend.objects.filter(author=current_user_object,friend=friend_object ,status='Accept')
+        relation_friend_to_author = Friend.objects.filter(author=friend_object,friend=current_user_object,status='Accept')
+
         if relation_author_to_friend or relation_friend_to_author:
             responseBody = {
                 "query":"friends",
