@@ -2,13 +2,11 @@
 var encoded_img="";
 function previewFile()
 {
-    var preview = document.querySelector('img'); 
     var file = document.querySelector('input[type=file]').files[0]; 
     var reader  = new FileReader();
     reader.onloadend = function () 
     {
-        preview.src = reader.result;
-        encoded_img = preview.src;
+        encoded_img = reader.result;
         document.getElementById("post-content").value = encoded_img;
         let selectedType = document.getElementById("post-contenttype").value;
         if (! encoded_img.includes(selectedType))
@@ -19,10 +17,6 @@ function previewFile()
     if (file) 
     {
         reader.readAsDataURL(file); //reads the data as a URL
-    } 
-    else 
-    {
-        preview.src = "";
     }
 }
 
@@ -52,12 +46,13 @@ function enableInput()
     {
         alert("Since you selected img, you will not be able to add content");
         document.getElementById("post-content").readOnly  = true;
-        document.getElementById("post-image").style.visibility = "visible";
+        document.getElementById("my-file").disabled = false;
     }
     else
     {
         document.getElementById("post-content").readOnly  = false;
-        document.getElementById("post-image").style.visibility = "hidden";
+        document.getElementById("my-file").disabled = true;
+        document.getElementById("post-content").value = "";
 
     }
 }
@@ -181,7 +176,7 @@ function post()
         } 
         else 
         {
-            alert("Something went wrong: " + response.status);
+            alert("Something went wrong: " +  response.status);
         }
     }); 
 

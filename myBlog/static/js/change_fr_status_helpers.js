@@ -32,8 +32,9 @@ function sendFRrequest(fr_id,status){
         },
         redirect: "follow",
         referrer: "no-referrer",
-    }).then(data=>console.log(data))
-        .then(document.location.reload(true));
+    })
+    .then(data=>console.log(data))
+    .then(document.location.reload(true));
 }
 
 function content_page(data){

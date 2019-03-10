@@ -326,7 +326,6 @@ class TestViews(TestCase):
         response = self.client.get(comment_url)
         self.assertEquals(response.status_code,200)
         content = json.loads(response.content)
-        print(content)
         self.assertEquals(content['comments'][0]['comment'],'this is comment from author2')
 
     def test_Post_To_User_HandlerView(self):
