@@ -50,5 +50,6 @@ urlpatterns = [
     path('myfriends/', FriendRequestHandler.MyFriends.as_view(), name='myfriends'),
     path('myfriendslist/', Helpers.my_friends, name='myfriendslist'),
     path('frlist/',Helpers.friend_request,name='requestlist'),
+    path('authordetails/<author_id>/',Helpers.author_details,name='authordetails'),
     path('', Helpers.posts_list, name='home'),
 ]

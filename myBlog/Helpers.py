@@ -107,6 +107,36 @@ def check_author1_follow_author2(author1_id,author2_id):
     else:
         return False
 
+
+def is_my_friend(current_user_id, author_id):
+    current_user_object = Author.objects.get(id=current_user_id)
+    friend_object = Author.objects.get(id=author_id)
+
+    relation_curUser_to_frined = Friend.objects.filter(author=current_user_object, friend=friend_object,
+                                                       status="Accept")
+    relation_friend_to_curUser = Friend.objects.filter(author=friend_object, friend=current_user_object,
+                                                       status="Accept")
+
+    if relation_curUser_to_frined or relation_friend_to_curUser:
+        return 'true'
+    else:
+        return 'false'
+
+
+def get_follow_status(current_user_id, author_id):
+    current_user_object = Author.objects.get(id=current_user_id)
+    friend_object = Author.objects.get(id=author_id)
+
+    try:
+        relation_curUser_to_friend = Friend.objects.filter(author=current_user_object,friend=friend_object)[0]
+        current_status = relation_curUser_to_friend.status
+        return current_status
+    except:
+        current_status = 'notFound'
+        return current_status
+
+
+
 def posts_list(request):
     url = "/myBlog/author/posts/?size=10"
     return render(request, 'posts.html', {"url":url, "trashable":"false"})
@@ -124,3 +154,12 @@ def friend_request(request):
 
 def my_friends(request):
     return render(request, 'myfriend.html')
+
+def author_details(request,author_id):
+    current_user_id = get_current_user_uuid(request)
+    current_user_name = Author.objects.get(pk=current_user_id).displayName
+    is_friend = is_my_friend(current_user_id,author_id)
+    follow_status = get_follow_status(current_user_id,author_id)
+    return render(request,'authordetails.html',{'authorid':author_id,'current_user_id':current_user_id,
+                                                'is_friend':is_friend,'followStatus':follow_status,
+                                                'current_user_name':current_user_name})
