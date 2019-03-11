@@ -26,7 +26,6 @@ class AuthorProfileHandler(APIView):
             serializer = AuthorSerializer(author)
             return JsonResponse(serializer.data)
         except Exception as e:
-            print(e)
             return HttpResponse(status=404)
 
 
