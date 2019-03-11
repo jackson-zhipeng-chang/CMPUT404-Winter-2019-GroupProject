@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Friend Request{% endblock %}
+{% block title %}Author Details{% endblock %}
 
 {% block content %}
     {% if user.is_authenticated %}
@@ -11,7 +11,8 @@
         <script>
 
         // get friend request list then render the page.
-        getFR_List("{% url "friendrequest" %}").then(content_page);
+        // authorid = the id of the author i want to see
+        getAuthorDetails("{{authorid}}","{{ current_user_id }}","{{ is_friend }}","{{ followStatus }}").then(renderpage);
         </script>
 
           {% else %}

@@ -21,9 +21,14 @@ from . import Helpers
 
 class AuthorProfileHandler(APIView):
     def get(self, request, user_id, format=None):
-        author = Helpers.get_author_or_not_exits(user_id)
-        serializer = AuthorSerializer(author)
-        return JsonResponse(serializer.data)
+        try:
+            author = Helpers.get_author_or_not_exits(user_id)
+            serializer = AuthorSerializer(author)
+            return JsonResponse(serializer.data)
+        except Exception as e:
+            print(e)
+            return HttpResponse(status=404)
+
 
     def put(self, request, user_id, format=None):
         data = request.data
