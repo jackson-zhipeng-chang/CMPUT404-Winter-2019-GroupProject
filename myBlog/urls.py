@@ -41,7 +41,7 @@ urlpatterns = [
     path('login/', Accounts.LoginView.as_view(), name='login'),
     path('logout/', Accounts.logout_user, name='logout'),
     path('signup/', Accounts.signup, name='signup'),
-    path('all/', Helpers.posts_list, name='postslist'),
+    path('all/', Helpers.home, name='postslist'),
     path('newpost/', Helpers.new_post, name='newpost'),
     path('myprofile/', AuthorProfileHandler.MyProfileHandler.as_view(), name='myprofile'),
     path('posts/mine/',  PostHandler.MyPostHandler.as_view(), name='myposts_view'),
@@ -49,5 +49,5 @@ urlpatterns = [
     path('myfriends/', FriendRequestHandler.MyFriends.as_view(), name='myfriends'),
     path('myfriendslist/', Helpers.my_friends, name='myfriendslist'),
     path('frlist/',Helpers.friend_request,name='requestlist'),
-    path('', Helpers.posts_list, name='home'),
+    path('', Helpers.home, name='home'),
 ]

@@ -107,20 +107,27 @@ def check_author1_follow_author2(author1_id,author2_id):
     else:
         return False
 
-def posts_list(request):
-    url = "/myBlog/author/posts/?size=10"
-    return render(request, 'homepage.html', {"url":url, "trashable":"false"})
+def home(request):
+    current_user_uuid = get_current_user_uuid(request)
+    try:
+        user_author = Author.objects.get(id=current_user_uuid)
+        author_github = user_author.github
+        github_id = author_github.replace("https://github.com/","")
+        posts_url = "/myBlog/author/posts/?size=10"
+        github_url = "https://api.github.com/users/%s/events/public"%github_id
+        return render(request, 'homepage.html', {"posts_url":posts_url, "github_url":github_url, "trashable":"false"})
+    except Exception as e:
+        return render(request, 'homepage.html')
 
 def new_post(request):
     return render(request, 'newpost.html')
 
 def my_posts(request):
-    url = "/myBlog/posts/mine/?size=10"
-    return render(request, 'posts.html', {"url":url, "trashable":"true"})
+    posts_url = "/myBlog/posts/mine/?size=10"
+    return render(request, 'posts.html', {"posts_url":posts_url, "trashable":"true"})
 
 def friend_request(request):
     return render(request,'friendrequest.html')
-
 
 def my_friends(request):
     return render(request, 'myfriend.html')

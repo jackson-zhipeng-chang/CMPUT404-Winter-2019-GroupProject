@@ -160,7 +160,6 @@ function post()
     }
     let body = JSON.stringify(form);
     let url =  get_host()+"/myBlog/posts/";
-    console.log(body);
     return fetch(url, {
         method: "POST", 
         mode: "cors", 

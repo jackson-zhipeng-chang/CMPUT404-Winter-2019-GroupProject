@@ -5,14 +5,12 @@ function getFriendReuqest(){
         url:"/myBlog/friendrequest/",
         type:"get",
         success:function(data){
-            // console.log(data);
             let reqeustNum =  data.length;
             let fRsign = document.querySelector('#FR');
             fRsign.innerHTML = reqeustNum;
 
         },
         complete:function(data){
-            console.log('complete');
             setTimeout(getFriendReuqest,5000);
         },
         error:function(){
