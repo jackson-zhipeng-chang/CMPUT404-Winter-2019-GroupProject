@@ -8,6 +8,7 @@ from django.contrib.auth.models import User
 from django.views import generic
 from django.db.models import Q
 from django.shortcuts import render
+from uuid import UUID
 
 def get_author_or_not_exits(current_user_uuid):
     if (not Author.objects.filter(id=current_user_uuid).exists()):
@@ -109,14 +110,18 @@ def check_author1_follow_author2(author1_id,author2_id):
 
 def home(request):
     current_user_uuid = get_current_user_uuid(request)
-    try:
+
+    if type(current_user_uuid) == UUID:
         user_author = Author.objects.get(id=current_user_uuid)
         author_github = user_author.github
-        github_id = author_github.replace("https://github.com/","")
+        if author_github is not None:
+            github_id = author_github.replace("https://github.com/","")
+            github_url = "https://api.github.com/users/%s/events/public"%github_id
+        else:
+            github_url = "null"
         posts_url = "/myBlog/author/posts/?size=10"
-        github_url = "https://api.github.com/users/%s/events/public"%github_id
         return render(request, 'homepage.html', {"posts_url":posts_url, "github_url":github_url, "trashable":"false"})
-    except Exception as e:
+    else:
         return render(request, 'homepage.html')
 
 def is_my_friend(current_user_id, author_id):
