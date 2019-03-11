@@ -1,6 +1,6 @@
 # CMPUT404-Winter-2019-GroupProject
 
-![Lagoon](/doc/images/lagoon.png)
+![Lagoon](docs/images/lagoon.png)
 
 | Build Status | Coverage Status | Documentation Status | 
 | ------------ | ----------- | --------------- | 
