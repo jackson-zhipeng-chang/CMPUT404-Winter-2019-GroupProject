@@ -18,13 +18,16 @@
 
         <h4>Post title</h4>
         <input class="w3-border w3-padding" type="text" name="Title" placeholder="My title" id=post-title><br>
+
         <h4>Post content</h4>
         <textarea style="width: 100%; height:10em;"class="w3-border w3-padding" type="text" name="Title" placeholder="What's on your mind?" id=post-content></textarea>
+
         <h4>Description</h4>
         <input class="w3-border w3-padding" type="text" name="Title" placeholder="Description" id=post-description><br>
+        
         <h4>Categories</h4>
         <input class="w3-border w3-padding" type="text" name="Title" placeholder="Categories" id=post-categories><br>
-        <br>
+        
         <form>Who do you want to share with?<br>
         <select name="visibility" id="post-visibility" onchange="enableVisibleTo()">
           <option value="PUBLIC" selected>PUBLIC</option>
@@ -35,6 +38,7 @@
         </select>
         </form>
         <br>
+
         <!-- Reference: https://stackoverflow.com/questions/30190588/html-select-multiple-as-dropdown answered Feb 10 '17 at 19:35 mgroat-->
       <form method="post" enctype="multipart/form-data">
         <select id= "friendsoptions" data-placeholder="Only avaliable when PRIVATE TO selected" multiple="true" class="chosen-select" name="friends" disabled="true">
@@ -50,8 +54,8 @@
         https://stackoverflow.com/questions/14007629/document-getelementbyidremember-visibility-hidden-not-working-on-a-chec-->
         <form method="post" enctype="multipart/form-data" id = "post-image">
         <input type="file" name="myfile" id="my-file" onchange="previewFile()" disabled="true">
-        </form>
-        <br>
+        </form><br>
+        
         Unlisted? 
         Yes: <input name="unlisted" value="Yes" type="radio"/>
         No: <input name="unlisted" value="No" type="radio" checked/>

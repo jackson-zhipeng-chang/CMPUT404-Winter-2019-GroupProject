@@ -133,6 +133,7 @@ class PostToUserIDHandler(APIView):
         else:
             return current_user_uuid
 
+
 # For local using only
 class MyPostHandler(APIView):
     def get(self, request, format=None):

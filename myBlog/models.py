@@ -2,10 +2,10 @@ from django.db import models
 import uuid
 from django.contrib.auth.models import User
 
-
 # When create a new model, run migration as follow:
 # python3 manage.py makemigrations
 # python3 manage.py migrate
+
 
 class Author(models.Model):
     # https://blog.csdn.net/laikaikai/article/details/80563387
@@ -38,10 +38,8 @@ class Friend(models.Model):
     class Meta:
         unique_together = ('author', 'friend',)
 
-
     def __str__(self):
         return "Friend request from %s to %s"%(self.author, self.friend)
-
 
 
 class Post(models.Model):
