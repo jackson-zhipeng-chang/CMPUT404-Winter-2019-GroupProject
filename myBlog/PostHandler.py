@@ -105,8 +105,6 @@ class PostToUserHandlerView(APIView):
 
             for friend in friends_list:
                 if (Post.objects.filter(Q(author_id=friend.id), Q(visibility='PRIVATE')).exists()):
-
-
                     private_list = get_list_or_404(Post.objects.order_by('-published'), Q(author_id=friend.id),Q(visibility='PRIVATE'))
                     for post in private_list:
                         if str(current_user_uuid) in post.visibleTo:
