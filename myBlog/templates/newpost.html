@@ -46,12 +46,10 @@
         https://stackoverflow.com/questions/30190588/html-select-multiple-as-dropdown answered Feb 10 '17 at 19:35 mgroat
         -->
         <br>
-        <br>
         <!-- Reference: https://simpleisbetterthancomplex.com/tutorial/2016/08/01/how-to-upload-files-with-django.html  
         https://stackoverflow.com/questions/14007629/document-getelementbyidremember-visibility-hidden-not-working-on-a-chec-->
-        <form method="post" enctype="multipart/form-data" id = "post-image" style="visibility:hidden;">
-        <input type="file" name="myfile" id="my-file" onchange="previewFile()">
-        <img src="" height="200" alt="Image preview...">
+        <form method="post" enctype="multipart/form-data" id = "post-image">
+        <input type="file" name="myfile" id="my-file" onchange="previewFile()" disabled="true">
         </form>
         <br>
         Unlisted? 

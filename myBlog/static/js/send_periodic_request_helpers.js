@@ -11,7 +11,7 @@ function getFriendReuqest(){
 
         },
         complete:function(data){
-            setTimeout(getFriendReuqest,5000);
+            setTimeout(getFriendReuqest,30000); // Pulling every 30 secs
         },
         error:function(){
             console.log('error');

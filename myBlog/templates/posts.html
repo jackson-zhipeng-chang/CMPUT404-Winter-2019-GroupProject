@@ -7,13 +7,14 @@ function display(data) {
     for (var i = 0; i < data.posts.length; i++) {
       var post = document.createElement("div");
       post.classList.add("w3-container", "w3-card", "w3-white", "w3-round", "w3-margin");
-      
+
       holder.appendChild(post);
       var userLogo = document.createElement("i");
       userLogo.classList.add("fa", "fa-user");
-      userLogo.classList.add("w3-left", "w3-circle", "w3-margin-right");
+      userLogo.classList.add("w3-left", "w3-circle");
       userLogo.style.width = "20px";
       userLogo.style.margin = "25px";
+      userLogo.style.display = "inline-block";
       post.appendChild(userLogo);
 
       if ({{trashable}})
@@ -26,21 +27,25 @@ function display(data) {
         trashLogo.onclick=function(){deletePost(post_id)} ;
         post.appendChild(trashLogo);
       }
-      var author = document.createElement("h3");
+      var author = document.createElement("a");
+      var friend_id = data.posts[i]['author']['id'];
+      author.setAttribute('href','/myBlog/authordetails/'+friend_id+'/');
       author.innerHTML = data.posts[i].author.displayName;
-      author.style.margin = "14px";
+      author.style.fontSize='25px';
+      author.style.marginTop = "11px";
+      author.style.display = "inline-block";
       post.appendChild(author);
 
       var line = document.createElement("hr");
       line.classList.add("w3-clear");
       post.appendChild(line);
-          
+
       var title = document.createElement("h3");
       title.innerHTML = data.posts[i].title;
       title.classList.add("w3-row-padding");
       title.style.margin = "0 20px";
       post.appendChild(title);
-      
+
       var line = document.createElement("hr");
       line.classList.add("w3-clear");
       post.appendChild(line);
@@ -49,7 +54,7 @@ function display(data) {
       divDescription.classList.add("w3-row-padding");
       divDescription.style.margin = "0 20px";
       post.appendChild(divDescription);
-      
+
       if (data.posts[i].contentType == "image/png;base64" || data.posts[i].contentType == "image/jepg;base64")
       {
         var content = document.createElement("img");
@@ -63,7 +68,7 @@ function display(data) {
         content.innerHTML = data.posts[i].content;
       }
       divDescription.appendChild(content);
-      
+
       var line = document.createElement("hr");
       line.classList.add("w3-clear");
       divDescription.appendChild(line);
@@ -72,7 +77,7 @@ function display(data) {
       commentText.innerHTML = "Comments";
       divDescription.appendChild(commentText);
 
-      for (var j = 0; j < data.posts[i].comments.length; j++) 
+      for (var j = 0; j < data.posts[i].comments.length; j++)
       {
         var comment = document.createElement("p");
         comment.innerHTML = data.posts[i].comments[j].author.displayName+" commented: "+data.posts[i].comments[j].comment;
@@ -84,7 +89,7 @@ function display(data) {
       commentInput.classList.add("w3-border", "w3-padding");
       commentInput.type="text";
       commentInput.style.width ="100%";
-      divDescription.appendChild(commentInput); 
+      divDescription.appendChild(commentInput);
 
 
       var commentButton = document.createElement("button");
@@ -93,7 +98,7 @@ function display(data) {
       let post_id = data.posts[i].postid;
       commentButton.onclick=function(){commentPost(post_id)} ;
       divDescription.appendChild(commentButton);
-    
+
     }
 
     

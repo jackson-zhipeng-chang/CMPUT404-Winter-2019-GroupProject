@@ -19,7 +19,7 @@ def get_host_from_request(request):
 # https://docs.djangoproject.com/en/2.1/ref/request-response/
     host = request.scheme+"://"+request.get_host()
     return host
-    
+
 def get_current_user_uuid(request):
     if (not User.objects.filter(pk=request.user.id).exists()):
         return Response("User coudn't find", status=404)
@@ -41,7 +41,7 @@ def verify_current_user_to_post(post, request):
     else:
         if User.objects.filter(pk=request.user.id).exists():
             current_user_uuid = get_current_user_uuid(request)
-            if current_user_uuid == post_author: 
+            if current_user_uuid == post_author:
                 return True
             else:
                 if post_visibility == 'PUBLIC':
@@ -83,7 +83,7 @@ def get_friends(current_user_uuid):
         if friend not in friends_list:
             friends_list.append(friend.author)
     return friends_list
-          
+
 def get_followings():
     return True
 
@@ -119,6 +119,34 @@ def home(request):
     except Exception as e:
         return render(request, 'homepage.html')
 
+def is_my_friend(current_user_id, author_id):
+    current_user_object = Author.objects.get(id=current_user_id)
+    friend_object = Author.objects.get(id=author_id)
+
+    relation_curUser_to_frined = Friend.objects.filter(author=current_user_object, friend=friend_object,
+                                                       status="Accept")
+    relation_friend_to_curUser = Friend.objects.filter(author=friend_object, friend=current_user_object,
+                                                       status="Accept")
+
+    if relation_curUser_to_frined or relation_friend_to_curUser:
+        return 'true'
+    else:
+        return 'false'
+
+
+def get_follow_status(current_user_id, author_id):
+    current_user_object = Author.objects.get(id=current_user_id)
+    friend_object = Author.objects.get(id=author_id)
+
+    try:
+        relation_curUser_to_friend = Friend.objects.filter(author=current_user_object,friend=friend_object)[0]
+        current_status = relation_curUser_to_friend.status
+        return current_status
+    except:
+        current_status = 'notFound'
+        return current_status
+
+
 def new_post(request):
     return render(request, 'newpost.html')
 
@@ -131,3 +159,12 @@ def friend_request(request):
 
 def my_friends(request):
     return render(request, 'myfriend.html')
+
+def author_details(request,author_id):
+    current_user_id = get_current_user_uuid(request)
+    current_user_name = Author.objects.get(pk=current_user_id).displayName
+    is_friend = is_my_friend(current_user_id,author_id)
+    follow_status = get_follow_status(current_user_id,author_id)
+    return render(request,'authordetails.html',{'authorid':author_id,'current_user_id':current_user_id,
+                                                'is_friend':is_friend,'followStatus':follow_status,
+                                                'current_user_name':current_user_name})
