@@ -30,7 +30,8 @@
        block.appendChild(line);
      }
    }
-   if (! {{github_url}} == null){
+   
+   if ("{{github_url}}" !== "null"){
     getGithubStream("{{github_url}}").then(display);
    }
 </script>
