@@ -35,9 +35,9 @@ function getAuthorDetails(authorid,currentUserID,isFriend,followStatus,currentUs
             redirect:"follow",
             referrer:"no-referrer",
         }).then(response => response.json());
-    }else{
+    }
+    else{
         let url = '/myBlog/posts/mine/?size=10';
-        console.log('here');
         return fetch(url,{
             method:"GET",
             mode:"cors",
@@ -128,11 +128,9 @@ function renderpage(data){
     btnDiv.style.marginBottom = '20px';
     btnDiv.style.marginLeft='70px';
     authorDiv.appendChild(btnDiv);
-
+    
     if (author_id != current_user_id){
         if(is_friend_bool=='true'){
-            //Todo: call un follow function
-
             var unFriendBtn = document.createElement("BUTTON");
             unFriendBtn.classList.add('w3-button','w3-theme-d1','w3-margin-bottom');
             var unfriendText = document.createTextNode('Unfollow');
@@ -140,9 +138,9 @@ function renderpage(data){
             btnDiv.append(unFriendBtn);
             var isFriendText = document.createTextNode('Friend');
             btnDiv.append(isFriendText);
-        }else{
+        }
+        else{
             if(follow_status=='Pending' || follow_status=='Decline'){
-
                 var unFriendBtn = document.createElement("BUTTON");
                 unFriendBtn.classList.add('w3-button','w3-theme-d1','w3-margin-bottom');
                 var unfriendText = document.createTextNode('Unfollow');
@@ -151,7 +149,8 @@ function renderpage(data){
                 var followingText = document.createTextNode('Following');
                 btnDiv.appendChild(followingText);
 
-            }else if (follow_status=='notFound'){
+            }
+            else if (follow_status=='notFound'){
                 var followBtn = document.createElement("BUTTON");
                 followBtn.setAttribute('id','follow_Btn');
                 followBtn.classList.add('w3-button','w3-theme-d1','w3-margin-bottom');
@@ -169,42 +168,5 @@ function renderpage(data){
     let line = document.createElement('hr');
     line.classList.add('w3-clear');
     authorDiv.append(line);
-
-    // traverse data, render posts
-    for (let i=0;i<data['posts'].length;i++) {
-        let posts = data['posts'][i];
-        console.log(posts);
-        let postsDiv = document.createElement('div');
-        postsDiv.classList.add("w3-container", "w3-card", "w3-white", "w3-round", "w3-margin");
-        authorDiv.appendChild(postsDiv);
-
-        let contentDiv = document.createElement('div');
-        contentDiv.innerHTML = posts['content'];
-        postsDiv.appendChild(contentDiv);
-        let public_time = document.createElement('div');
-        public_time.innerHTML = posts['published'];
-        public_time.style.fontSize = '0.8em';
-        postsDiv.appendChild(public_time);
-
-        // render all comments
-        var commentContent = posts['comments'];
-        for (let j = 0; j < commentContent.length; j++) {
-            let commentDiv = document.createElement('div');
-            commentDiv.innerHTML = commentContent[j]['comment'];
-            commentDiv.style.fontSize = '0.5em';
-            postsDiv.appendChild(commentDiv);
-
-        }
-
-
-        let line = document.createElement('hr');
-        line.classList.add('w3-clear');
-        authorDiv.appendChild(line);
-    }
-
-
-
-
-
 
 }

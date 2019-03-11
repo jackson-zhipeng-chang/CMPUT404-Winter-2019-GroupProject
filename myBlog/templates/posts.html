@@ -26,9 +26,10 @@ function display(data) {
       holder.appendChild(post);
       var userLogo = document.createElement("i");
       userLogo.classList.add("fa", "fa-user");
-      userLogo.classList.add("w3-left", "w3-circle", "w3-margin-right");
+      userLogo.classList.add("w3-left", "w3-circle");
       userLogo.style.width = "20px";
       userLogo.style.margin = "25px";
+      userLogo.style.display = "inline-block";
       post.appendChild(userLogo);
 
       if ({{trashable}})
@@ -41,13 +42,13 @@ function display(data) {
         trashLogo.onclick=function(){deletePost(post_id)} ;
         post.appendChild(trashLogo);
       }
-      // TODO: change postion
       var author = document.createElement("a");
       var friend_id = data.posts[i]['author']['id'];
       author.setAttribute('href','/myBlog/authordetails/'+friend_id+'/');
       author.innerHTML = data.posts[i].author.displayName;
       author.style.fontSize='25px';
-      author.style.margin = "14px";
+      author.style.marginTop = "11px";
+      author.style.display = "inline-block";
       post.appendChild(author);
 
       var line = document.createElement("hr");
