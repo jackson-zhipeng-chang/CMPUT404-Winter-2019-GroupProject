@@ -1,7 +1,6 @@
 <div class="w3-container w3-card w3-white w3-round w3-margin">
   <h4>Github streams</h4>
   <hr class="w3-clear">
-  
   <div id="github_holder"> 
 </div>
 
@@ -31,6 +30,7 @@
        block.appendChild(line);
      }
    }
-   getGithubStream("{{github_url}}").then(display);
-
+   if (! {{github_url}} == null){
+    getGithubStream("{{github_url}}").then(display);
+   }
 </script>
