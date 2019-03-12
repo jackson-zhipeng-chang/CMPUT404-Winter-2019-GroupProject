@@ -154,7 +154,7 @@ function post()
         }
     }
     let body = JSON.stringify(form);
-    let url =  get_host()+"/myBlog/posts/";
+    let url =  get_host()+"myBlog/posts/";
     console.log(body);
     return fetch(url, {
         method: "POST", 
@@ -172,7 +172,7 @@ function post()
     .then(response => {
         if (response.status === 200) 
         { 
-            window.location.replace(get_host()+"/myBlog/all/"); 
+            window.location.replace(get_host()+"myBlog/all/");
         } 
         else 
         {
