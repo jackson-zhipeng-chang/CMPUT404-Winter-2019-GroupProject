@@ -68,8 +68,11 @@ def verify_current_user_to_post(post, request):
                 elif post_visibility == 'PRIVATE':
                     if current_user_uuid == post_author:
                         return True
-                    elif str(current_user_uuid) in post.visibleTo:
-                        return True
+                    elif post.visibleTo is not None:
+                        if (str(current_user_uuid) in post.visibleTo):
+                            return True
+                        else:
+                            return False
                     else:
                         return False
                 elif post_visibility == 'SERVERONLY':
