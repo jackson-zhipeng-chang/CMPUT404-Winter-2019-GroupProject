@@ -20,7 +20,7 @@ function getAllPosts(url)
           redirect: "follow", 
           referrer: "no-referrer", 
       })
-      .then(response => response.json()); // parses response to JSON
+      .then(response => response.json());
 }
 
 function deletePost(id)
