@@ -28,7 +28,6 @@ class AuthorProfileHandler(APIView):
         except Exception as e:
             return HttpResponse(status=404)
 
-
     def put(self, request, user_id, format=None):
         data = request.data
         author = Helpers.get_author_or_not_exits(user_id)
