@@ -96,9 +96,11 @@ class PostToUserHandlerView(APIView):
         current_user_uuid = Helpers.get_current_user_uuid(request)
         if type(current_user_uuid) == UUID:
             public_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(author_id=current_user_uuid)| Q(visibility='PUBLIC'))
-            friends_list = Helpers.get_friends(current_user_uuid)
             friend_posts_list=[]  
             private_posts_list=[]
+            serveronly_posts_list=[]
+            foaf_posts_list=[]
+            friends_list = Helpers.get_friends(current_user_uuid)
             for friend in friends_list:
                 if (Post.objects.filter(Q(author_id=friend.id),Q(visibility='FRIENDS')).exists()):
                     friend_posts_list+=get_list_or_404(Post.objects.order_by('-published'), Q(author_id=friend.id),Q(visibility='FRIENDS'))
@@ -110,7 +112,7 @@ class PostToUserHandlerView(APIView):
                         if str(current_user_uuid) in post.visibleTo:
                             private_posts_list.append(post)
             
-            posts_list = public_posts_list+ friend_posts_list + private_posts_list
+            posts_list = public_posts_list+friend_posts_list+private_posts_list+serveronly_posts_list+foaf_posts_list
             posts_list.sort(key=lambda x: x.published, reverse=True) # https://stackoverflow.com/questions/403421/how-to-sort-a-list-of-objects-based-on-an-attribute-of-the-objects answered Dec 31 '08 at 16:42 by Triptych
             paginator = CustomPagination()
             results = paginator.paginate_queryset(posts_list, request)
@@ -125,13 +127,25 @@ class PostToUserIDHandler(APIView):
     def get(self, request, user_id, format=None):
         current_user_uuid = Helpers.get_current_user_uuid(request)
         if type(current_user_uuid) == UUID:
-            posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(author_id=user_id), Q(visibility='PUBLIC'))
+            public_posts_list=get_list_or_404(Post.objects.order_by('-published'), Q(author_id=user_id), Q(visibility='PUBLIC'))
+            friend_posts_list=[]
+            private_posts_list=[]
+            serveronly_posts_list=[]
+            foaf_posts_list=[]
+
+            isFriend = Helpers.check_two_users_friends(current_user_uuid, user_id)
+            if isFriend:
+                if (Post.objects.filter(Q(author_id=user_id),Q(visibility='FRIENDS')).exists()):
+                    friend_posts_list+=get_list_or_404(Post.objects.order_by('-published'), Q(author_id=user_id), Q(visibility='FRIENDS'))
+
+            posts_list = public_posts_list+friend_posts_list+private_posts_list+serveronly_posts_list+foaf_posts_list
             paginator = CustomPagination()
             results = paginator.paginate_queryset(posts_list, request)
             serializer=PostSerializer(results, many=True)
             return paginator.get_paginated_response(serializer.data)  
         else:
             return current_user_uuid
+
 
 # For local using only
 class MyPostHandler(APIView):

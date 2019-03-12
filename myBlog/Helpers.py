@@ -55,8 +55,13 @@ def verify_current_user_to_post(post, request):
                         return True
                     else:
                         return False
-                elif (post_visibility == 'PRIVATE') and (current_user_uuid != post_author):
-                    return False
+                elif post_visibility == 'PRIVATE':
+                    if current_user_uuid == post_author:
+                        return True
+                    elif str(current_user_uuid) in post.visibleTo:
+                        return True
+                    else:
+                        return False
                 elif post_visibility == 'SERVERONLY':
                     current_server = get_host_from_request(request)
                     user_server = Author.objects.get(id=current_user_uuid).host
@@ -110,7 +115,6 @@ def check_author1_follow_author2(author1_id,author2_id):
 
 def home(request):
     current_user_uuid = get_current_user_uuid(request)
-
     if type(current_user_uuid) == UUID:
         user_author = Author.objects.get(id=current_user_uuid)
         author_github = user_author.github
@@ -127,22 +131,16 @@ def home(request):
 def is_my_friend(current_user_id, author_id):
     current_user_object = Author.objects.get(id=current_user_id)
     friend_object = Author.objects.get(id=author_id)
-
-    relation_curUser_to_frined = Friend.objects.filter(author=current_user_object, friend=friend_object,
-                                                       status="Accept")
-    relation_friend_to_curUser = Friend.objects.filter(author=friend_object, friend=current_user_object,
-                                                       status="Accept")
-
+    relation_curUser_to_frined = Friend.objects.filter(author=current_user_object, friend=friend_object,status="Accept")
+    relation_friend_to_curUser = Friend.objects.filter(author=friend_object, friend=current_user_object,status="Accept")
     if relation_curUser_to_frined or relation_friend_to_curUser:
         return 'true'
     else:
         return 'false'
 
-
 def get_follow_status(current_user_id, author_id):
     current_user_object = Author.objects.get(id=current_user_id)
     friend_object = Author.objects.get(id=author_id)
-
     try:
         relation_curUser_to_friend = Friend.objects.filter(author=current_user_object,friend=friend_object)[0]
         current_status = relation_curUser_to_friend.status
@@ -151,13 +149,13 @@ def get_follow_status(current_user_id, author_id):
         current_status = 'notFound'
         return current_status
 
-
+#-----------------Local endpoints-----------------#
 def new_post(request):
     return render(request, 'newpost.html')
 
 def my_posts(request):
     posts_url = "/myBlog/posts/mine/?size=10"
-    return render(request, 'posts.html', {"posts_url":posts_url, "trashable":"true"})
+    return render(request, 'posts_list.html', {"posts_url":posts_url, "trashable":"true"})
 
 def friend_request(request):
     return render(request,'friendrequest.html')
