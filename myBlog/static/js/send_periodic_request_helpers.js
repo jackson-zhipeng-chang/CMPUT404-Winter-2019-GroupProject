@@ -19,6 +19,7 @@ function getFriendReuqest(){
     });
 }
 
+
 $(document).ready(function(){
     setTimeout(getFriendReuqest,0)
 });

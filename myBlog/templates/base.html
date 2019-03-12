@@ -7,7 +7,6 @@
 <script src="{% static "js/posts_list_helper.js" %}"></script>
 <script src="{% static "js/friends_list_helper.js" %}"></script>
 <script src="{% static "js/change_fr_status_helpers.js" %}"></script>
-<script src="{% static "js/github_helper.js" %}"></script>
 <script src="{% static "js/author_details_helpers.js" %}"></script>
 <link rel="stylesheet" type="text/css" href="/static/css/stylew3.css" />
 <link rel="stylesheet" href="https://www.w3schools.com/lib/w3-theme-blue-grey.css">
@@ -21,13 +20,13 @@
 
 <head>
   <meta charset="utf-8">
-  <title>{% block title %}myBlog{% endblock %}</title>
+  <title>{% block title %}Login page{% endblock %}</title>
 </head>
 <body>
   <div class="w3-top">
     <div class="w3-bar w3-theme-d2 w3-left-align w3-large">
       <a class="w3-bar-item w3-button w3-hide-medium w3-hide-large w3-right w3-padding-large w3-hover-white w3-large w3-theme-d2" href="javascript:void(0);" onclick="openNav()"><i class="fa fa-bars"></i></a>
-      <a href="/myBlog/all" class="w3-bar-item w3-button w3-padding-large w3-theme-d4"><i class="fa fa-home w3-margin-right">   </i><img src="{% static 'images/lagoon.png' %}" style='height:24px;'></a>
+      <a href="/myBlog/all" class="w3-bar-item w3-button w3-padding-large w3-theme-d4"><i class="fa fa-home w3-margin-right"></i>myBlog</a>
       <a href="/myBlog/newpost" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" title="News"><i class="fa fa-pencil"></i></a>
     {% if user.is_authenticated %}
       <div class="w3-dropdown-hover w3-hide-small" id="dropdown-hover">
@@ -54,6 +53,7 @@
   </div>
   <main>
     {% block content %}
+
     {% endblock %}
   </main>
 

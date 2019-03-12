@@ -128,6 +128,7 @@ function commentPost(id) {
 // got data, render the page
 function renderpage(data){
     var content = document.getElementById('content');
+
     aPosts = data['posts'][0];
     var authorName = aPosts['author']['displayName'];
     var authorUrl = aPosts['author']['url'];

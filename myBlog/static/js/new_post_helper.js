@@ -2,9 +2,9 @@
 var encoded_img="";
 function previewFile()
 {
-    var file = document.querySelector('input[type=file]').files[0];
+    var file = document.querySelector('input[type=file]').files[0]; 
     var reader  = new FileReader();
-    reader.onloadend = function ()
+    reader.onloadend = function () 
     {
         encoded_img = reader.result;
         document.getElementById("post-content").value = encoded_img;
@@ -14,7 +14,7 @@ function previewFile()
             alert("Please upload the selected type image!");
         }
     }
-    if (file)
+    if (file) 
     {
         reader.readAsDataURL(file); //reads the data as a URL
     }
@@ -58,7 +58,7 @@ function enableInput()
 }
 
 function set_friends_list (){
-
+    
     get_friends_list().then(function(response) {
         if (response.length ==0){
             document.getElementById("friendsoptions").setAttribute("data-placeholder", "Looks like you don't have any friends...");
@@ -75,30 +75,30 @@ function set_friends_list (){
                 $('#friendsoptions').trigger("chosen:updated");
             }
         }
-    })
+    })    
 }
 
 function get_friends_list()
 {
     let url = "/myBlog/myfriends/";
     return fetch(url, {
-        method: "GET",
-        mode: "cors",
-        cache: "no-cache",
-        credentials: "same-origin",
-        redirect: "follow",
-        referrer: "no-referrer",
+        method: "GET", 
+        mode: "cors", 
+        cache: "no-cache", 
+        credentials: "same-origin", 
+        redirect: "follow", 
+        referrer: "no-referrer", 
     })
     .then(response => {
-        if (response.status === 200)
-        {
-            return response.json();
-        }
-        else
+        if (response.status === 200) 
+        { 
+            return response.json(); 
+        } 
+        else 
         {
             alert("Something went wrong: " + response.status);
         }
-    });
+    }); 
 }
 
 // https://stackoverflow.com/questions/6941533/get-protocol-domain-and-port-from-url
@@ -110,9 +110,9 @@ function get_host()
     return result
 }
 
-function post()
+function post() 
 {
-    let form =
+    let form = 
     {
         title: "",
         content: "",
@@ -131,7 +131,7 @@ function post()
     form.unlisted = document.getElementById("post-content").value;
     form.visibleTo = String($(".chosen-select").chosen().val());
     form.description = document.getElementById("post-description").value;
-    if (form.contentType == "image/png;base64" || form.contentType =="image/jepg;base64")
+    if (form.contentType == "image/png;base64" || form.contentType =="image/jepg;base64") 
     {
         form.content = encoded_img;
     }
@@ -155,28 +155,29 @@ function post()
     }
     let body = JSON.stringify(form);
     let url =  get_host()+"myBlog/posts/";
+    console.log(body);
     return fetch(url, {
-        method: "POST",
-        mode: "cors",
-        cache: "no-cache",
-        credentials: "same-origin",
+        method: "POST", 
+        mode: "cors", 
+        cache: "no-cache", 
+        credentials: "same-origin", 
         body: body,
         headers: {
             "Content-Type": "application/json",
             "x-csrftoken": csrf_token
         },
-        redirect: "follow",
-        referrer: "no-referrer",
+        redirect: "follow", 
+        referrer: "no-referrer", 
     })
     .then(response => {
-        if (response.status === 200)
-        {
+        if (response.status === 200) 
+        { 
             window.location.replace(get_host()+"myBlog/all/");
-        }
-        else
+        } 
+        else 
         {
             alert("Something went wrong: " +  response.status);
         }
-    });
+    }); 
 
   }
