@@ -1,20 +1,17 @@
 {% extends 'base.html' %}
-
-{% block title %}Author Details{% endblock %}
+{% block title %}
+Author Details
+{% endblock %}
 
 {% block content %}
     {% if user.is_authenticated %}
         <div id = 'content'>
-
         </div>
-
         <script>
-
         // get friend request list then render the page.
         // authorid = the id of the author i want to see
         getAuthorDetails("{{authorid}}","{{ current_user_id }}","{{ is_friend }}","{{ followStatus }}").then(renderpage);
         </script>
-
           {% else %}
           <div class="w3-card w3-round w3-white" style="width:30%;margin:auto;margin-top: 5%;">
             <div class="w3-container w3-padding">
@@ -26,7 +23,5 @@
             </div>
           </div>
         {% endif %}
-
-
 
 {% endblock %}
