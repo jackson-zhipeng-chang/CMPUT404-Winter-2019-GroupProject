@@ -12,7 +12,7 @@ class Author(models.Model):
     # https://docs.djangoproject.com/en/2.1/topics/db/examples/one_to_one/
     # https://simpleisbetterthancomplex.com/tutorial/2016/07/22/how-to-extend-django-user-model.html By Vitor Freitas
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(User, on_delete=models.PROTECT, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, editable=False)
     displayName = models.CharField(max_length=128)
     github = models.URLField(null=True, blank=False)
     host = models.URLField()
@@ -30,8 +30,8 @@ class Friend(models.Model):
         ('Pending', 'Pending'),
     )
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    author = models.ForeignKey(Author, related_name='sender',on_delete=models.PROTECT, editable=False)
-    friend = models.ForeignKey(Author,  related_name='reciver',on_delete=models.PROTECT, editable=False)
+    author = models.ForeignKey(Author, related_name='sender',on_delete=models.CASCADE, editable=False)
+    friend = models.ForeignKey(Author,  related_name='reciver',on_delete=models.CASCADE, editable=False)
     status = models.CharField(max_length=32, choices=friednStatusChoise, default='Pending')
     last_modified_time = models.DateTimeField(auto_now_add=True, editable=False)
 

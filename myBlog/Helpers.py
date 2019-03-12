@@ -55,8 +55,13 @@ def verify_current_user_to_post(post, request):
                         return True
                     else:
                         return False
-                elif (post_visibility == 'PRIVATE') and (current_user_uuid != post_author):
-                    return False
+                elif post_visibility == 'PRIVATE':
+                    if current_user_uuid == post_author:
+                        return True
+                    elif str(current_user_uuid) in post.visibleTo:
+                        return True
+                    else:
+                        return False
                 elif post_visibility == 'SERVERONLY':
                     current_server = get_host_from_request(request)
                     user_server = Author.objects.get(id=current_user_uuid).host

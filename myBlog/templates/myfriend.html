@@ -36,7 +36,8 @@
       		divDescription.appendChild(url);
 
       		var github = document.createElement("p");
-      		github.innerHTML = data[i].github;
+			github.innerHTML ="GitHub: " + data[i].github;
+                  github.style.marginLeft = "48px";
       		divDescription.appendChild(github);
             }
       }

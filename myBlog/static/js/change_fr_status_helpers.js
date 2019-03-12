@@ -18,7 +18,6 @@ function sendFRrequest(fr_id,status){
         'status':status
     }
     let body = JSON.stringify(change_status_form);
-
     let url = "/myBlog/friendrequest/";
     return fetch(url,{
         method:"PUT",
@@ -33,8 +32,7 @@ function sendFRrequest(fr_id,status){
         redirect: "follow",
         referrer: "no-referrer",
     })
-    .then(data=>console.log(data))
-    .then(document.location.reload(true));
+    .then(window.location.replace(get_host()+"myBlog/myfriendslist/"));
 }
 
 function content_page(data){
