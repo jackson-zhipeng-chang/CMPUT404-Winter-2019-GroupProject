@@ -1,4 +1,8 @@
-<div id="posts_holder">
+
+<div class="w3-container w3-card w3-white w3-round w3-margin">
+  <h4>Posts streams</h4>
+</div>
+<div id="posts_holder"> 
 
 </div>
 <script>
@@ -40,7 +44,7 @@ function display(data) {
           trashLogo.onclick=function(){deletePost(post_id)} ;
           post.appendChild(trashLogo);
         }
-        
+
         var author = document.createElement("a");
         var friend_id = data.posts[i]['author']['id'];
         author.setAttribute('href','/myBlog/authordetails/'+friend_id+'/');
