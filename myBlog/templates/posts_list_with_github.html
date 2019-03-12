@@ -15,7 +15,7 @@ function display(data) {
         notFound.style.margin = "20px";
         post.appendChild(notFound);
     }
-    
+
     else{
       for (var i = 0; i < data.posts.length; i++) {
         let post = document.createElement("div");
@@ -40,6 +40,7 @@ function display(data) {
           trashLogo.onclick=function(){deletePost(post_id)} ;
           post.appendChild(trashLogo);
         }
+        
         var author = document.createElement("a");
         var friend_id = data.posts[i]['author']['id'];
         author.setAttribute('href','/myBlog/authordetails/'+friend_id+'/');
