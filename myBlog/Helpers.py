@@ -60,8 +60,8 @@ def verify_current_user_to_post(post, request):
                 elif post_visibility == 'FOAF':
                     return True
                 elif post_visibility == 'FRIENDS':
-                    friend = check_two_users_friends(post_author,current_user_uuid)
-                    if friend:
+                    isFriend = check_two_users_friends(post_author,current_user_uuid)
+                    if isFriend:
                         return True
                     else:
                         return False
@@ -75,10 +75,10 @@ def verify_current_user_to_post(post, request):
                             return False
                     else:
                         return False
-                elif post_visibility == 'SERVERONLY':
-                    current_server = get_host_from_request(request)
+                elif post_visibility == 'SERVERONLY' and isFriend:
+                    post_server = Author.objects.get(id=post.author.id).host
                     user_server = Author.objects.get(id=current_user_uuid).host
-                    if current_server == user_server:
+                    if user_server == post_server:
                         return True
                     else:
                         return False
