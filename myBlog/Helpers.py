@@ -155,6 +155,9 @@ def friend_request(request):
 def my_friends(request):
     return render(request, 'myfriend.html')
 
+def my_profile(request):
+    return render(request, 'myprofile.html')
+
 def author_details(request,author_id):
     current_user_id = get_current_user_uuid(request)
     current_user_name = Author.objects.get(pk=current_user_id).displayName
