@@ -92,7 +92,6 @@ function sendFollowRequest(author_id,author_host,author_name,author_url,currentU
 // got data, render the page
 function renderpage(data){
     var content = document.getElementById('content');
-
     aPosts = data['posts'][0];
     let authorName = aPosts['author']['displayName'];
     let authorUrl = aPosts['author']['url'];
