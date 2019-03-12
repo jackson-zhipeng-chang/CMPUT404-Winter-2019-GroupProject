@@ -139,7 +139,8 @@ def get_follow_status(current_user_id, author_id):
 
 def posts_list(request):
     url = "/myBlog/author/posts/?size=10"
-    return render(request, 'posts.html', {"url":url, "trashable":"false"})
+    current_user_id = get_current_user_uuid(request)
+    return render(request, 'posts.html', {"url":url, "trashable":"false",'current_user_id':current_user_id})
 
 def new_post(request):
     return render(request, 'newpost.html')

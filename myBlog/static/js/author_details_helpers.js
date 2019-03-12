@@ -86,7 +86,7 @@ function sendFollowRequest(author_id,author_host,author_name,author_url,currentU
         referrer:"no-referrer",
     }).then(function(){
         //https://www.permadi.com/tutorial/jsInnerHTMLDOM/index.html
-       document.getElementById('follow_Btn').childNodes[0].nodeValue="Followed";
+       document.getElementById('follow_Btn').childNodes[0].nodeValue="Following";
 
     })
 }
@@ -201,10 +201,33 @@ function renderpage(data){
         author_info_div.appendChild(blank);
     }
 
+    if(is_friend_bool=='true'){
+        var dropdownDiv = document.createElement('div');
+        btnDiv.appendChild(dropdownDiv);
+        dropdownDiv.classList.add('w3-dropdown-hover');
 
-    
-    if (author_id != current_user_id){
-        if(is_friend_bool=='true'){
+        var unFriendBtn = document.createElement("BUTTON");
+        dropdownDiv.appendChild(unFriendBtn);
+        unFriendBtn.classList.add('w3-button','w3-theme-d1');
+
+        var dropdownContentDiv = document.createElement('div');
+        dropdownDiv.appendChild(dropdownContentDiv);
+        dropdownContentDiv.classList.add("w3-dropdown-content","w3-card-4", "w3-bar-block");
+
+        var contentlink = document.createElement('a');
+        dropdownContentDiv.appendChild(contentlink);
+        contentlink.classList.add("w3-bar-item", "w3-button");
+        // contentlink.setAttribute('href','#');
+        contentlink.innerHTML='Unfollow';
+        // TODO: change function
+        // contentlink.setAttribute('onclick',sendFollowRequest(author_id,authorHost,authorName,authorUrl,cuurent_user_name));
+
+
+        var unfriendText = document.createTextNode('Friend');
+        unFriendBtn.appendChild(unfriendText);
+    }
+    else{
+        if(follow_status=='Pending' || follow_status=='Decline'){
             var dropdownDiv = document.createElement('div');
             btnDiv.appendChild(dropdownDiv);
             dropdownDiv.classList.add('w3-dropdown-hover');
@@ -224,66 +247,29 @@ function renderpage(data){
             contentlink.innerHTML='Unfollow';
             // TODO: change function
             // contentlink.setAttribute('onclick',sendFollowRequest(author_id,authorHost,authorName,authorUrl,cuurent_user_name));
-
-
-            var unfriendText = document.createTextNode('Friend');
+            var unfriendText = document.createTextNode('Following');
             unFriendBtn.appendChild(unfriendText);
-
-            // var isFriendText = document.createTextNode('Friend');
-            // btnDiv.appendChild(isFriendText);
         }
-        else{
-            if(follow_status=='Pending' || follow_status=='Decline'){
-                // var unFriendBtn = document.createElement("BUTTON");
-                // unFriendBtn.classList.add('w3-button','w3-theme-d1');
-                // var unfriendText = document.createTextNode('Unfollow');
-                // unFriendBtn.appendChild(unfriendText);
-                // btnDiv.appendChild(unFriendBtn);
-                // var followingText = document.createTextNode('Following');
-                // btnDiv.appendChild(followingText);
-                var dropdownDiv = document.createElement('div');
-                btnDiv.appendChild(dropdownDiv);
-                dropdownDiv.classList.add('w3-dropdown-hover');
+        else if (follow_status=='notFound'){
+            var followBtn = document.createElement("BUTTON");
+            followBtn.setAttribute('id','follow_Btn');
+            followBtn.classList.add('w3-button','w3-theme-d1','w3-margin-bottom');
+            var followText = document.createTextNode('Follow');
+            followBtn.appendChild(followText);
+            btnDiv.appendChild(followBtn);
+            followBtn.addEventListener('click',function(){
+                sendFollowRequest(author_id,authorHost,authorName,authorUrl,cuurent_user_name);
+            });
 
-                var unFriendBtn = document.createElement("BUTTON");
-                dropdownDiv.appendChild(unFriendBtn);
-                unFriendBtn.classList.add('w3-button','w3-theme-d1');
-
-                var dropdownContentDiv = document.createElement('div');
-                dropdownDiv.appendChild(dropdownContentDiv);
-                dropdownContentDiv.classList.add("w3-dropdown-content","w3-card-4", "w3-bar-block");
-
-                var contentlink = document.createElement('a');
-                dropdownContentDiv.appendChild(contentlink);
-                contentlink.classList.add("w3-bar-item", "w3-button");
-                // contentlink.setAttribute('href','#');
-                contentlink.innerHTML='Unfollow';
-                // TODO: change function
-                // contentlink.setAttribute('onclick',sendFollowRequest(author_id,authorHost,authorName,authorUrl,cuurent_user_name));
-                var unfriendText = document.createTextNode('Following');
-                unFriendBtn.appendChild(unfriendText);
-            }
-            else if (follow_status=='notFound'){
-                var followBtn = document.createElement("BUTTON");
-                followBtn.setAttribute('id','follow_Btn');
-                followBtn.classList.add('w3-button','w3-theme-d1','w3-margin-bottom');
-                var followText = document.createTextNode('Follow');
-                followBtn.appendChild(followText);
-                btnDiv.appendChild(followBtn);
-                followBtn.addEventListener('click',function(){
-                    sendFollowRequest(author_id,authorHost,authorName,authorUrl,cuurent_user_name);
-                });
-
-            }
         }
     }
-        // traverse data, render posts
+            // traverse data, render posts
     for (let i=0;i<data['posts'].length;i++) {
         let posts = data['posts'][i];
         let postsDiv = document.createElement('div');
         postsDiv.classList.add("w3-container", "w3-card", "w3-white", "w3-round", "w3-margin");
         content.appendChild(postsDiv);
-        
+
         var title = document.createElement('h3');
         title.innerHTML = posts.title;
         title.classList.add('w3-row-padding');
@@ -340,6 +326,8 @@ function renderpage(data){
         divDescription.appendChild(commentButton);
 
     }
+
+
     // if (data.next !=null){
     //     var nextButton = document.createElement('button');
     //     nextButton.classList.add("w3-button", "w3-theme-d1", "w3-margin-bottom", "w3-right");
