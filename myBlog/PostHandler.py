@@ -101,7 +101,7 @@ class PostToUserHandlerView(APIView):
             private_posts_list=[]
             serveronly_posts_list=[]
             foaf_posts_list=[]
-            if (Post.objects.filter(Q(author_id=friend.id),Q(visibility='PUBLIC')).exists()):
+            if (Post.objects.filter(Q(author_id=current_user_uuid)|Q(visibility='PUBLIC')).exists()):
                 public_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(author_id=current_user_uuid)| Q(visibility='PUBLIC'))
 
             friends_list = Helpers.get_friends(current_user_uuid)
