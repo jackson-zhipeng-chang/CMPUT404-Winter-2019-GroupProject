@@ -7,7 +7,7 @@
 
 </div>
 <script>
-function display(data) {
+function display_my_posts(data) {
     let holder = document.getElementById("posts_holder");
     holder.innerHTML = "";
     if (data.posts.length == 0){
@@ -124,7 +124,7 @@ function display(data) {
         var nextButton = document.createElement("button");
         nextButton.classList.add("w3-button", "w3-theme-d1", "w3-margin-bottom", "w3-right");
         nextButton.insertAdjacentHTML("beforeend", "<i class='fa fa-arrow-right	'></i> Next Page");
-        nextButton.onclick=function(){getAllPosts(data.next).then(display)} ;
+        nextButton.onclick=function(){getAllPosts(data.next).then(display_my_posts)} ;
         holder.appendChild(nextButton);
       }
 
@@ -133,12 +133,12 @@ function display(data) {
         var nextButton = document.createElement("button");
         nextButton.classList.add("w3-button", "w3-theme-d1", "w3-margin-bottom", "w3-left");
         nextButton.insertAdjacentHTML("beforeend", "<i class='fa fa-arrow-left	'></i> Previous Page");
-        nextButton.onclick=function(){getAllPosts(data.previous).then(display)} ;
+        nextButton.onclick=function(){getAllPosts(data.previous).then(display_my_posts)} ;
         holder.appendChild(nextButton);
       }
     }
   }
-  getAllPosts("{{posts_url}}").then(display);
+  getAllPosts("{{posts_url}}").then(display_my_posts);
 
 </script>
   {% else %}
