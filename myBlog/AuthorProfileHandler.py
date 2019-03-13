@@ -35,6 +35,8 @@ class AuthorProfileHandler(APIView):
         current_user_uuid = Helpers.get_current_user_uuid(request)
         if current_user_uuid == author.id:
             serializer = AuthorSerializer(author, data=data)
+            serializer.is_valid();
+            print(serializer.errors);
             if serializer.is_valid():
                 serializer.save()
                 return JsonResponse(serializer.data)

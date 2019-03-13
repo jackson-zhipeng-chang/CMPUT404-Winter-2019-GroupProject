@@ -154,8 +154,12 @@ function post()
         }
     }
     let body = JSON.stringify(form);
-    let url =  get_host()+"myBlog/posts/";
+<<<<<<< HEAD
+    let url =  get_host()+"/myBlog/posts/";
     console.log(body);
+=======
+    let url =  get_host()+"/myBlog/posts/";
+>>>>>>> upstream/github
     return fetch(url, {
         method: "POST", 
         mode: "cors", 

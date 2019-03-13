@@ -385,3 +385,10 @@ class TestViews(TestCase):
         content = json.loads(response1.content)
         self.assertEquals(response1.status_code,200)
 
+    # def test_login_view(self):
+    #     client = Client()
+    #     usr = User.objects.create(username='login_tester')
+    #     usr.set_password('myblogiscool')
+    #     usr.save()
+    #     login_url = reverse('login')
+    #     response = client.post(login_url)

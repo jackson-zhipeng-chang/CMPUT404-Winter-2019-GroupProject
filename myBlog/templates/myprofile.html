@@ -8,10 +8,84 @@
 
 
 <script>
+	function done_function(value,data){
+		let url = "/myBlog/author/" + data.id+'/';
+		let requestFrom = {
+			"id":data.id,
+			"displayName":value,
+			"url":data.url,
+			"host":data.host,
+			"github":data.github
+
+
+		}
+		let body = JSON.stringify(requestFrom);
+		return fetch(url,{
+			method:"PUT",
+			mode:"cors",
+        	cache:"no-cache",
+        	credentials:"same-origin",
+        	body:body,
+        	headers:{
+            	"Content-Type":"application/json",
+            	"x-csrftoken":csrf_token,
+        	},
+       		redirect:"follow",
+        	referrer:"no-referrer",
+		}).then(response=>{
+			if(response.status==200){
+				window.location.reload(true);
+			}
+		})
+
+
+
+
+	}
+
+
+
+	function edit_function(data){
+
+		//chage name to textinput
+		var old_name = document.getElementById("displayname");
+		inputText = document.createElement('INPUT');
+		inputText.setAttribute('type','text');
+		inputText.setAttribute('value',data.displayName);
+
+		old_name.replaceChild(inputText,old_name.childNodes[0]);
+
+
+
+		//chage done button
+		var old_button = document.getElementById("BUTTON");
+		doneText = document.createTextNode('done');
+		var new_button = document.createElement("BUTTON");
+        new_button.classList.add('w3-button','w3-theme-d1','w3-margin-top','w3-right');
+		new_button.appendChild(doneText);
+
+		old_button.parentNode.replaceChild(new_button,old_button);
+		new_button.addEventListener('click',function(){
+			done_function(inputText.value,data);
+			
+
+
+		});
+
+
+
+
+	}
+
+
+
+
+
 
 	function display(data) {
 		var friend = document.createElement("div");
 		friend.classList.add("w3-container", "w3-card", "w3-white", "w3-round", "w3-margin");
+		friend.setAttribute('id','friendDiv');
 		holder.appendChild(friend);
 		var userLogo = document.createElement("i");
 		userLogo.classList.add("fa", "fa-user");
@@ -20,14 +94,37 @@
 		userLogo.style.margin = "25px";
 		friend.appendChild(userLogo);
 
+        //edit button
+        var editButton = document.createElement("BUTTON");
+        editButton.setAttribute('id','BUTTON')
+        editButton.classList.add('w3-button','w3-theme-d1','w3-margin-top','w3-right');
+        var editText = document.createTextNode('Edit');
+        editButton.appendChild(editText);
+        friend.appendChild(editButton);
+        editButton.addEventListener('click',function(){
+        	edit_function(data);
+        });
+
+
 		var name = document.createElement("h3");
-		name.innerHTML = "Name: " + data.displayName;
+		name.setAttribute('id','displayname1')
+		name.innerHTML = "Name: "
 		name.style.margin = "14px";
 		friend.appendChild(name);
 
+		var name2 = document.createElement("h3");
+		name2.setAttribute('id','displayname')
+		name2.innerHTML = data.displayName;
+		//name2.style.margin = "14px";
+		friend.appendChild(name2);
+
+		document.getElementById("displayname1").style.display="inline-block";
+		document.getElementById("displayname").style.display="inline-block";
+
 		var id = document.createElement("p");
 		id.innerHTML = "Id: " + data.id;
-            id.style.margin = "14px";
+		id.style.marginTop = "14px";
+		id.style.marginLeft = "75px";
 		friend.appendChild(id);
 
 		var line = document.createElement("hr");
@@ -37,7 +134,7 @@
 		var divDescription = document.createElement("div");
 		//divDescription.classList.add("w3-row-padding");
 		//divDescription.style.margin = "0 20px";
-            divDescription.style.margin = "14px"
+        divDescription.style.margin = "14px"
 		friend.appendChild(divDescription);
 
 		var url = document.createElement("p");
@@ -46,12 +143,13 @@
             url.style.marginLeft = "48px";
 		divDescription.appendChild(url);
 
+
 		var github = document.createElement("p");
 		github.innerHTML = data.github;
 		divDescription.appendChild(github);
 
-            //edit button
-            
+
+
 
       }
 
