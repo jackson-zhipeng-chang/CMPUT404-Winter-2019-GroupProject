@@ -9,6 +9,7 @@ from django.views import generic
 from django.db.models import Q
 from django.shortcuts import render
 from uuid import UUID
+from django.http import HttpResponse, HttpResponseNotFound, Http404
 
 def get_author_or_not_exits(current_user_uuid):
     if (not Author.objects.filter(id=current_user_uuid).exists()):
@@ -47,6 +48,7 @@ def verify_current_user_to_post(post, request):
     post_visibility = post.visibility
     post_author = post.author_id
     unlisted_post = post.unlisted
+    print(post_visibility)
     if User.objects.filter(pk=request.user.id).exists():
         current_user_uuid = get_current_user_uuid(request)
         if current_user_uuid == post_author:
@@ -66,6 +68,9 @@ def verify_current_user_to_post(post, request):
                 if current_user_uuid == post_author:
                     return True
                 elif post.visibleTo is not None:
+                    print(current_user_uuid)
+                    print(post.visibleTo)
+                    print(str(current_user_uuid) in post.visibleTo)
                     if (str(current_user_uuid) in post.visibleTo):
                         return True
                     else:
@@ -195,32 +200,36 @@ def author_details(request,author_id):
 def post_details(request, post_id):
     comments = Comment.objects.filter(postid=post_id)
     post = Post.objects.get(pk=post_id)
-    if post.contentType == "image/png;base64" or post.contentType == "image/jpeg;base64":
-        content_is_picture = True
-    else:
-        content_is_picture = False
-
-    current_author_id = get_current_user_uuid(request)
-    if type(current_author_id) is UUID:
-        current_display_name = Author.objects.get(pk=current_author_id).displayName
-        if (post.author.displayName == current_display_name):
-            current_author_is_owner = True
+    accessible = verify_current_user_to_post(post, request)
+    if accessible:
+        if post.contentType == "image/png;base64" or post.contentType == "image/jpeg;base64":
+            content_is_picture = True
         else:
-            current_author_is_owner = False
+            content_is_picture = False
 
-        categories = []
-        partially_split_categories = post.categories.split(" ")
-        for partially_split_category in partially_split_categories:
-            categories += partially_split_category.split(",")
+        current_author_id = get_current_user_uuid(request)
+        if type(current_author_id) is UUID:
+            current_display_name = Author.objects.get(pk=current_author_id).displayName
+            if (post.author.displayName == current_display_name):
+                current_author_is_owner = True
+            else:
+                current_author_is_owner = False
 
-        text_area_id = "commentInput"+post_id
+            categories = []
+            partially_split_categories = post.categories.split(" ")
+            for partially_split_category in partially_split_categories:
+                categories += partially_split_category.split(",")
 
-        return render(request, 'postdetails.html', {'author': post.author, 'title': post.title,
-                                                    'description': post.description, 'categories': categories,
-                                                    'content': post.content, 'visibility': post.visibility,
-                                                    'published': post.published, 'comments': comments,
-                                                    "contentIsPicture": content_is_picture, 'postID': post.postid,
-                                                    "currentAuthorIsOwner": current_author_is_owner,
-                                                    "textAreaID": text_area_id})
+            text_area_id = "commentInput"+post_id
+
+            return render(request, 'postdetails.html', {'author': post.author, 'title': post.title,
+                                                        'description': post.description, 'categories': categories,
+                                                        'content': post.content, 'visibility': post.visibility,
+                                                        'published': post.published, 'comments': comments,
+                                                        "contentIsPicture": content_is_picture, 'postID': post.postid,
+                                                        "currentAuthorIsOwner": current_author_is_owner,
+                                                        "textAreaID": text_area_id})
+        else:
+            return render(request, 'homepage.html')
     else:
-        return render(request, 'homepage.html')
+        raise Http404("Post does not exist")
