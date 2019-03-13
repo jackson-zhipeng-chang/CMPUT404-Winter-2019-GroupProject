@@ -239,7 +239,6 @@ class TestViews(TestCase):
         post1_id = post1.postid
 
         comment_url_private = reverse('comment',args=[post1_id])
-        # TODO: look for structure in how to post comments data
         response1=self.client.post(comment_url_private,{
             'query': 'addComment',
             'post': 'testserver',
@@ -278,7 +277,6 @@ class TestViews(TestCase):
         self.assertEquals(response2.status_code,200)
 
     def test_Comment_Handler_GET_API(self):
-        # TODO: search how to do get request with query in url in django
         # first, post a post, add comments on it, then test if we can get the comments
 
         # create a post
@@ -332,7 +330,6 @@ class TestViews(TestCase):
         # another author tries to visit all these posts
 
         posts_num = 10
-        # TODO: change author data structure; may need to modify. what does size means?
         # post ten posts and get a list of these posts' ids.
         for i in range(posts_num):
             self.client.post(self.new_post_url, {
@@ -385,10 +382,4 @@ class TestViews(TestCase):
         content = json.loads(response1.content)
         self.assertEquals(response1.status_code,200)
 
-    # def test_login_view(self):
-    #     client = Client()
-    #     usr = User.objects.create(username='login_tester')
-    #     usr.set_password('myblogiscool')
-    #     usr.save()
-    #     login_url = reverse('login')
-    #     response = client.post(login_url)
+
