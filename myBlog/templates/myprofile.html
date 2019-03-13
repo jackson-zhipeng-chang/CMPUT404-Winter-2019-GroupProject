@@ -8,14 +8,14 @@
 
 
 <script>
-	function done_function(value,data){
+	function done_function(Namevalue,Githubvalue,data){
 		let url = "/myBlog/author/" + data.id+'/';
 		let requestFrom = {
 			"id":data.id,
-			"displayName":value,
+			"displayName":Namevalue,
 			"url":data.url,
 			"host":data.host,
-			"github":data.github
+			"github":Githubvalue
 		}
 		let body = JSON.stringify(requestFrom);
 		return fetch(url,{
@@ -44,18 +44,30 @@
 		nameinputText.setAttribute('type','text');
 		nameinputText.setAttribute('value',data.displayName);
 		old_name.replaceChild(nameinputText,old_name.childNodes[0]);
+		
+		//change github to textinput
+		var old_github = document.getElementById("github");
+		githubinputText = document.createElement('INPUT');
+		githubinputText.setAttribute('type','text');
+		githubinputText.setAttribute('value',data.github);
+		old_github.replaceChild(githubinputText,old_name.childNodes[0]);
+		
+		
 
 		//chage done button
 		var old_button = document.getElementById("BUTTON");
 		doneText = document.createTextNode('done');
 		var new_button = document.createElement("BUTTON");
-        new_button.classList.add('w3-button','w3-theme-d1','w3-margin-top','w3-right');
+        	new_button.classList.add('w3-button','w3-theme-d1','w3-margin-top','w3-right');
 		new_button.appendChild(doneText);
 
 		old_button.parentNode.replaceChild(new_button,old_button);
 		new_button.addEventListener('click',function(){
-			done_function(nameinputText.value,data);
+			done_function(nameinputText.value,githubinputText.value,data);
 		});
+		
+		
+		
 
 	}
 
@@ -73,7 +85,7 @@
 
         //edit button
         var editButton = document.createElement("BUTTON");
-        editButton.setAttribute('id','BUTTON')
+        editButton.setAttribute('id','BUTTON');
         editButton.classList.add('w3-button','w3-theme-d1','w3-margin-top','w3-right');
         var editText = document.createTextNode('Edit');
         editButton.appendChild(editText);
@@ -89,7 +101,7 @@
 		friend.appendChild(name);
 
 		var name2 = document.createElement("h3");
-		name2.setAttribute('id','displayname')
+		name2.setAttribute('id','displayname');
 		name2.innerHTML = data.displayName;
 		friend.appendChild(name2);
 
@@ -102,16 +114,17 @@
 		friend.appendChild(id);
 
 		var divDescription = document.createElement("div");
-        divDescription.style.margin = "14px"
+        	divDescription.style.margin = "14px";
 		friend.appendChild(divDescription);
 
 		var url = document.createElement("p");
 		url.innerHTML ="URL: " + data.url;
-        url.style.marginLeft = "48px";
+        	url.style.marginLeft = "48px";
 		divDescription.appendChild(url);
 
 
 		var github = document.createElement("p");
+		github.setAttribute('id','github');
 		github.innerHTML = "GitHub: "+data.github;
 		github.style.marginLeft = "48px";
 		divDescription.appendChild(github);
