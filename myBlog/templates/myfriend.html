@@ -4,7 +4,7 @@
 <div id="firends_holder">
 </div>
 <script>
-	function display(data) {
+	function display_my_friendlist(data) {
 		for (var i = 0; i < data.length; i++) {
       		var friend = document.createElement("div");
       		friend.classList.add("w3-container", "w3-card", "w3-white", "w3-round", "w3-margin");
@@ -17,10 +17,9 @@
       		friend.appendChild(userLogo);
 
       		var name = document.createElement("p");
-      		name.style.fontSize = "20px";
-      		var name_link = document.createElement('a');
-      		{#name_link.setAttribute('href','/myBlog/authordetails/'+data[i].id+'/');#}
-      		name.innerHTML = "Name: "+"<span>"+"<a href='/myBlog/authordetails/"+data[i].id+"/'>"+data[i].displayName+"</a>"+"</span>" ;
+			name.style.fontSize = "22px";
+			var name_link = document.createElement('a');
+			name.innerHTML = "Name: " + "<span>" + "<a href='/myBlog/authordetails/" + data[i].id + "/'>" + data[i].displayName + "</a>" + "</span>";
       		name.style.margin = "14px";
       		friend.appendChild(name);
 
@@ -45,7 +44,7 @@
             }
       }
 
-getAllFriends("/myBlog/myfriends/").then(display);
+getAllFriends("/myBlog/myfriends/").then(display_my_friendlist);
 </script>
 {% else %}
 <div class="w3-card w3-round w3-white" style="width:30%;margin:auto;margin-top: 5%;">
@@ -59,5 +58,3 @@ getAllFriends("/myBlog/myfriends/").then(display);
 </div>
 {% endif %}
 {% endblock %}
-
-

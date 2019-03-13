@@ -51,7 +51,7 @@ function commentPost(id)
             "comment":"",
             "contentType":"text/plain"
         }
-    }
+    };
     commentForm.comment.comment= document.getElementById("commentInput"+id).value;
     let body = JSON.stringify(commentForm);
     let url = "/myBlog/posts/"+id+"/comments/";

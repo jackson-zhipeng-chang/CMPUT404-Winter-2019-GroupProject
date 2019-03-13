@@ -14,6 +14,13 @@ from uuid import UUID
 
 
 class NewPostHandler(APIView):
+    def get(self, request, format=None):
+        posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(visibility='PUBLIC'))
+        paginator = CustomPagination()
+        results = paginator.paginate_queryset(posts_list, request)
+        serializer=PostSerializer(results, many=True)
+        return paginator.get_paginated_response(serializer.data) 
+
     def post(self, request, format=None):
         current_user_uuid = Helpers.get_current_user_uuid(request)
         author = Helpers.get_author_or_not_exits(current_user_uuid)
@@ -37,15 +44,16 @@ class NewPostHandler(APIView):
 # https://www.django-rest-framework.org/tutorial/2-requests-and-responses/
 # https://www.django-rest-framework.org/tutorial/1-serialization/
 class PostHandler(APIView):
-    def get(self, request,postid, format=None):
+    def get(self, request, postid, format=None):
         if (not Post.objects.filter(pk=postid).exists()):
             return Response("Post couldn't find", status=404)
         else:
             post = Post.objects.get(pk=postid)
             serializer = PostSerializer(post)
             unlisted_post = post.unlisted
+            visibility = post.visibility
 
-            if unlisted_post:
+            if unlisted_post and visibility=='PUBLIC':
                 return JsonResponse(serializer.data, status=200)
 
             else:
@@ -96,32 +104,36 @@ class PostToUserHandlerView(APIView):
     def get(self, request, format=None):
         current_user_uuid = Helpers.get_current_user_uuid(request)
         if type(current_user_uuid) == UUID:
+            my_posts_list=[]
             public_posts_list = []
             friend_posts_list=[]  
             private_posts_list=[]
             serveronly_posts_list=[]
             foaf_posts_list=[]
-            if (Post.objects.filter(Q(author_id=current_user_uuid)|Q(visibility='PUBLIC')).exists()):
-                public_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(author_id=current_user_uuid)| Q(visibility='PUBLIC'))
+            if (Post.objects.filter(Q(unlisted=False), Q(author_id=current_user_uuid)).exists()):
+                my_posts_list=get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=current_user_uuid))
+
+            if (Post.objects.filter(Q(unlisted=False), ~Q(author_id=current_user_uuid), Q(visibility='PUBLIC')).exists()):
+                public_posts_list = get_list_or_404(Post.objects.order_by('-published'), ~Q(author_id=current_user_uuid), Q(unlisted=False), Q(visibility='PUBLIC'))
 
             friends_list = Helpers.get_friends(current_user_uuid)
             for friend in friends_list:
-                if (Post.objects.filter(Q(author_id=friend.id),Q(visibility='FRIENDS')).exists()):
-                    friend_posts_list+=get_list_or_404(Post.objects.order_by('-published'), Q(author_id=friend.id), Q(visibility='FRIENDS'))
+                if (Post.objects.filter(Q(unlisted=False),Q(author_id=friend.id),Q(visibility='FRIENDS')).exists()):
+                    friend_posts_list+=get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend.id), Q(visibility='FRIENDS'))
 
             for friend in friends_list:
-                if (Post.objects.filter(Q(author_id=friend.id), Q(visibility='PRIVATE')).exists()):
-                    private_list = get_list_or_404(Post.objects.order_by('-published'), Q(author_id=friend.id), Q(visibility='PRIVATE'))
+                if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend.id), Q(visibility='PRIVATE')).exists()):
+                    private_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend.id), Q(visibility='PRIVATE'))
                     for post in private_list:
                         if str(current_user_uuid) in post.visibleTo:
                             private_posts_list.append(post)
 
             for friend in friends_list:
-                if (Post.objects.filter(Q(author_id=friend.id), Q(visibility='SERVERONLY')).exists()):
+                if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend.id), Q(visibility='SERVERONLY')).exists()):
                     if (Helpers.get_current_user_host(request)==friend.host):
-                        serveronly_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(author_id=friend.id),Q(visibility='SERVERONLY'))
+                        serveronly_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend.id),Q(visibility='SERVERONLY'))
 
-            posts_list = public_posts_list+friend_posts_list+private_posts_list+serveronly_posts_list+foaf_posts_list
+            posts_list = my_posts_list+public_posts_list+friend_posts_list+private_posts_list+serveronly_posts_list+foaf_posts_list
             posts_list.sort(key=lambda x: x.published, reverse=True) # https://stackoverflow.com/questions/403421/how-to-sort-a-list-of-objects-based-on-an-attribute-of-the-objects answered Dec 31 '08 at 16:42 by Triptych
             paginator = CustomPagination()
             results = paginator.paginate_queryset(posts_list, request)
@@ -141,24 +153,24 @@ class PostToUserIDHandler(APIView):
             private_posts_list=[]
             serveronly_posts_list=[]
             foaf_posts_list=[]
-            if (Post.objects.filter(Q(author_id=user_id),Q(visibility='PUBLIC')).exists()):
-                public_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(author_id=user_id),Q(visibility='PUBLIC'))
+            if (Post.objects.filter(Q(unlisted=False), Q(author_id=user_id),Q(visibility='PUBLIC')).exists()):
+                public_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=user_id),Q(visibility='PUBLIC'))
 
             isFriend = Helpers.check_two_users_friends(current_user_uuid, user_id)
             if isFriend:
-                if (Post.objects.filter(Q(author_id=user_id),Q(visibility='FRIENDS')).exists()):
-                    friend_posts_list+=get_list_or_404(Post.objects.order_by('-published'), Q(author_id=user_id),Q(visibility='FRIENDS'))
+                if (Post.objects.filter(Q(unlisted=False),Q(author_id=user_id),Q(visibility='FRIENDS')).exists()):
+                    friend_posts_list+=get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False),Q(author_id=user_id),Q(visibility='FRIENDS'))
 
-                if (Post.objects.filter(Q(author_id=user_id), Q(visibility='PRIVATE')).exists()):
-                    private_list = get_list_or_404(Post.objects.order_by('-published'), Q(author_id=user_id),Q(visibility='PRIVATE'))
+                if (Post.objects.filter(Q(unlisted=False),Q(author_id=user_id), Q(visibility='PRIVATE')).exists()):
+                    private_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False),Q(author_id=user_id),Q(visibility='PRIVATE'))
                     for post in private_list:
                         if str(current_user_uuid) in post.visibleTo:
                             private_posts_list.append(post)
 
-                if (Post.objects.filter(Q(author_id=user_id), Q(visibility='SERVERONLY')).exists()):
+                if (Post.objects.filter(Q(unlisted=False),Q(author_id=user_id), Q(visibility='SERVERONLY')).exists()):
                     user_host = Author.objects.get(id=user_id)
                     if (Helpers.get_current_user_host(request)==user_host):
-                        serveronly_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(author_id=user_id),Q(visibility='SERVERONLY'))
+                        serveronly_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False),Q(author_id=user_id),Q(visibility='SERVERONLY'))
 
             posts_list = public_posts_list+friend_posts_list+private_posts_list+serveronly_posts_list+foaf_posts_list
             posts_list.sort(key=lambda x: x.published, reverse=True)
