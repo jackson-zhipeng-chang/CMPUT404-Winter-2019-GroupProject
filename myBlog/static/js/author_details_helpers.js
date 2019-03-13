@@ -261,13 +261,15 @@ function renderpage(data){
             postsDiv.classList.add("w3-container", "w3-card", "w3-white", "w3-round", "w3-margin");
             content.appendChild(postsDiv);
 
-            var title = document.createElement('h3');
-            title.innerHTML = posts.title;
-            title.classList.add('w3-row-padding');
-            title.style.margin = '0 20p;x';
-            title.style.marginTop = '10px';
-            title.style.marginLeft = '20px';
-            postsDiv.appendChild(title);
+            var post_details_link = document.createElement("a");
+            post_details_link.setAttribute('href','/myBlog/postdetails/'+data.posts[i].postid+'/');
+            postsDiv.appendChild(post_details_link);
+            var title = document.createElement("h3");
+            title.innerHTML = data.posts[i].title;
+            title.classList.add("w3-row-padding");
+            title.style.marginTop = "20px";
+            title.style.marginLeft = "20px";
+            post_details_link.appendChild(title);
 
             var line = document.createElement('hr');
             line.classList.add('w3-clear');

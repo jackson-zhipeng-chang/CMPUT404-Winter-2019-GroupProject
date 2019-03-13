@@ -1,7 +1,7 @@
 <div class="w3-container w3-card w3-white w3-round w3-margin">
-  <h4>Posts streams</h4>
+    <h4>Posts streams</h4>
 </div>
-<div id="posts_holder"> 
+<div id="posts_holder">
 
 </div>
 <script>
@@ -135,7 +135,6 @@ function display_posts(data) {
         holder.appendChild(nextButton);
       }
     }
-  }
-  getAllPosts("{{posts_url}}").then(display_posts);
+    getAllPosts("{{posts_url}}").then(display_posts);
 
 </script>
