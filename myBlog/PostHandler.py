@@ -14,6 +14,13 @@ from uuid import UUID
 
 
 class NewPostHandler(APIView):
+    def get(self, request, format=None):
+        posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(visibility='PUBLIC'))
+        paginator = CustomPagination()
+        results = paginator.paginate_queryset(posts_list, request)
+        serializer=PostSerializer(results, many=True)
+        return paginator.get_paginated_response(serializer.data) 
+
     def post(self, request, format=None):
         current_user_uuid = Helpers.get_current_user_uuid(request)
         author = Helpers.get_author_or_not_exits(current_user_uuid)

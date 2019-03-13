@@ -156,7 +156,7 @@ def get_follow_status(current_user_id, author_id):
         current_status = 'notFound'
         return current_status
 
-#-----------------Local endpoints-----------------#
+#-----------------------------------------Local endpoints-----------------------------------------#
 def new_post(request):
     return render(request, 'newpost.html')
 
@@ -178,3 +178,4 @@ def author_details(request,author_id):
     return render(request,'authordetails.html',{'authorid':author_id,'current_user_id':current_user_id,
                                                 'is_friend':is_friend,'followStatus':follow_status,
                                                 'current_user_name':current_user_name})
+#-----------------------------------------Local endpoints-----------------------------------------#
