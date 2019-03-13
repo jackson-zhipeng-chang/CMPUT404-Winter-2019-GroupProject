@@ -5,6 +5,12 @@ var follow_status;
 var aPosts;
 var cuurent_user_name;
 
+var authorName;
+var authorUrl;
+var authorHost;
+var authorGithub;
+
+
 // https://stackoverflow.com/questions/6941533/get-protocol-domain-and-port-from-url
 function get_host(){
     let current_url = window.location.href;
@@ -14,13 +20,18 @@ function get_host(){
 }
 
 // get author details which are the author's info & his posts
-function getAuthorDetails(authorid,currentUserID,isFriend,followStatus,currentUserName){
+function getAuthorDetails(authorid,currentUserID,isFriend,followStatus,currentUserName,friendInfo){
 
     author_id = authorid;
     current_user_id = currentUserID;
     is_friend_bool = isFriend;
     follow_status = followStatus;
     cuurent_user_name = currentUserName;
+
+    authorName = aPosts['author']['displayName'];
+    authorUrl = aPosts['author']['url'];
+    authorHost = aPosts['author']['host'];
+    authorGithub = aPosts['author']['github'];
     if (currentUserID != authorid){
         let url = '/myBlog/author/'+authorid+'/posts/';
         return fetch(url,{
@@ -141,11 +152,16 @@ function commentPost(id) {
 // got data, render the page
 function renderpage(data){
     var content = document.getElementById('content');
-    aPosts = data['posts'][0];
-    var authorName = aPosts['author']['displayName'];
-    var authorUrl = aPosts['author']['url'];
-    var authorHost = aPosts['author']['host'];
-    var authorGithub = aPosts['author']['github'];
+    // try{
+    //     aPosts = data['posts'][0];
+    //     var authorName = aPosts['author']['displayName'];
+    //     var authorUrl = aPosts['author']['url'];
+    //     var authorHost = aPosts['author']['host'];
+    //     var authorGithub = aPosts['author']['github'];
+    // }catch (exception) {
+    //     get_author_info
+    // }
+
 
     var authorDiv = document.createElement('div');
     authorDiv.setAttribute('id','author_div');
@@ -179,7 +195,7 @@ function renderpage(data){
     divDescription.appendChild(url);
 
     var github = document.createElement('p');
-    github.innerHTML = 'Github: '+aPosts.github;
+    github.innerHTML = 'Github: '+authorGithub;
     github.style.marginLeft='48px';
     divDescription.appendChild(github);
 

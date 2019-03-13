@@ -10,7 +10,7 @@ Author Details
         <script>
         // get friend request list then render the page.
         // authorid = the id of the author i want to see
-        getAuthorDetails("{{authorid}}","{{ current_user_id }}","{{ is_friend }}","{{ followStatus }}").then(renderpage);
+        getAuthorDetails("{{authorid}}","{{ current_user_id }}","{{ is_friend }}","{{ followStatus }}","{{ friend_info }}").then(renderpage);
         </script>
           {% else %}
           <div class="w3-card w3-round w3-white" style="width:30%;margin:auto;margin-top: 5%;">
