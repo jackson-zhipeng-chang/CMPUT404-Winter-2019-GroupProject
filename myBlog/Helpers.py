@@ -48,7 +48,6 @@ def verify_current_user_to_post(post, request):
     post_visibility = post.visibility
     post_author = post.author_id
     unlisted_post = post.unlisted
-    print(post_visibility)
     if User.objects.filter(pk=request.user.id).exists():
         current_user_uuid = get_current_user_uuid(request)
         if current_user_uuid == post_author:
@@ -68,9 +67,6 @@ def verify_current_user_to_post(post, request):
                 if current_user_uuid == post_author:
                     return True
                 elif post.visibleTo is not None:
-                    print(current_user_uuid)
-                    print(post.visibleTo)
-                    print(str(current_user_uuid) in post.visibleTo)
                     if (str(current_user_uuid) in post.visibleTo):
                         return True
                     else:
