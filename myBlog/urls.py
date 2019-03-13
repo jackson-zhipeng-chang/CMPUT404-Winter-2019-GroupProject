@@ -51,6 +51,6 @@ urlpatterns = [
     path('myfriendslist/', Helpers.my_friends, name='myfriendslist'),
     path('frlist/',Helpers.friend_request,name='requestlist'),
     path('authordetails/<author_id>/',Helpers.author_details,name='authordetails'),
-    path('unfriend/<uuid:friendid>/',Helpers.friend_request,name='unfriend'),
+    path('unfriend/<friendid>/',FriendRequestHandler.UnFriend.as_view(),name='unfriend'),
 
 ]

@@ -52,7 +52,21 @@ function getAuthorDetails(authorid,currentUserID,isFriend,followStatus,currentUs
 
     }
 }
-
+function sendUnFriendRequest(author_id){
+    let url = '/myBlog/unfriend/'+author_id+'/';
+    return fetch(url,{
+        method:"delete",
+        mode:"cors",
+        cache:"no-cache",
+        credentials:"same-origin",
+        headers:{
+            "Content-Type":"application/json",
+            "x-csrftoken":csrf_token,
+        },
+        redirect:"follow",
+        referrer:"no-referrer",
+    }).then(function(){window.location.reload(true)});
+}
 function sendFollowRequest(author_id,author_host,author_name,author_url,currentUserName){
     let host = get_host();
     let request_form = {
@@ -86,8 +100,8 @@ function sendFollowRequest(author_id,author_host,author_name,author_url,currentU
         referrer:"no-referrer",
     }).then(function(){
         //https://www.permadi.com/tutorial/jsInnerHTMLDOM/index.html
-       document.getElementById('follow_Btn').childNodes[0].nodeValue="Following";
-
+       //document.getElementById('follow_Btn').childNodes[0].nodeValue="Following";
+        window.location.reload(true);
     })
 }
 
@@ -202,7 +216,9 @@ function renderpage(data){
             // contentlink.setAttribute('href','#');
             contentlink.innerHTML = 'Unfollow';
             // TODO: change function
-            // contentlink.setAttribute('onclick',sendFollowRequest(author_id,authorHost,authorName,authorUrl,cuurent_user_name));
+            contentlink.addEventListener('click',function(){
+                sendUnFriendRequest(author_id);
+            });
 
 
             var unfriendText = document.createTextNode('Friend');
