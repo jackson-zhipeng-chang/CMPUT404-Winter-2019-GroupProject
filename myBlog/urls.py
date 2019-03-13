@@ -38,7 +38,7 @@ urlpatterns = [
     path('author/<uuid:user_id>/', AuthorProfileHandler.AuthorProfileHandler.as_view(), name='authorprofile'),
     path('author/<uuid:user_id1>/friends/<uuid:user_id2>/', Friend2FriendHandler.Friend2FriendHandler.as_view(), name='friend2friend'),
 
-
+    path('', Helpers.home, name='home'),
     path('login/', Accounts.LoginView.as_view(), name='login'),
     path('logout/', Accounts.logout_user, name='logout'),
     path('signup/', Accounts.signup, name='signup'),
@@ -50,7 +50,7 @@ urlpatterns = [
     path('myfriends/', FriendRequestHandler.MyFriends.as_view(), name='myfriends'),
     path('myfriendslist/', Helpers.my_friends, name='myfriendslist'),
     path('frlist/',Helpers.friend_request,name='requestlist'),
-    path('', Helpers.home, name='home'),
     path('authordetails/<author_id>/',Helpers.author_details,name='authordetails'),
+    path('unfriend/<uuid:friendid>/',Helpers.friend_request,name='unfriend'),
 
 ]
