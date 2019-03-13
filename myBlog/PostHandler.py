@@ -113,8 +113,8 @@ class PostToUserHandlerView(APIView):
             if (Post.objects.filter(Q(author_id=current_user_uuid)).exists()):
                 my_posts_list=get_list_or_404(Post.objects.order_by('-published'), Q(author_id=current_user_uuid))
 
-            if (Post.objects.filter(Q(unlisted=False), Q(visibility='PUBLIC')).exists()):
-                public_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(visibility='PUBLIC'))
+            if (Post.objects.filter(Q(unlisted=False), ~Q(author_id=current_user_uuid), Q(visibility='PRIVATE')).exists()):
+                public_posts_list = get_list_or_404(Post.objects.order_by('-published'), ~Q(author_id=current_user_uuid), Q(unlisted=False), Q(visibility='PUBLIC'))
 
             friends_list = Helpers.get_friends(current_user_uuid)
             for friend in friends_list:
