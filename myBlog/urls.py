@@ -52,5 +52,6 @@ urlpatterns = [
     path('frlist/',Helpers.friend_request,name='requestlist'),
     path('', Helpers.home, name='home'),
     path('authordetails/<author_id>/',Helpers.author_details,name='authordetails'),
+    path('postdetails/<post_id>/', Helpers.post_details, name='postdetails')
 
 ]

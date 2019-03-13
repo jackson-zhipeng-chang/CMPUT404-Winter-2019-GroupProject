@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+
+{% if user.is_authenticated %}
+<div class="w3-container w3-card w3-white w3-round w3-margin">
+    <i class="fa fa-user w3-left w3-circle" style="width: 20px; margin: 25px; display: inline-block;"></i>
+    <a href="/myBlog/authordetails/ab0657a6-cec1-4879-925f-d23990e2e105/" style="font-size: 25px; margin-top: 11px; display: inline-block;">{{author}}</a>
+    <hr class="w3-clear"><h3 class="w3-row-padding" style="margin: 0px 20px;">{{title}}</h3><hr class="w3-clear">
+    <div class="w3-row-padding" style="margin: 0px 20px;">
+        <p>{{ content }}</p>
+        <hr class="w3-clear">
+        <h4>Comments</h4>
+        {% for comment in comments %}
+                <p>{{author}} commented: {{ comment.comment }}</p>
+        {% endfor %}
+        <textarea id="commentInput0280f155-417e-4e66-af52-9cc164275309" class="w3-border w3-padding" style="width: 100%;"></textarea>
+        <button class="w3-button w3-theme-d1 w3-margin-bottom w3-right"><i class="fa fa-comment"></i> &nbsp;Comment</button>
+    </div>
+
+{% else %}
+  <div class="w3-card w3-round w3-white" style="width:30%;margin:auto;margin-top: 5%;">
+    <div class="w3-container w3-padding">
+      <div class="w3-center">
+        <h3>You are not logged in</h3>
+        <a href="{% url 'login' %}" class="w3-button w3-theme-d1 w3-margin-bottom"><i class="fa fa-sign-in"></i>  Login</a>
+        <a href="{% url 'signup' %}" class="w3-button w3-theme-d1 w3-margin-bottom"><i class="fa fa-angle-double-up"></i> Sign up</a>
+      </div>
+    </div>
+  </div>
+{% endif %}
+{% endblock %}

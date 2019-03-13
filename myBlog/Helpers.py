@@ -184,3 +184,13 @@ def author_details(request,author_id):
     return render(request,'authordetails.html',{'authorid':author_id,'current_user_id':current_user_id,
                                                 'is_friend':is_friend,'followStatus':follow_status,
                                                 'current_user_name':current_user_name})
+
+
+def post_details(request, post_id):
+    comments = Comment.objects.filter(postid=post_id)
+    post = Post.objects.get(pk=post_id)
+    return render(request, 'postdetails.html', {'author': post.author, 'title': post.title,
+                                                'description': post.description, 'categories': post.categories,
+                                                'content': post.content, 'visibility': post.visibility,
+                                                'published': post.published, 'comments': comments})
+
