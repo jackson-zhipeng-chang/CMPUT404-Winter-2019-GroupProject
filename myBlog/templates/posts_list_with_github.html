@@ -79,7 +79,7 @@
                 divDescription.style.margin = "0 20px";
                 post.appendChild(divDescription);
 
-                if (data.posts[i].contentType == "image/png;base64" || data.posts[i].contentType == "image/jepg;base64")
+                if (data.posts[i].contentType == "image/png;base64" || data.posts[i].contentType == "image/jpeg;base64")
                 {
                     var content = document.createElement("img");
                     content.src = data.posts[i].content;
