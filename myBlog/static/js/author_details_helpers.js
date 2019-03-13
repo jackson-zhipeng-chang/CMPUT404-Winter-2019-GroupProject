@@ -213,7 +213,6 @@ function renderpage(data){
             var contentlink = document.createElement('a');
             dropdownContentDiv.appendChild(contentlink);
             contentlink.classList.add("w3-bar-item", "w3-button");
-            // contentlink.setAttribute('href','#');
             contentlink.innerHTML = 'Unfollow';
             // TODO: change function
             contentlink.addEventListener('click',function(){
@@ -240,10 +239,11 @@ function renderpage(data){
                 var contentlink = document.createElement('a');
                 dropdownContentDiv.appendChild(contentlink);
                 contentlink.classList.add("w3-bar-item", "w3-button");
-                // contentlink.setAttribute('href','#');
                 contentlink.innerHTML = 'Unfollow';
                 // TODO: change function
-                // contentlink.setAttribute('onclick',sendFollowRequest(author_id,authorHost,authorName,authorUrl,cuurent_user_name));
+                contentlink.addEventListener('click',function(){
+                    sendUnFriendRequest(author_id);
+                });
                 var unfriendText = document.createTextNode('Following');
                 unFriendBtn.appendChild(unfriendText);
             } else if (follow_status == 'notFound') {
