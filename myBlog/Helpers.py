@@ -119,12 +119,11 @@ def check_author1_follow_author2(author1_id,author2_id):
 
 def home(request):
     current_user_uuid = get_current_user_uuid(request)
-    print(current_user_uuid)
     if type(current_user_uuid) == UUID:
         user_author = Author.objects.get(id=current_user_uuid)
         author_github = user_author.github
         if author_github is not None:
-            github_id = author_github.replace("https://github.com/","")
+            github_id = author_github.replace("https://github.com/","").replace("/","")
             github_url = "https://api.github.com/users/%s/events/public"%github_id
         else:
             github_url = "null"
