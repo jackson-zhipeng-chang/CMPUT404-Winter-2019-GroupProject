@@ -47,49 +47,43 @@ def verify_current_user_to_post(post, request):
     post_visibility = post.visibility
     post_author = post.author_id
     unlisted_post = post.unlisted
-    if unlisted_post:
-        return True
-    else:
-        if User.objects.filter(pk=request.user.id).exists():
-            current_user_uuid = get_current_user_uuid(request)
-            if current_user_uuid == post_author:
+    if User.objects.filter(pk=request.user.id).exists():
+        current_user_uuid = get_current_user_uuid(request)
+        if current_user_uuid == post_author:
+            return True
+        else:
+            if post_visibility == 'PUBLIC':
                 return True
-            else:
-                if post_visibility == 'PUBLIC':
+            elif post_visibility == 'FOAF':
+                return True
+            elif post_visibility == 'FRIENDS':
+                isFriend = check_two_users_friends(post_author,current_user_uuid)
+                if isFriend:
                     return True
-                elif post_visibility == 'FOAF':
+                else:
+                    return False
+            elif post_visibility == 'PRIVATE':
+                if current_user_uuid == post_author:
                     return True
-                elif post_visibility == 'FRIENDS':
-                    isFriend = check_two_users_friends(post_author,current_user_uuid)
-                    if isFriend:
-                        return True
-                    else:
-                        return False
-                elif post_visibility == 'PRIVATE':
-                    if current_user_uuid == post_author:
-                        return True
-                    elif post.visibleTo is not None:
-                        if (str(current_user_uuid) in post.visibleTo):
-                            return True
-                        else:
-                            return False
-                    else:
-                        return False
-                elif post_visibility == 'SERVERONLY' and isFriend:
-                    post_server = Author.objects.get(id=post.author.id).host
-                    user_server = Author.objects.get(id=current_user_uuid).host
-                    if user_server == post_server:
+                elif post.visibleTo is not None:
+                    if (str(current_user_uuid) in post.visibleTo):
                         return True
                     else:
                         return False
                 else:
                     return False
-        elif (not User.objects.filter(pk=request.user.id).exists()):
-            if unlisted_post:
-                return True
+            elif post_visibility == 'SERVERONLY' and isFriend:
+                post_server = Author.objects.get(id=post.author.id).host
+                user_server = Author.objects.get(id=current_user_uuid).host
+                if user_server == post_server:
+                    return True
+                else:
+                    return False
             else:
-                return False
-
+                    return False
+    elif (not User.objects.filter(pk=request.user.id).exists()):
+        return False
+        
 def get_friends(current_user_uuid):
     author_object = Author.objects.get(id=current_user_uuid)
     friendsDirect = Friend.objects.filter(Q(author=author_object), Q(status='Accept'))
@@ -168,13 +162,13 @@ def get_follow_status(current_user_id, author_id):
     else:
         return render(request, 'homepage.html')
 
-#-----------------Local endpoints-----------------#
+#-----------------------------------------Local endpoints-----------------------------------------#
 def new_post(request):
     return render(request, 'newpost.html')
 
 def my_posts(request):
     posts_url = "/myBlog/posts/mine/?size=10"
-    return render(request, 'posts_list.html', {"posts_url":posts_url, "trashable":"true"})
+    return render(request, 'my_posts_list.html', {"posts_url":posts_url, "trashable":"true"})
 
 def friend_request(request):
     return render(request,'friendrequest.html')

@@ -9,7 +9,7 @@
 function display_posts(data) {
     let holder = document.getElementById("posts_holder");
     holder.innerHTML = "";
-    if (data.posts.length == 0){
+    if (data.detail === 'Not found.'){
         let post = document.createElement("div");
         post.classList.add("w3-container", "w3-card", "w3-white", "w3-round", "w3-margin");
         holder.appendChild(post);
