@@ -162,13 +162,7 @@ def get_follow_status(current_user_id, author_id):
         current_status = 'notFound'
         return current_status
 
-
-
-def posts_list(request):
-    url = "/myBlog/author/posts/?size=10"
-    current_user_id = get_current_user_uuid(request)
-    return render(request, 'posts.html', {"url":url, "trashable":"false",'current_user_id':current_user_id})
-
+#-----------------Local endpoints-----------------#
 def new_post(request):
     return render(request, 'newpost.html')
 
