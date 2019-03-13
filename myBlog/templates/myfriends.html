@@ -5,6 +5,17 @@
 </div>
 <script>
 	function display_my_friendlist(data) {
+		if (data.length == 0){
+			let friend = document.createElement("div");
+			friend.classList.add("w3-container", "w3-card", "w3-white", "w3-round", "w3-margin");
+			firends_holder.appendChild(friend);
+			let notFound = document.createElement("h2");
+			notFound.innerHTML = "No friends found";
+			notFound.classList.add("w3-row-padding");
+			notFound.style.margin = "20px";
+			friend.appendChild(notFound);
+		}
+
 		for (var i = 0; i < data.length; i++) {
       		var friend = document.createElement("div");
       		friend.classList.add("w3-container", "w3-card", "w3-white", "w3-round", "w3-margin");
