@@ -220,6 +220,7 @@ def post_details(request, post_id):
 
             return render(request, 'postdetails.html', {'author': post.author, 'title': post.title,
                                                         'description': post.description, 'categories': categories,
+                                                        'unlisted': post.unlisted,
                                                         'content': post.content, 'visibility': post.visibility,
                                                         'published': post.published, 'comments': comments,
                                                         "contentIsPicture": content_is_picture, 'postID': post.postid,
