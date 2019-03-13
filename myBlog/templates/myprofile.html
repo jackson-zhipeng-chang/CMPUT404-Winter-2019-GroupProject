@@ -8,14 +8,14 @@
 
 
 <script>
-	function done_function(value,data){
+	function done_function(Namevalue,Githubvalue,data){
 		let url = "/myBlog/author/" + data.id+'/';
 		let requestFrom = {
 			"id":data.id,
-			"displayName":value,
+			"displayName":Namevalue,
 			"url":data.url,
 			"host":data.host,
-			"github":data.github
+			"github":Githubvalue
 		}
 		let body = JSON.stringify(requestFrom);
 		return fetch(url,{
@@ -45,6 +45,18 @@
 		nameinputText.setAttribute('value',data.displayName);
 		old_name.replaceChild(nameinputText,old_name.childNodes[0]);
 
+
+
+		//change github to textinput
+		var old_github = document.getElementById("github");
+		githubinputText = document.createElement('INPUT');
+		githubinputText.setAttribute('type','text');
+		githubinputText.setAttribute('value',data.github);
+		old_github.replaceChild(githubinputText,old_github.childNodes[0]);
+
+
+
+
 		//chage done button
 		var old_button = document.getElementById("BUTTON");
 		doneText = document.createTextNode('done');
@@ -54,7 +66,7 @@
 
 		old_button.parentNode.replaceChild(new_button,old_button);
 		new_button.addEventListener('click',function(){
-			done_function(inputText.value,data);
+			done_function(nameinputText.value,githubinputText.value,data);
 		});
 
 	}
@@ -112,9 +124,19 @@
 
 
 		var github = document.createElement("p");
-		github.innerHTML = "GitHub: "+data.github;
+		github.setAttribute('id','github_label')
+		github.innerHTML = "GitHub: ";
 		github.style.marginLeft = "48px";
 		divDescription.appendChild(github);
+
+		var github = document.createElement("p");
+		github.setAttribute('id','github')
+		github.innerHTML = data.github;
+		//github.style.marginLeft = "48px";
+		divDescription.appendChild(github);
+		document.getElementById("github_label").style.display="inline-block";
+		document.getElementById("github").style.display="inline-block";
+
 
       }
 

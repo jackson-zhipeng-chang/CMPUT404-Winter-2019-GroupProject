@@ -23,7 +23,7 @@ class Author(models.Model):
 
 class Friend(models.Model):
 #https://briancaffey.github.io/2017/07/19/different-ways-to-build-friend-models-in-django.html
-# https://stackoverflow.com/questions/2201598/how-to-define-two-fields-unique-as-couple
+#https://stackoverflow.com/questions/2201598/how-to-define-two-fields-unique-as-couple
     friednStatusChoise = (
         ('Accept', 'Accept'),
         ('Decline', 'Decline'),

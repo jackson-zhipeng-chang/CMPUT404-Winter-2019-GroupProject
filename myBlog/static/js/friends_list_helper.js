@@ -9,10 +9,10 @@ function get_host()
 function getAllFriends(url) 
 {
       return fetch(url, {
-          method: "GET", 
+          method: "GET",
           mode: "cors", 
           cache: "no-cache", 
-          credentials: "same-origin", 
+          credentials: "same-origin",
           headers: {
               "Content-Type": "application/json"
           },

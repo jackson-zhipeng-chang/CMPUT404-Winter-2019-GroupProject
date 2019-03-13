@@ -9,18 +9,18 @@ function get_host()
 
 function getAllPosts(url) 
 {
-      return fetch(url, {
-          method: "GET", 
-          mode: "cors", 
-          cache: "no-cache", 
-          credentials: "same-origin", 
-          headers: {
-              "Content-Type": "application/json"
-          },
-          redirect: "follow", 
-          referrer: "no-referrer", 
-      })
-      .then(response => response.json());
+    return fetch(url, {
+        method: "GET", 
+        mode: "cors", 
+        cache: "no-cache", 
+        credentials: "same-origin", 
+        headers: {
+            "Content-Type": "application/json"
+        },
+        redirect: "follow", 
+        referrer: "no-referrer", 
+    })
+    .then(response => response.json());
 }
 
 function deletePost(id)
@@ -55,6 +55,7 @@ function commentPost(id)
     commentForm.comment.comment= document.getElementById("commentInput"+id).value;
     let body = JSON.stringify(commentForm);
     let url = "/myBlog/posts/"+id+"/comments/";
+
     return fetch(url, {
         method: "POST", 
         mode: "cors", 

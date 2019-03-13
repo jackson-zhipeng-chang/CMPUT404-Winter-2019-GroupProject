@@ -4,8 +4,7 @@ function previewFile()
 {
     var file = document.querySelector('input[type=file]').files[0];
     var reader  = new FileReader();
-    reader.onloadend = function ()
-    {
+    reader.onloadend = function (){
         encoded_img = reader.result;
         document.getElementById("post-content").value = encoded_img;
         let selectedType = document.getElementById("post-contenttype").value;
@@ -14,8 +13,7 @@ function previewFile()
             alert("Please upload the selected type image!");
         }
     }
-    if (file)
-    {
+    if (file){
         reader.readAsDataURL(file); //reads the data as a URL
     }
 }
@@ -42,14 +40,12 @@ function enableVisibleTo()
 function enableInput()
 {
     var selectedType = document.getElementById("post-contenttype").value;
-    if (selectedType=="image/png;base64" || selectedType=="image/jpeg;base64")
-    {
+    if (selectedType=="image/png;base64" || selectedType=="image/jpeg;base64"){
         alert("Since you selected img, you will not be able to add content");
         document.getElementById("post-content").readOnly  = true;
         document.getElementById("my-file").disabled = false;
     }
-    else
-    {
+    else{
         document.getElementById("post-content").readOnly  = false;
         document.getElementById("my-file").disabled = true;
         document.getElementById("post-content").value = "";
@@ -78,8 +74,7 @@ function set_friends_list (){
     })
 }
 
-function get_friends_list()
-{
+function get_friends_list(){
     let url = "/myBlog/myfriends/";
     return fetch(url, {
         method: "GET",
@@ -102,16 +97,14 @@ function get_friends_list()
 }
 
 // https://stackoverflow.com/questions/6941533/get-protocol-domain-and-port-from-url
-function get_host()
-{
+function get_host(){
     var url = window.location.href;
     var arr = url.split("/");
     var result = arr[0] + "//" + arr[2];
     return result
 }
 
-function post()
-{
+function post(){
     let form =
     {
         title: "",
@@ -180,4 +173,4 @@ function post()
         }
     });
 
-  }
+}
