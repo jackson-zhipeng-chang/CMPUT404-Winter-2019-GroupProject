@@ -51,8 +51,14 @@
 		var old_github = document.getElementById("github");
 		githubinputText = document.createElement('INPUT');
 		githubinputText.setAttribute('type','text');
-		githubinputText.setAttribute('value',data.github);
-		old_github.replaceChild(githubinputText,old_github.childNodes[0]);
+		if (data.github != null){
+			githubinputText.setAttribute('value',data.github);
+			old_github.replaceChild(githubinputText,old_github.childNodes[0]);
+		}
+		else{
+			githubinputText.setAttribute('value',"");
+			old_github.appendChild(githubinputText);
+		}
 
 
 
@@ -119,25 +125,21 @@
 
 		var url = document.createElement("p");
 		url.innerHTML ="URL: " + data.url;
-        url.style.marginLeft = "48px";
-		divDescription.appendChild(url);
-
+        url.style.marginLeft = "60px";
+		friend.appendChild(url);
 
 		var github = document.createElement("p");
 		github.setAttribute('id','github_label')
 		github.innerHTML = "GitHub: ";
-		github.style.marginLeft = "48px";
-		divDescription.appendChild(github);
+		github.style.marginLeft = "60px";
+		friend.appendChild(github);
 
 		var github = document.createElement("p");
 		github.setAttribute('id','github')
 		github.innerHTML = data.github;
-		//github.style.marginLeft = "48px";
-		divDescription.appendChild(github);
+		friend.appendChild(github);
 		document.getElementById("github_label").style.display="inline-block";
 		document.getElementById("github").style.display="inline-block";
-
-
       }
 
 getProfile("/myBlog/myprofile/").then(display_my_profile);
