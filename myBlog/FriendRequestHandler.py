@@ -130,3 +130,20 @@ class MyFriends(APIView):
         serializer = AuthorSerializer(friends_list, many=True)
         return JsonResponse(serializer.data, safe=False)
             
+class UnFriend(APIView):
+    def delete(self, request, friendid, format=None):
+        current_user_uuid = Helpers.get_current_user_uuid(request)
+        if (Friend.objects.filter(Q(author=current_user_uuid), Q(status='Accept')).exists()):
+            Friend.objects.filter(Q(author=current_user_uuid), Q(status='Accept')).delete()
+            return Response("Deleted", status=200)
+
+        if (Friend.objects.filter(Q(author=friendid), Q(status='Accept')).exists()):
+            Friend.objects.filter(Q(author=friendid), Q(status='Accept')).delete()
+            return Response("Deleted", status=200)
+
+        # case that, A requests B, before B accepts/declines this request, A sends an unFriend request to B
+        elif (Friend.objects.filter(Q(author=current_user_uuid),Q(friend=friendid),Q(status='Pending')).exists()):
+            Friend.objects.filter(Q(author=current_user_uuid),Q(friend=friendid),Q(status='Pending')).delete()
+            return Response("Cancel friend quest",status=200)
+        else:
+            return Response("You are not friend yet", status=400)

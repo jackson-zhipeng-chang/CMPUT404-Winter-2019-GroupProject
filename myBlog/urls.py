@@ -38,20 +38,21 @@ urlpatterns = [
     path('author/<uuid:user_id>/', AuthorProfileHandler.AuthorProfileHandler.as_view(), name='authorprofile'),
     path('author/<uuid:user_id1>/friends/<uuid:user_id2>/', Friend2FriendHandler.Friend2FriendHandler.as_view(), name='friend2friend'),
 
-
+    path('', Helpers.home, name='home'),
     path('login/', Accounts.LoginView.as_view(), name='login'),
     path('logout/', Accounts.logout_user, name='logout'),
     path('signup/', Accounts.signup, name='signup'),
     path('all/', Helpers.home, name='postslist'),
     path('newpost/', Helpers.new_post, name='newpost'),
     path('myprofile/', AuthorProfileHandler.MyProfileHandler.as_view(), name='myprofile'),
+    path('myprofliepage/', Helpers.my_profile, name='myprofliepage'),
     path('posts/mine/',  PostHandler.MyPostHandler.as_view(), name='myposts_view'),
     path('myposts/', Helpers.my_posts, name='myposts'),
     path('myfriends/', FriendRequestHandler.MyFriends.as_view(), name='myfriends'),
     path('myfriendslist/', Helpers.my_friends, name='myfriendslist'),
     path('frlist/',Helpers.friend_request,name='requestlist'),
-    path('', Helpers.home, name='home'),
     path('authordetails/<author_id>/',Helpers.author_details,name='authordetails'),
-    path('postdetails/<post_id>/', Helpers.post_details, name='postdetails')
+    path('postdetails/<post_id>/', Helpers.post_details, name='postdetails'),
+    path('unfriend/<friendid>/',FriendRequestHandler.UnFriend.as_view(),name='unfriend'),
 
 ]
