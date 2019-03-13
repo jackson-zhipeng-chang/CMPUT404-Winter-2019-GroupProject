@@ -12,9 +12,13 @@
         <a href="/myBlog/authordetails/ab0657a6-cec1-4879-925f-d23990e2e105/" style="font-size: 25px; margin-top: 11px; display: inline-block;">{{author}}</a>
         <hr class="w3-clear">
         <h3 class="w3-row-padding" style="margin: 0px 20px;">{{title}}</h3>
+        <hr class="w3-clear">
         <p class="w3-row-padding" style="margin: 0px 20px;">{{ published }}</p>
+        <hr class="w3-clear">
         <p class="w3-row-padding" style="margin: 0px 20px;">Visibility: {{ visibility }}</p>
+        <hr class="w3-clear">
         <p class="w3-row-padding" style="margin: 0px 20px;">Description: {{ description }}</p>
+        <hr class="w3-clear">
         <p class="w3-row-padding" style="margin: 0px 20px;">Categories:
             {% for category in categories %}
                 <mark class="w3-theme-d1" style="padding: 5px">{{ category }}</mark>
@@ -22,7 +26,7 @@
         </p>
         <hr class="w3-clear">
 
-        <div class="w3-row-padding" style="margin: 0px 20px;">
+        <div class="w3-row-padding" style="margin: 0px 20px;">Content: 
 
             {% if contentIsPicture%}
                 <img src={{ content }} height=20% width=20%>

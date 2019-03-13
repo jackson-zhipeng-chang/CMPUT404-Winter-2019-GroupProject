@@ -6,12 +6,12 @@
 <script src="https://cdn.rawgit.com/harvesthq/chosen/gh-pages/chosen.jquery.min.js"></script>
 <script>var csrf_token = '{{ csrf_token }}';</script>
 {% load staticfiles %}
-<script src="{% static "js/new_post_helper.js" %}"></script>
-<script src="{% static "js/posts_list_helper.js" %}"></script>
-<script src="{% static "js/friends_list_helper.js" %}"></script>
-<script src="{% static "js/change_fr_status_helpers.js" %}"></script>
-<script src="{% static "js/github_helper.js" %}"></script>
-<script src="{% static "js/author_details_helpers.js" %}"></script>
+<script src="{% static 'js/new_post_helper.js' %}"></script>
+<script src="{% static 'js/posts_list_helper.js' %}"></script>
+<script src="{% static 'js/friends_list_helper.js' %}"></script>
+<script src="{% static 'js/change_fr_status_helpers.js' %}"></script>
+<script src="{% static 'js/github_helper.js' %}"></script>
+<script src="{% static 'js/author_details_helpers.js' %}"></script>
 <link rel="stylesheet" type="text/css" href="/static/css/stylew3.css" />
 <link rel="stylesheet" href="https://www.w3schools.com/lib/w3-theme-blue-grey.css">
 <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Open+Sans'>
@@ -50,7 +50,7 @@
                     <a href="/myBlog/myprofile" class="w3-bar-item w3-button">My Profile</a>
                     <a href="/myBlog/logout" class="w3-bar-item w3-button">Log Out</a></div>
             </div>
-            <script src="{% static "js/send_periodic_request_helpers.js" %}"></script>
+            <script src="{% static 'js/send_periodic_request_helpers.js' %}"></script>
         {% endif %}
     </div>
 </div>
