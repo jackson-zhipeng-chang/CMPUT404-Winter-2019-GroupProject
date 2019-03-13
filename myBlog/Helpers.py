@@ -174,7 +174,7 @@ def friend_request(request):
     return render(request,'friendrequest.html')
 
 def my_friends(request):
-    return render(request, 'myfriend.html')
+    return render(request, 'myfriends.html')
 
 def my_profile(request):
     return render(request, 'myprofile.html')

@@ -179,23 +179,16 @@ function renderpage(data){
     url.style.marginLeft='48px';
     divDescription.appendChild(url);
 
-    if(authorGithub){
-        var github = document.createElement('p');
-        github.innerHTML = 'Github: '+aPosts.github;
-        github.style.marginLeft='48px';
-        divDescription.appendChild(github);
-    }else{
-        var blank = document.createElement('br');
-        divDescription.appendChild(blank);
-    }
-
+    var github = document.createElement('p');
+    github.innerHTML = 'Github: '+aPosts.github;
+    github.style.marginLeft='48px';
+    divDescription.appendChild(github);
 
     var btnDiv = document.createElement('div');
     btnDiv.setAttribute('id','btn_Div');
     btnDiv.classList.add("w3-white","w3-round","w3-margin","w3-right");
     authorDiv.appendChild(btnDiv);
-
-
+    
     if(current_user_id!=author_id) {
         if (is_friend_bool == 'true') {
             var dropdownDiv = document.createElement('div');
