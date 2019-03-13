@@ -34,11 +34,11 @@ def get_current_user_uuid(request):
 
 def get_current_user_host(request):
     if (not User.objects.filter(pk=request.user.id).exists()):
-        return Response("User coudn't find", status=404)
+        raise Response("User coudn't find", status=404)
     else:
         current_user = User.objects.get(pk=request.user.id)
         if (not Author.objects.filter(user=current_user).exists()):
-            return Response("Author coudn't find", status=404)
+            raise Response("User coudn't find", status=404)
         else:
             author = get_object_or_404(Author, user=current_user)
             return author.host
@@ -97,9 +97,6 @@ def get_friends(current_user_uuid):
             friends_list.append(friend.author)
     return friends_list
 
-def get_followings():
-    return True
-
 def check_two_users_friends(author1_id,author2_id):
     author1_object = Author.objects.get(id=author1_id)
     author2_object = Author.objects.get(id=author2_id)
@@ -122,6 +119,7 @@ def check_author1_follow_author2(author1_id,author2_id):
 
 def home(request):
     current_user_uuid = get_current_user_uuid(request)
+    print(current_user_uuid)
     if type(current_user_uuid) == UUID:
         user_author = Author.objects.get(id=current_user_uuid)
         author_github = user_author.github
@@ -138,7 +136,7 @@ def home(request):
 def is_my_friend(current_user_id, author_id):
     current_user_object = Author.objects.get(id=current_user_id)
     if type(current_user_id) is UUID:
-        friend_object = Author.objects.get(id=author_id)
+        friend_object = get_object_or_404(Author, id=author_id)
         relation_curUser_to_frined = Friend.objects.filter(author=current_user_object, friend=friend_object,status="Accept")
         relation_friend_to_curUser = Friend.objects.filter(author=friend_object, friend=current_user_object,status="Accept")
         if relation_curUser_to_frined or relation_friend_to_curUser:
@@ -146,7 +144,7 @@ def is_my_friend(current_user_id, author_id):
         else:
             return 'false'
     else:
-        return render(request, 'homepage.html')
+        raise Response("User coudn't find", status=404)
         
 def get_follow_status(current_user_id, author_id):
     current_user_object = Author.objects.get(id=current_user_id)
@@ -160,7 +158,7 @@ def get_follow_status(current_user_id, author_id):
             current_status = 'notFound'
             return current_status
     else:
-        return render(request, 'homepage.html')
+        raise Response("User coudn't find", status=404)
 
 #-----------------------------------------Local endpoints-----------------------------------------#
 def new_post(request):
@@ -180,6 +178,7 @@ def my_profile(request):
     return render(request, 'myprofile.html')
 
 def author_details(request,author_id):
+    get_author_or_not_exits(author_id)
     current_user_id = get_current_user_uuid(request)
     if type(current_user_id) is UUID:
         current_user_name = Author.objects.get(pk=current_user_id).displayName

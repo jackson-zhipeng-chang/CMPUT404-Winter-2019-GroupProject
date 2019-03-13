@@ -22,7 +22,6 @@ function getAuthorDetails(authorid,currentUserID,isFriend,followStatus,currentUs
     follow_status = followStatus;
     cuurent_user_name = currentUserName;
     if (currentUserID != authorid){
-
         let url = '/myBlog/author/'+authorid+'/posts/';
         return fetch(url,{
             method:"GET",
@@ -215,7 +214,9 @@ function renderpage(data){
 
             var unfriendText = document.createTextNode('Friend');
             unFriendBtn.appendChild(unfriendText);
-        } else {
+        } 
+
+        else {
             if (follow_status == 'Pending' || follow_status == 'Decline') {
                 var dropdownDiv = document.createElement('div');
                 btnDiv.appendChild(dropdownDiv);
@@ -239,7 +240,8 @@ function renderpage(data){
                 });
                 var unfriendText = document.createTextNode('Following');
                 unFriendBtn.appendChild(unfriendText);
-            } else if (follow_status == 'notFound') {
+            } 
+            else if (follow_status == 'notFound') {
                 var followBtn = document.createElement("BUTTON");
                 followBtn.setAttribute('id', 'follow_Btn');
                 followBtn.classList.add('w3-button', 'w3-theme-d1', 'w3-margin-bottom');
@@ -283,7 +285,8 @@ function renderpage(data){
                 imgContent.src = posts.content;
                 imgContent.style.width = '20%';
                 imgContent.style.height = '20%';
-            } else {
+            } 
+            else {
                 var imgContent = document.createElement('p');
                 imgContent.innerHTML = posts.content;
             }
@@ -320,24 +323,5 @@ function renderpage(data){
             divDescription.appendChild(commentButton);
 
         }
-    }else{
-        console.log('edit mode');
     }
-
-    // if (data.next !=null){
-    //     var nextButton = document.createElement('button');
-    //     nextButton.classList.add("w3-button", "w3-theme-d1", "w3-margin-bottom", "w3-right");
-    //     nextButton.insertAdjacentHTML("beforeend", "<i class='fa fa-arrow-right	'></i> Next Page");
-    //     nextButton.onclick=function(){getAuthorDetails(data.next).then(renderpage)} ;
-    //     content.appendChild(nextButton);
-    // }
-    //
-    // if (data.previous != null){
-    //     var nextButton = document.createElement('button');
-    //     nextButton.classList.add("w3-button", "w3-theme-d1", "w3-margin-bottom", "w3-right");
-    //     nextButton.insertAdjacentHTML("beforeend", "<i class='fa fa-arrow-left	'></i> Previous Page");
-    //     nextButton.onclick=function(){getAuthorDetails(data.next).then(renderpage)} ;
-
-    //}
-
 }

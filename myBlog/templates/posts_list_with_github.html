@@ -36,13 +36,13 @@ function display_posts(data) {
 
         if ({{trashable}})
         {
-          let post_id = data.posts[i].postid;
-          var trashLogo = document.createElement("i");
-          trashLogo.classList.add("fa", "fa-trash", "w3-right", "w3-margin-right", "w3-button");
-          trashLogo.style.width = "25px";
-          trashLogo.style.margin = "25px";
-          trashLogo.onclick=function(){deletePost(post_id)} ;
-          post.appendChild(trashLogo);
+        let post_id = data.posts[i].postid;
+        var trashLogo = document.createElement("i");
+        trashLogo.classList.add("fa", "fa-trash", "w3-right", "w3-margin-right", "w3-button");
+        trashLogo.style.width = "25px";
+        trashLogo.style.margin = "25px";
+        trashLogo.onclick=function(){deletePost(post_id)} ;
+        post.appendChild(trashLogo);
         }
 
         var author = document.createElement("a");
@@ -75,15 +75,15 @@ function display_posts(data) {
 
         if (data.posts[i].contentType == "image/png;base64" || data.posts[i].contentType == "image/jepg;base64")
         {
-          var content = document.createElement("img");
-          content.src = data.posts[i].content;
-          content.style.width = "20%";
-          content.style.height = "20%";
+        var content = document.createElement("img");
+        content.src = data.posts[i].content;
+        content.style.width = "20%";
+        content.style.height = "20%";
         }
         else
         {
-          var content = document.createElement("p");
-          content.innerHTML = data.posts[i].content;
+        var content = document.createElement("p");
+        content.innerHTML = data.posts[i].content;
         }
         divDescription.appendChild(content);
 
@@ -97,9 +97,9 @@ function display_posts(data) {
 
         for (var j = 0; j < data.posts[i].comments.length; j++)
         {
-          var comment = document.createElement("p");
-          comment.innerHTML = data.posts[i].comments[j].author.displayName+" commented: "+data.posts[i].comments[j].comment;
-          divDescription.appendChild(comment);
+        var comment = document.createElement("p");
+        comment.innerHTML = data.posts[i].comments[j].author.displayName+" commented: "+data.posts[i].comments[j].comment;
+        divDescription.appendChild(comment);
         }
 
         var commentInput = document.createElement("textarea");
@@ -119,8 +119,7 @@ function display_posts(data) {
 
       }
     
-      if (data.next != null)
-      {
+      if (data.next != null){
         var nextButton = document.createElement("button");
         nextButton.classList.add("w3-button", "w3-theme-d1", "w3-margin-bottom", "w3-right");
         nextButton.insertAdjacentHTML("beforeend", "<i class='fa fa-arrow-right	'></i> Next Page");
@@ -128,8 +127,7 @@ function display_posts(data) {
         holder.appendChild(nextButton);
       }
 
-      if (data.previous != null)
-      {
+      if (data.previous != null){
         var nextButton = document.createElement("button");
         nextButton.classList.add("w3-button", "w3-theme-d1", "w3-margin-bottom", "w3-left");
         nextButton.insertAdjacentHTML("beforeend", "<i class='fa fa-arrow-left	'></i> Previous Page");
