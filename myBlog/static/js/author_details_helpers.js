@@ -139,193 +139,181 @@ function renderpage(data){
     authorDiv.classList.add("w3-container","w3-card","w3-white","w3-round","w3-margin");
     content.appendChild(authorDiv);
 
-    var author_name_div = document.createElement('div');
-    author_name_div.setAttribute('id','authorname')
-    author_name_div.classList.add('w3-margin-top','w3-left');
-    authorDiv.appendChild(author_name_div);
-
     var userLogo = document.createElement('i');
     userLogo.classList.add("fa","fa-user");
-    userLogo.classList.add("w3-center","w3-circle");
-    userLogo.style.width="50px";
-    author_name_div.appendChild(userLogo);
+    userLogo.classList.add("w3-left","w3-circle","w3-margin-right");
+    userLogo.style.width="20px";
+    userLogo.style.margin='25px';
+    authorDiv.appendChild(userLogo);
 
+    var name = document.createElement('h3');
+    name.innerHTML = "Name: " +authorName;
+    name.style.margin = "14px";
+    authorDiv.appendChild(name);
 
-    var author_name = document.createElement('h3');
-    author_name.innerHTML = authorName;
-    author_name.classList.add("w3-margin-right","w3-show-inline-block");
-    author_name_div.appendChild(author_name);
+    var id = document.createElement('p');
+    id.innerHTML = "Id: " + author_id;
+    id.style.margin='14px';
+    authorDiv.appendChild(id);
+
+    var divDescription = document.createElement('div');
+    divDescription.style.margin='14px';
+    authorDiv.appendChild(divDescription);
+
+    var url = document.createElement('p');
+    url.innerHTML ='URL: '+authorUrl.toString();
+    url.style.marginLeft='48px';
+    divDescription.appendChild(url);
+
+    if(authorGithub){
+        var github = document.createElement('p');
+        github.innerHTML = 'Github: '+aPosts.github;
+        github.style.marginLeft='48px';
+        divDescription.appendChild(github);
+    }else{
+        var blank = document.createElement('br');
+        divDescription.appendChild(blank);
+    }
+
 
     var btnDiv = document.createElement('div');
     btnDiv.setAttribute('id','btn_Div');
-    btnDiv.classList.add("w3-white","w3-round","w3-margin");
-    author_name_div.appendChild(btnDiv);
+    btnDiv.classList.add("w3-white","w3-round","w3-margin","w3-right");
+    authorDiv.appendChild(btnDiv);
 
 
-    var author_info_div = document.createElement('div');
-    authorDiv.appendChild(author_info_div);
-    author_info_div.classList.add("w3-container","w3-card","w3-white","w3-round","w3-margin","w3-right");
-    author_info_div.style.width = '400px';
-
-    var info_text = document.createElement('h4');
-    info_text.innerHTML='User Info';
-    author_info_div.appendChild(info_text);
-
-    var url_text = document.createElement('h5');
-    url_text.innerHTML = 'Url: ';
-    url_text.style.fontSize='15px';
-    url_text.style.marginBottom='0px';
-    author_info_div.appendChild(url_text);
-
-    var author_url = document.createElement('a');
-    author_info_div.appendChild(author_url);
-    author_url.innerHTML = authorUrl.toString();
-    author_url.setAttribute('href',authorUrl);
-    author_url.style.fontSize = '15px';
-
-    var github_text = document.createElement('h5');
-    github_text.innerHTML = 'Github: ';
-    github_text.style.fontSize='15px';
-    github_text.style.marginBottom='0px';
-    author_info_div.appendChild(github_text);
-
-    if (authorGithub){
-        let github_url = document.createElement('a');
-        author_info_div.appendChild(github_url);
-        github_url.innerHTML = authorGithub.toString();
-        github_url.setAttribute('href',authorGithub);
-        github_url.style.fontSize = '15px';
-    }else{
-        var blank = document.createElement('br');
-        author_info_div.appendChild(blank);
-    }
-
-    if(is_friend_bool=='true'){
-        var dropdownDiv = document.createElement('div');
-        btnDiv.appendChild(dropdownDiv);
-        dropdownDiv.classList.add('w3-dropdown-hover');
-
-        var unFriendBtn = document.createElement("BUTTON");
-        dropdownDiv.appendChild(unFriendBtn);
-        unFriendBtn.classList.add('w3-button','w3-theme-d1');
-
-        var dropdownContentDiv = document.createElement('div');
-        dropdownDiv.appendChild(dropdownContentDiv);
-        dropdownContentDiv.classList.add("w3-dropdown-content","w3-card-4", "w3-bar-block");
-
-        var contentlink = document.createElement('a');
-        dropdownContentDiv.appendChild(contentlink);
-        contentlink.classList.add("w3-bar-item", "w3-button");
-        // contentlink.setAttribute('href','#');
-        contentlink.innerHTML='Unfollow';
-        // TODO: change function
-        // contentlink.setAttribute('onclick',sendFollowRequest(author_id,authorHost,authorName,authorUrl,cuurent_user_name));
-
-
-        var unfriendText = document.createTextNode('Friend');
-        unFriendBtn.appendChild(unfriendText);
-    }
-    else{
-        if(follow_status=='Pending' || follow_status=='Decline'){
+    if(current_user_id!=author_id) {
+        if (is_friend_bool == 'true') {
             var dropdownDiv = document.createElement('div');
             btnDiv.appendChild(dropdownDiv);
             dropdownDiv.classList.add('w3-dropdown-hover');
 
             var unFriendBtn = document.createElement("BUTTON");
             dropdownDiv.appendChild(unFriendBtn);
-            unFriendBtn.classList.add('w3-button','w3-theme-d1');
+            unFriendBtn.classList.add('w3-button', 'w3-theme-d1');
 
             var dropdownContentDiv = document.createElement('div');
             dropdownDiv.appendChild(dropdownContentDiv);
-            dropdownContentDiv.classList.add("w3-dropdown-content","w3-card-4", "w3-bar-block");
+            dropdownContentDiv.classList.add("w3-dropdown-content", "w3-card-4", "w3-bar-block");
 
             var contentlink = document.createElement('a');
             dropdownContentDiv.appendChild(contentlink);
             contentlink.classList.add("w3-bar-item", "w3-button");
             // contentlink.setAttribute('href','#');
-            contentlink.innerHTML='Unfollow';
+            contentlink.innerHTML = 'Unfollow';
             // TODO: change function
             // contentlink.setAttribute('onclick',sendFollowRequest(author_id,authorHost,authorName,authorUrl,cuurent_user_name));
-            var unfriendText = document.createTextNode('Following');
+
+
+            var unfriendText = document.createTextNode('Friend');
             unFriendBtn.appendChild(unfriendText);
+        } else {
+            if (follow_status == 'Pending' || follow_status == 'Decline') {
+                var dropdownDiv = document.createElement('div');
+                btnDiv.appendChild(dropdownDiv);
+                dropdownDiv.classList.add('w3-dropdown-hover');
+
+                var unFriendBtn = document.createElement("BUTTON");
+                dropdownDiv.appendChild(unFriendBtn);
+                unFriendBtn.classList.add('w3-button', 'w3-theme-d1');
+
+                var dropdownContentDiv = document.createElement('div');
+                dropdownDiv.appendChild(dropdownContentDiv);
+                dropdownContentDiv.classList.add("w3-dropdown-content", "w3-card-4", "w3-bar-block");
+
+                var contentlink = document.createElement('a');
+                dropdownContentDiv.appendChild(contentlink);
+                contentlink.classList.add("w3-bar-item", "w3-button");
+                // contentlink.setAttribute('href','#');
+                contentlink.innerHTML = 'Unfollow';
+                // TODO: change function
+                // contentlink.setAttribute('onclick',sendFollowRequest(author_id,authorHost,authorName,authorUrl,cuurent_user_name));
+                var unfriendText = document.createTextNode('Following');
+                unFriendBtn.appendChild(unfriendText);
+            } else if (follow_status == 'notFound') {
+                var followBtn = document.createElement("BUTTON");
+                followBtn.setAttribute('id', 'follow_Btn');
+                followBtn.classList.add('w3-button', 'w3-theme-d1', 'w3-margin-bottom');
+                var followText = document.createTextNode('Follow');
+                followBtn.appendChild(followText);
+                btnDiv.appendChild(followBtn);
+                followBtn.addEventListener('click', function () {
+                    sendFollowRequest(author_id, authorHost, authorName, authorUrl, cuurent_user_name);
+                });
+
+            }
         }
-        else if (follow_status=='notFound'){
-            var followBtn = document.createElement("BUTTON");
-            followBtn.setAttribute('id','follow_Btn');
-            followBtn.classList.add('w3-button','w3-theme-d1','w3-margin-bottom');
-            var followText = document.createTextNode('Follow');
-            followBtn.appendChild(followText);
-            btnDiv.appendChild(followBtn);
-            followBtn.addEventListener('click',function(){
-                sendFollowRequest(author_id,authorHost,authorName,authorUrl,cuurent_user_name);
-            });
+        // traverse data, render posts
+        for (let i = 0; i < data['posts'].length; i++) {
+            let posts = data['posts'][i];
+            let postsDiv = document.createElement('div');
+            postsDiv.classList.add("w3-container", "w3-card", "w3-white", "w3-round", "w3-margin");
+            content.appendChild(postsDiv);
+
+            var title = document.createElement('h3');
+            title.innerHTML = posts.title;
+            title.classList.add('w3-row-padding');
+            title.style.margin = '0 20p;x';
+            title.style.marginTop = '10px';
+            title.style.marginLeft = '20px';
+            postsDiv.appendChild(title);
+
+            var line = document.createElement('hr');
+            line.classList.add('w3-clear');
+            line.style.marginLeft = '25px';
+            line.style.marginRight = '25px';
+            postsDiv.appendChild(line);
+
+            var divDescription = document.createElement('div');
+            divDescription.classList.add('w3-row-padding');
+            divDescription.style.margin = '0 20px';
+            postsDiv.appendChild(divDescription);
+
+            if (posts.contentType == 'image/png;base64' || posts.contentType == 'image/jpeg;base64') {
+                var imgContent = document.createElement('img');
+                imgContent.src = posts.content;
+                imgContent.style.width = '20%';
+                imgContent.style.height = '20%';
+            } else {
+                var imgContent = document.createElement('p');
+                imgContent.innerHTML = posts.content;
+            }
+            divDescription.appendChild(imgContent);
+
+            var line = document.createElement('hr');
+            line.classList.add('w3-clear');
+            divDescription.appendChild(line);
+
+            var commentText = document.createElement('h4');
+            commentText.innerHTML = 'Comments';
+            divDescription.appendChild(commentText);
+
+            for (let j = 0; j < posts.comments.length; j++) {
+                var comment = document.createElement('p');
+                comment.innerHTML = posts.comments[j].author.displayName + ' commented: ' + posts.comments[j].comment;
+                divDescription.appendChild(comment);
+            }
+
+            var commentInput = document.createElement('textarea');
+            commentInput.id = 'commentInput' + posts.postid;
+            commentInput.classList.add('w3-border', 'w3-padding');
+            commentInput.type = 'text';
+            commentInput.style.width = '100%';
+            divDescription.appendChild(commentInput);
+
+            var commentButton = document.createElement('button');
+            commentButton.classList.add('w3-buuton', "w3-theme-d1", "w3-margin-bottom", "w3-right");
+            commentButton.insertAdjacentHTML("beforeend", "<i class='fa fa-comment'></i>  Comment");
+            let post_id = posts.postid;
+            commentButton.onclick = function () {
+                commentPost(post_id)
+            };
+            divDescription.appendChild(commentButton);
 
         }
+    }else{
+        console.log('edit mode');
     }
-            // traverse data, render posts
-    for (let i=0;i<data['posts'].length;i++) {
-        let posts = data['posts'][i];
-        let postsDiv = document.createElement('div');
-        postsDiv.classList.add("w3-container", "w3-card", "w3-white", "w3-round", "w3-margin");
-        content.appendChild(postsDiv);
-
-        var title = document.createElement('h3');
-        title.innerHTML = posts.title;
-        title.classList.add('w3-row-padding');
-        title.style.margin = '0 20p;x';
-        title.style.marginTop='10px';
-        postsDiv.appendChild(title);
-
-        var line = document.createElement('hr');
-        line.classList.add('w3-clear');
-        postsDiv.appendChild(line);
-
-        var divDescription = document.createElement('div');
-        divDescription.classList.add('w3-row-padding');
-        divDescription.style.margin = '0 20px';
-        postsDiv.appendChild(divDescription);
-
-        if(posts.contentType == 'image/png;base64' || posts.contentType == 'image/jpeg;base64'){
-            var imgContent = document.createElement('img');
-            imgContent.src = posts.content;
-            imgContent.style.width='20%';
-            imgContent.style.height = '20%';
-        }else{
-            var imgContent = document.createElement('p');
-            imgContent.innerHTML = posts.content;
-        }
-        divDescription.appendChild(imgContent);
-
-        var line = document.createElement('hr');
-        line.classList.add('w3-clear');
-        divDescription.appendChild(line);
-
-        var commentText = document.createElement('h4');
-        commentText.innerHTML = 'Comments';
-        divDescription.appendChild(commentText);
-
-        for (let j=0; j < posts.comments.length;j++){
-            var comment = document.createElement('p');
-            comment.innerHTML = posts.comments[j].author.displayName+' commented: '+ posts.comments[j].comment;
-            divDescription.appendChild(comment);
-        }
-
-        var commentInput = document.createElement('textarea');
-        commentInput.id = 'commentInput'+posts.postid;
-        commentInput.classList.add('w3-border','w3-padding');
-        commentInput.type = 'text';
-        commentInput.style.width='100%';
-        divDescription.appendChild(commentInput);
-
-        var commentButton = document.createElement('button');
-        commentButton.classList.add('w3-buuton',"w3-theme-d1", "w3-margin-bottom", "w3-right");
-        commentButton.insertAdjacentHTML("beforeend","<i class='fa fa-comment'></i>  Comment");
-        let post_id = posts.postid;
-        commentButton.onclick=function(){commentPost(post_id)};
-        divDescription.appendChild(commentButton);
-
-    }
-
 
     // if (data.next !=null){
     //     var nextButton = document.createElement('button');
