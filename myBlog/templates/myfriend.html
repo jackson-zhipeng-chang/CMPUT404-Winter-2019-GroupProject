@@ -16,8 +16,10 @@
       		userLogo.style.margin = "25px";
       		friend.appendChild(userLogo);
 
-      		var name = document.createElement("h3");
-      		name.innerHTML = "Name: " + data[i].displayName;
+      		var name = document.createElement("p");
+			name.style.fontSize = "22px";
+			var name_link = document.createElement('a');
+			name.innerHTML = "Name: " + "<span>" + "<a href='/myBlog/authordetails/" + data[i].id + "/'>" + data[i].displayName + "</a>" + "</span>";
       		name.style.margin = "14px";
       		friend.appendChild(name);
 

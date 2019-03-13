@@ -52,6 +52,7 @@ urlpatterns = [
     path('myfriendslist/', Helpers.my_friends, name='myfriendslist'),
     path('frlist/',Helpers.friend_request,name='requestlist'),
     path('authordetails/<author_id>/',Helpers.author_details,name='authordetails'),
+    path('postdetails/<post_id>/', Helpers.post_details, name='postdetails'),
     path('unfriend/<friendid>/',FriendRequestHandler.UnFriend.as_view(),name='unfriend'),
 
 ]

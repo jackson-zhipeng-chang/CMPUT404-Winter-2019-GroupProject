@@ -9,6 +9,7 @@ from django.views import generic
 from django.db.models import Q
 from django.shortcuts import render
 from uuid import UUID
+from django.http import HttpResponse, HttpResponseNotFound, Http404
 
 def get_author_or_not_exits(current_user_uuid):
     if (not Author.objects.filter(id=current_user_uuid).exists()):
@@ -190,3 +191,42 @@ def author_details(request,author_id):
                                                     'current_user_name':current_user_name})
     else:
         return render(request, 'homepage.html')
+
+
+def post_details(request, post_id):
+    comments = Comment.objects.filter(postid=post_id)
+    post = Post.objects.get(pk=post_id)
+    accessible = verify_current_user_to_post(post, request)
+    if accessible:
+        if post.contentType == "image/png;base64" or post.contentType == "image/jpeg;base64":
+            content_is_picture = True
+        else:
+            content_is_picture = False
+
+        current_author_id = get_current_user_uuid(request)
+        if type(current_author_id) is UUID:
+            current_display_name = Author.objects.get(pk=current_author_id).displayName
+            if (post.author.displayName == current_display_name):
+                current_author_is_owner = True
+            else:
+                current_author_is_owner = False
+
+            categories = []
+            partially_split_categories = post.categories.split(" ")
+            for partially_split_category in partially_split_categories:
+                categories += partially_split_category.split(",")
+
+            text_area_id = "commentInput"+post_id
+
+            return render(request, 'postdetails.html', {'author': post.author, 'title': post.title,
+                                                        'description': post.description, 'categories': categories,
+                                                        'unlisted': post.unlisted,
+                                                        'content': post.content, 'visibility': post.visibility,
+                                                        'published': post.published, 'comments': comments,
+                                                        "contentIsPicture": content_is_picture, 'postID': post.postid,
+                                                        "currentAuthorIsOwner": current_author_is_owner,
+                                                        "textAreaID": text_area_id})
+        else:
+            return render(request, 'homepage.html')
+    else:
+        raise Http404("Post does not exist")
