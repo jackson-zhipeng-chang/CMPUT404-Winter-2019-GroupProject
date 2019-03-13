@@ -169,6 +169,7 @@ function post()
         referrer: "no-referrer",
     })
     .then(response => {
+
         if (response.status === 200)
         {
             window.location.replace(get_host()+"myBlog/all/");
