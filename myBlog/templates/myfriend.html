@@ -1,18 +1,14 @@
 {% extends 'base.html' %}
 {% block content %}
-
 {% if user.is_authenticated %}
-<div id="holder">
-
+<div id="firends_holder">
 </div>
-
 <script>
-      
 	function display(data) {
 		for (var i = 0; i < data.length; i++) {
       		var friend = document.createElement("div");
       		friend.classList.add("w3-container", "w3-card", "w3-white", "w3-round", "w3-margin");
-      		holder.appendChild(friend);
+      		firends_holder.appendChild(friend);
       		var userLogo = document.createElement("i");
       		userLogo.classList.add("fa", "fa-user");
       		userLogo.classList.add("w3-left", "w3-circle", "w3-margin-right");
@@ -30,34 +26,24 @@
                   id.style.margin = "14px";
       		friend.appendChild(id);
 
-      		var line = document.createElement("hr");
-      		line.classList.add("w3-clear");
-      		friend.appendChild(line);
-
       		var divDescription = document.createElement("div");
-      		//divDescription.classList.add("w3-row-padding");
-      		//divDescription.style.margin = "0 20px";
                   divDescription.style.margin = "14px"
       		friend.appendChild(divDescription);
 
       		var url = document.createElement("p");
-      		url.innerHTML ="url: " + data[i].url;
-      		//url.classList.add("w3-row-padding");
+      		url.innerHTML ="URL: " + data[i].url;
                   url.style.marginLeft = "48px";
       		divDescription.appendChild(url);
 
       		var github = document.createElement("p");
-      		github.innerHTML = data[i].github;
+			github.innerHTML ="GitHub: " + data[i].github;
+                  github.style.marginLeft = "48px";
       		divDescription.appendChild(github);
-
-
             }
       }
 
 getAllFriends("/myBlog/myfriends/").then(display);
-
 </script>
-
 {% else %}
 <div class="w3-card w3-round w3-white" style="width:30%;margin:auto;margin-top: 5%;">
 	<div class="w3-container w3-padding">

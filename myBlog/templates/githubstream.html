@@ -1,7 +1,7 @@
 <div class="w3-container w3-card w3-white w3-round w3-margin">
   <h4>Github streams</h4>
-  <hr class="w3-clear">
-  
+</div>
+<div class="w3-container w3-card w3-white w3-round w3-margin">
   <div id="github_holder"> 
 </div>
 
@@ -12,18 +12,12 @@
        var block = document.createElement("div"); 
        holder.appendChild(block);
 
-       var userLogo = document.createElement("i");
-       userLogo.classList.add("fa", "fa-user");
-       userLogo.classList.add("w3-left", "w3-circle", "w3-margin-right");
-       userLogo.style.width = "20px";
-       block.appendChild(userLogo);
-
        var repo = document.createElement("h6");
-       repo.innerHTML = data[i].repo.name;
+       repo.innerHTML = "Repo: "+data[i].repo.name;
        block.appendChild(repo);
 
        var type = document.createElement("p")
-       type.innerHTML = data[i].type;
+       type.innerHTML = "Event: "+data[i].type;
        block.appendChild(type);
 
        var line = document.createElement("hr");
@@ -31,6 +25,8 @@
        block.appendChild(line);
      }
    }
-   getGithubStream("{{github_url}}").then(display);
-
+   
+   if ("{{github_url}}" !== "null"){
+    getGithubStream("{{github_url}}").then(display);
+   }
 </script>
