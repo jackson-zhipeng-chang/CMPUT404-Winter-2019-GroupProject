@@ -201,23 +201,26 @@ def post_details(request, post_id):
         content_is_picture = False
 
     current_author_id = get_current_user_uuid(request)
-    current_display_name = Author.objects.get(pk=current_author_id).displayName
-    if (post.author.displayName == current_display_name):
-        current_author_is_owner = True
+    if type(current_author_id) is UUID:
+        current_display_name = Author.objects.get(pk=current_author_id).displayName
+        if (post.author.displayName == current_display_name):
+            current_author_is_owner = True
+        else:
+            current_author_is_owner = False
+
+        categories = []
+        partially_split_categories = post.categories.split(" ")
+        for partially_split_category in partially_split_categories:
+            categories += partially_split_category.split(",")
+
+        text_area_id = "commentInput"+post_id
+
+        return render(request, 'postdetails.html', {'author': post.author, 'title': post.title,
+                                                    'description': post.description, 'categories': categories,
+                                                    'content': post.content, 'visibility': post.visibility,
+                                                    'published': post.published, 'comments': comments,
+                                                    "contentIsPicture": content_is_picture, 'postID': post.postid,
+                                                    "currentAuthorIsOwner": current_author_is_owner,
+                                                    "textAreaID": text_area_id})
     else:
-        current_author_is_owner = False
-
-    categories = []
-    partially_split_categories = post.categories.split(" ")
-    for partially_split_category in partially_split_categories:
-        categories += partially_split_category.split(",")
-
-    text_area_id = "commentInput"+post_id
-
-    return render(request, 'postdetails.html', {'author': post.author, 'title': post.title,
-                                                'description': post.description, 'categories': categories,
-                                                'content': post.content, 'visibility': post.visibility,
-                                                'published': post.published, 'comments': comments,
-                                                "contentIsPicture": content_is_picture, 'postID': post.postid,
-                                                "currentAuthorIsOwner": current_author_is_owner,
-                                                "textAreaID": text_area_id})
+        return render(request, 'homepage.html')
