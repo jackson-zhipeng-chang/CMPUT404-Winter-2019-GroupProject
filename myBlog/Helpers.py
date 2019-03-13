@@ -143,24 +143,30 @@ def home(request):
 
 def is_my_friend(current_user_id, author_id):
     current_user_object = Author.objects.get(id=current_user_id)
-    friend_object = Author.objects.get(id=author_id)
-    relation_curUser_to_frined = Friend.objects.filter(author=current_user_object, friend=friend_object,status="Accept")
-    relation_friend_to_curUser = Friend.objects.filter(author=friend_object, friend=current_user_object,status="Accept")
-    if relation_curUser_to_frined or relation_friend_to_curUser:
-        return 'true'
+    if type(current_user_id) is UUID:
+        friend_object = Author.objects.get(id=author_id)
+        relation_curUser_to_frined = Friend.objects.filter(author=current_user_object, friend=friend_object,status="Accept")
+        relation_friend_to_curUser = Friend.objects.filter(author=friend_object, friend=current_user_object,status="Accept")
+        if relation_curUser_to_frined or relation_friend_to_curUser:
+            return 'true'
+        else:
+            return 'false'
     else:
-        return 'false'
-
+        return render(request, 'homepage.html')
+        
 def get_follow_status(current_user_id, author_id):
     current_user_object = Author.objects.get(id=current_user_id)
-    friend_object = Author.objects.get(id=author_id)
-    try:
-        relation_curUser_to_friend = Friend.objects.filter(author=current_user_object,friend=friend_object)[0]
-        current_status = relation_curUser_to_friend.status
-        return current_status
-    except:
-        current_status = 'notFound'
-        return current_status
+    if type(current_user_id) is UUID:
+        friend_object = Author.objects.get(id=author_id)
+        try:
+            relation_curUser_to_friend = Friend.objects.filter(author=current_user_object,friend=friend_object)[0]
+            current_status = relation_curUser_to_friend.status
+            return current_status
+        except:
+            current_status = 'notFound'
+            return current_status
+    else:
+        return render(request, 'homepage.html')
 
 #-----------------Local endpoints-----------------#
 def new_post(request):
@@ -178,9 +184,12 @@ def my_friends(request):
 
 def author_details(request,author_id):
     current_user_id = get_current_user_uuid(request)
-    current_user_name = Author.objects.get(pk=current_user_id).displayName
-    is_friend = is_my_friend(current_user_id,author_id)
-    follow_status = get_follow_status(current_user_id,author_id)
-    return render(request,'authordetails.html',{'authorid':author_id,'current_user_id':current_user_id,
-                                                'is_friend':is_friend,'followStatus':follow_status,
-                                                'current_user_name':current_user_name})
+    if type(current_user_id) is UUID:
+        current_user_name = Author.objects.get(pk=current_user_id).displayName
+        is_friend = is_my_friend(current_user_id,author_id)
+        follow_status = get_follow_status(current_user_id,author_id)
+        return render(request,'authordetails.html',{'authorid':author_id,'current_user_id':current_user_id,
+                                                    'is_friend':is_friend,'followStatus':follow_status,
+                                                    'current_user_name':current_user_name})
+    else:
+        return render(request, 'homepage.html')
