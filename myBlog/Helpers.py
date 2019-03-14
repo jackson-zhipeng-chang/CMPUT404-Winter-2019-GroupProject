@@ -12,10 +12,12 @@ from uuid import UUID
 from django.http import HttpResponse, HttpResponseNotFound, Http404
 
 def get_author_or_not_exits(current_user_uuid):
-    if (not Author.objects.filter(id=current_user_uuid).exists()):
-        return Response("Author coudn't find", status=404)
-    else:
+    try:
+        Author.objects.filter(id=current_user_uuid)
         return Author.objects.get(id=current_user_uuid)
+    except:
+        return Response("Author coudn't find", status=404)
+
 
 def get_host_from_request(request):
 # https://docs.djangoproject.com/en/2.1/ref/request-response/
@@ -48,9 +50,9 @@ def verify_current_user_to_post(post, request):
     post_visibility = post.visibility
     post_author = post.author_id
     unlisted_post = post.unlisted
-    isFriend = check_two_users_friends(post_author,current_user_uuid)
     if User.objects.filter(pk=request.user.id).exists():
         current_user_uuid = get_current_user_uuid(request)
+        isFriend = check_two_users_friends(post_author,current_user_uuid)
         if current_user_uuid == post_author:
             return True
         else:
