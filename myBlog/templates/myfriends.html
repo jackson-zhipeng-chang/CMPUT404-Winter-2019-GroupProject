@@ -4,6 +4,12 @@
 <div id="firends_holder">
 </div>
 <script>
+    function clickToSendUnfollow(idx,data){
+        let author_id = data[idx].id;
+        sendUnFriendRequest(author_id);
+
+    }
+
 	function display_my_friendlist(data) {
 		if (data.length == 0){
 			let friend = document.createElement("div");
@@ -70,18 +76,19 @@
             dropdownDiv.appendChild(dropdownContentDiv);
             dropdownContentDiv.classList.add("w3-dropdown-content", "w3-card-4", "w3-bar-block");
 
-            var contentlink = document.createElement('a');
+            var contentlink = document.createElement('BUTTON');
             dropdownContentDiv.appendChild(contentlink);
             contentlink.classList.add("w3-bar-item", "w3-button");
             contentlink.innerHTML = 'Unfollow';
-            // TODO: change function
+            contentlink.setAttribute('id',i);
+
             contentlink.addEventListener('click',function(){
-                sendUnFriendRequest(friend_id);
-            });
+                clickToSendUnfollow(this.id,data);
+            })
             var unfriendText = document.createTextNode('Friend');
             unFriendBtn.appendChild(unfriendText);
-            }
-      }
+        }
+    }
 
 getAllFriends("/myBlog/myfriends/").then(display_my_friendlist);
 </script>
