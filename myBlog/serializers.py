@@ -70,7 +70,7 @@ class AuthorSerializer(serializers.ModelSerializer):
         fields = ('id','displayName', 'url','host', 'github')
 
     def get_url(self, obj):
-        url = obj.host+"/myBlog/author/"+str(obj.id)
+        url = obj.host+"myBlog/author/"+str(obj.id)
         return url
 
     def update(self, instance, validated_data):
@@ -160,7 +160,7 @@ class AuthorProfileSerializer(serializers.ModelSerializer):
         fields = ('id','host','displayName', 'url', 'github', 'friends')
 
     def get_url(self, obj):
-        url = obj.host+"/myBlog/author/"+str(obj.id)
+        url = obj.host+"myBlog/author/"+str(obj.id)
         return url
 
     def get_friends(self, obj):

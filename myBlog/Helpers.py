@@ -21,7 +21,7 @@ def get_author_or_not_exits(current_user_uuid):
 
 def get_host_from_request(request):
 # https://docs.djangoproject.com/en/2.1/ref/request-response/
-    host = request.scheme+"://"+request.get_host()
+    host = request.scheme+"://"+request.get_host()+"/"
     return host
 
 def get_current_user_uuid(request):

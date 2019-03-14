@@ -22,12 +22,12 @@ class FriendQueryHandler(APIView):
             friends_list = []
 
             for friend in friendsDirect:
-                url = friend.friend.host+"/myBlog/author/"+str(friend.friend.id)
+                url = friend.friend.host+"myBlog/author/"+str(friend.friend.id)
                 if url not in friends_list:
                     friends_list.append(url)
 
             for friend in friendsIndirect:
-                url = friend.author.host+"/myBlog/author/"+str(friend.author.id)
+                url = friend.author.host+"myBlog/author/"+str(friend.author.id)
                 if url not in friends_list:
                     friends_list.append(url)
 
@@ -52,7 +52,7 @@ class FriendQueryHandler(APIView):
                             respons_list.append(author_url)
                 responsBody={
                     "query": "friends",
-                    "author":author.host+"/myBlog/author/"+str(author.id),
+                    "author":author.host+"myBlog/author/"+str(author.id),
                     "authors":respons_list
                 }
                 return Response(responsBody, status=200)
