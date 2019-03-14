@@ -237,3 +237,13 @@ def post_details(request, post_id):
             return render(request, 'homepage.html')
     else:
         raise Http404("Post does not exist")
+
+
+def edit_post(request, post_id):
+    current_author_id = get_current_user_uuid(request)
+    if type(current_author_id) is UUID:
+        print("TODO")
+    else:
+        raise Http404("Post does not exist")
+
+    return render(request, 'editpost.html', {})

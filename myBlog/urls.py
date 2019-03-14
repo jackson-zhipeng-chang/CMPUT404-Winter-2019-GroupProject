@@ -44,6 +44,7 @@ urlpatterns = [
     path('signup/', Accounts.signup, name='signup'),
     path('all/', Helpers.home, name='postslist'),
     path('newpost/', Helpers.new_post, name='newpost'),
+    path('editpost/<post_id>/', Helpers.edit_post, name='editpost'),
     path('myprofile/', AuthorProfileHandler.MyProfileHandler.as_view(), name='myprofile'),
     path('myprofilepage/', Helpers.my_profile, name='myprofliepage'),
     path('posts/mine/',  PostHandler.MyPostHandler.as_view(), name='myposts_view'),
