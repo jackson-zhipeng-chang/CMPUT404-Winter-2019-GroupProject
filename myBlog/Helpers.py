@@ -48,6 +48,7 @@ def verify_current_user_to_post(post, request):
     post_visibility = post.visibility
     post_author = post.author_id
     unlisted_post = post.unlisted
+    isFriend = check_two_users_friends(post_author,current_user_uuid)
     if User.objects.filter(pk=request.user.id).exists():
         current_user_uuid = get_current_user_uuid(request)
         if current_user_uuid == post_author:
@@ -58,7 +59,6 @@ def verify_current_user_to_post(post, request):
             elif post_visibility == 'FOAF':
                 return True
             elif post_visibility == 'FRIENDS':
-                isFriend = check_two_users_friends(post_author,current_user_uuid)
                 if isFriend:
                     return True
                 else:
