@@ -10,7 +10,6 @@ from django.db.models import Q
 from django.shortcuts import render
 from uuid import UUID
 from django.http import HttpResponse, HttpResponseNotFound, Http404
-import json
 
 def get_author_or_not_exits(current_user_uuid):
     if (not Author.objects.filter(id=current_user_uuid).exists()):
