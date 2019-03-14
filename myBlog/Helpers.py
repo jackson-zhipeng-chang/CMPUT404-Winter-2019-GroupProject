@@ -184,9 +184,16 @@ def author_details(request,author_id):
         current_user_name = Author.objects.get(pk=current_user_id).displayName
         is_friend = is_my_friend(current_user_id,author_id)
         follow_status = get_follow_status(current_user_id,author_id)
+        friend = Author.objects.get(pk=author_id)
+        host = friend.host
+        url = friend.host + '/' + author_id
+        friend_name = friend.displayName
+        friend_github = friend.github
         return render(request,'authordetails.html',{'authorid':author_id,'current_user_id':current_user_id,
                                                     'is_friend':is_friend,'followStatus':follow_status,
-                                                    'current_user_name':current_user_name})
+                                                    'current_user_name':current_user_name,'friend_host':host,
+                                                    'friend_url':url,'friend_name':friend_name,
+                                                    'friend_github':friend_github})
     else:
         return render(request, 'homepage.html')
 
