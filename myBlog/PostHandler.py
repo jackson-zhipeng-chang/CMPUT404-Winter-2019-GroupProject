@@ -73,7 +73,6 @@ class PostHandler(APIView):
             if current_user_uuid==post.author_id:
                 data = request.data
                 serializer = PostSerializer(post, data=data)
-
                 if serializer.is_valid():
                     serializer.save()
                     return JsonResponse(serializer.data)
