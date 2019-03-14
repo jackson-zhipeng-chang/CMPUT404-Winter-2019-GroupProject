@@ -94,12 +94,12 @@ class PostHandler(APIView):
                 return HttpResponse("You don't have the access to the post",status=404)
 
 
-# https://stackoverflow.com/questions/12615154/how-to-get-the-currently-logged-in-users-user-id-in-django
+# https://stackoverflow.com/questions/12615154/how-to-get-the-currently-logged-in-users-user-id-in-django answered Sep 27 '12 at 6:17 K Z
 # https://www.django-rest-framework.org/api-guide/views/
-# https://stackoverflow.com/questions/6567831/how-to-perform-or-condition-in-django-queryset
-# https://github.com/belatrix/BackendAllStars/blob/master/employees/views.py
-# https://github.com/belatrix/BackendAllStars/blob/master/employees/serializers.py
-# https://stackoverflow.com/questions/2658291/get-list-or-404-ordering-in-django
+# https://stackoverflow.com/questions/6567831/how-to-perform-or-condition-in-django-queryset answered Jul 4 '11 at 6:15 Lakshman Prasad, edited Oct 26 '13 at 2:13 Mechanical snail
+# https://github.com/belatrix/BackendAllStars/blob/master/employees/views.py by Sergio Infante
+# https://github.com/belatrix/BackendAllStars/blob/master/employees/serializers.py by Sergio Infante
+# https://stackoverflow.com/questions/2658291/get-list-or-404-ordering-in-django answered Apr 17 '10 at 12:21 Ludwik Trammer
 class PostToUserHandlerView(APIView):
     def get(self, request, format=None):
         current_user_uuid = Helpers.get_current_user_uuid(request)
@@ -143,7 +143,7 @@ class PostToUserHandlerView(APIView):
             return current_user_uuid
 
 
-# https://stackoverflow.com/questions/19360874/pass-url-argument-to-listview-queryset
+# https://stackoverflow.com/questions/19360874/pass-url-argument-to-listview-queryset answered Oct 14 '13 at 13:11 Aamir Adnan
 class PostToUserIDHandler(APIView):
     def get(self, request, user_id, format=None):
         current_user_uuid = Helpers.get_current_user_uuid(request)
