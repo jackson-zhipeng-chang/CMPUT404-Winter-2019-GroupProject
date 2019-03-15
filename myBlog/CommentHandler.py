@@ -36,7 +36,8 @@ class CommentHandler(APIView):
             return Response("Post couldn't find", status=404)
         else:
             data = request.data
-            if data['query'] == 'addComment':
+            try:
+                data['query'] == 'addComment'
                 post = Post.objects.get(pk=postid)
                 if (not Helpers.verify_current_user_to_post(post, request)):
                     responsBody={
@@ -59,6 +60,6 @@ class CommentHandler(APIView):
                         }
                         return Response(responsBody, status=status.HTTP_200_OK)
                     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            else:
+            except:
                 return Response("You are not sending the new comment with the correct format. Missing 'query': 'addComment'",status=status.HTTP_400_BAD_REQUEST)
     

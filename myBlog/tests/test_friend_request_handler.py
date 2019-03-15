@@ -111,3 +111,4 @@ class TestFriendRequestHandler(TestCase):
         self.assertTrue(response.status_code,200)
         has_friend = Friend.objects.filter(author=author,friend=friend).exists()
         self.assertFalse(has_friend)
+

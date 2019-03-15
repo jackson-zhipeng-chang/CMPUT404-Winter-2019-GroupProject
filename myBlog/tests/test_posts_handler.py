@@ -485,6 +485,78 @@ class TestPostsHandler(TestCase):
         response = self.client.get(url)
         self.assertEquals(response.status_code,200)
 
+    def test_get_post_to_me(self):
+        url = reverse('friendrequest')
+        self.client.post(url,{
+            "query":"friendrequest",
+            "author":{
+                "id":self.author.id,
+                "host":self.author.host,
+                "displayName":self.author.displayName,
+                "url":self.author.host+'/'+str(self.author.id)
+            },
+            "friend":{
+                "id":self.other_author.id,
+                "host":self.other_author.host,
+                "displayName":self.other_author.displayName,
+                "url":self.other_author.host+'/'+str(self.other_author.id)
+            }
+        },'application/json')
+        fr_id = Friend.objects.get(author=self.author,friend=self.other_author).id
+        self.other_client.put(url,{
+            "id":fr_id,
+            "status":"Accept"
+        },"application/json")
+
+        post_url = reverse("new_post")
+        self.client.post(post_url,{
+            'title': 'POST1',
+            'description': 'post for testing',
+            'contentType': 'text/plain',
+            'category': 'test',
+            'author': {
+                'id': self.author.id,
+                'host': self.author.host,
+                'displayName': self.author.displayName,
+                'github': self.author.github
+            },
+            'visibility': 'FRIENDS',
+            'content': 'test',
+            'unlisted': False,
+            'visibleTo': "",
+        }, 'application/json')
+
+        posttouser_url = reverse('posttouser')
+        response=self.other_client.get(posttouser_url)
+        self.assertEquals(response.status_code,200)
+        self.assertEquals(json.loads(response.content)['posts'][0]['author']['id'],str(self.author.id))
+
+        self.client.post(post_url,{
+            'title': 'POST1',
+            'description': 'post for testing',
+            'contentType': 'text/plain',
+            'category': 'test',
+            'author': {
+                'id': self.author.id,
+                'host': self.author.host,
+                'displayName': self.author.displayName,
+                'github': self.author.github
+            },
+            'visibility': 'PRIVATE',
+            'content': 'test',
+            'unlisted': False,
+            'visibleTo': self.other_author.id,
+        }, 'application/json')
+        posttouser_url = reverse('posttouser')
+        response = self.other_client.get(posttouser_url)
+        self.assertEquals(response.status_code,200)
+        self.assertEquals(json.loads(response.content)['posts'][0]['author']['id'],str(self.author.id))
+
+        posttouserid_url = reverse('posttouserid',args=[self.author.id])
+        response = self.other_client.get(posttouserid_url)
+        self.assertEquals(response.status_code,200)
+        self.assertEquals(json.loads(response.content)['posts'][0]['author']['id'],str(self.author.id))
+
 
 
 

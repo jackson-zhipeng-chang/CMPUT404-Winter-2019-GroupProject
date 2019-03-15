@@ -70,7 +70,7 @@ class TestAuthorProfileHandler(TestCase):
         },'application/json')
         self.assertEquals(response.status_code,404)
 
-    def test_delet_author_profile(self):
+    def test_delete_author_profile(self):
         url = reverse('authorprofile',args=[self.author1.id])
         response=self.client1.delete(url)
         self.assertEquals(response.status_code,204)
