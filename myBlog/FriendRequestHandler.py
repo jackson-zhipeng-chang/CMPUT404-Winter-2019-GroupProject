@@ -144,6 +144,9 @@ class UnFriend(APIView):
         # case that, A requests B, before B accepts/declines this request, A sends an unFriend request to B
         elif (Friend.objects.filter(Q(author=current_user_uuid),Q(friend=friendid),Q(status='Pending')).exists()):
             Friend.objects.filter(Q(author=current_user_uuid),Q(friend=friendid),Q(status='Pending')).delete()
-            return Response("Cancel friend quest",status=200)
+            return Response("Cancel friend request",status=200)
+        elif(Friend.objects.filter(Q(author=current_user_uuid),Q(friend=friendid),Q(status='Decline')).exists()):
+            Friend.objects.filter(Q(author=current_user_uuid), Q(friend=friendid), Q(status='Decline')).delete()
+            return Response("Delete friend request",status=200)
         else:
             return Response("You are not friend yet", status=400)
