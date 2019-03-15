@@ -11,7 +11,7 @@
                     <form action="" method="POST" >Post type<br>
                         <select name="content-type" id=post-contenttype onchange="enableInput()">
                             <option value="text/plain" selected>Plain text</option>
-                            <option value="text/markdown">Markdonw</option>
+                            <option value="text/markdown">Markdown</option>
                             <option value="image/png;base64">image/png</option>
                             <option value="image/jpeg;base64">image/jpeg</option>
                         </select>
@@ -52,9 +52,10 @@
                         <br>
                         <!-- Reference: https://simpleisbetterthancomplex.com/tutorial/2016/08/01/how-to-upload-files-with-django.html
                         https://stackoverflow.com/questions/14007629/document-getelementbyidremember-visibility-hidden-not-working-on-a-chec-->
-                        <form method="post" enctype="multipart/form-data" id = "post-image">
-                            <input type="file" name="myfile" id="my-file" onchange="previewFile()" disabled="true">
-                        </form><br>
+                        <div>
+                            <label id="file-button" for="files" class="w3-button w3-theme">Add File</label>
+                            <input id="files" style="visibility:hidden;" type="file" onchange="previewFile()" disabled>
+                        </div>
 
                         Unlisted?
                         Yes: <input name="unlisted" value="Yes" type="radio"/>
@@ -62,6 +63,7 @@
                         <br><br>
 
                         <button type="button" class="w3-button w3-theme" onclick="post()"><i class="fa fa-pencil"></i>Post</button>
+                        <script>enableInput()</script>
                     </form>
                 </div>
             </div>

@@ -6,16 +6,20 @@ function previewFile()
     var reader  = new FileReader();
     reader.onloadend = function (){
         encoded_img = reader.result;
-        document.getElementById("post-content").value = encoded_img;
+
         let selectedType = document.getElementById("post-contenttype").value;
         if (! encoded_img.includes(selectedType))
         {
             alert("Please upload the selected type image!");
+        } else {
+            document.getElementById("post-content").value = encoded_img;
+            document.getElementById("file-button").innerText = "Change File"
         }
-    }
+    };
     if (file){
         reader.readAsDataURL(file); //reads the data as a URL
     }
+
 }
 
 function enableVisibleTo()
@@ -43,14 +47,16 @@ function enableInput()
     if (selectedType=="image/png;base64" || selectedType=="image/jpeg;base64"){
         alert("Since you selected img, you will not be able to add content");
         document.getElementById("post-content").readOnly  = true;
-        document.getElementById("my-file").disabled = false;
+        document.getElementById("files").disabled = false;
+        document.getElementById("file-button").style.visibility = "visible";
+        document.getElementById("file-button").innerText = "Add File";
     }
     else{
         document.getElementById("post-content").readOnly  = false;
-        document.getElementById("my-file").disabled = true;
-        document.getElementById("post-content").value = "";
-
+        document.getElementById("files").disabled = true;
+        document.getElementById("file-button").style.visibility = "hidden";
     }
+    document.getElementById("post-content").value = "";
 }
 
 function set_friends_list (){

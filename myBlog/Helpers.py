@@ -213,7 +213,7 @@ def post_details(request, post_id):
         current_author_id = get_current_user_uuid(request)
         if type(current_author_id) is UUID:
             current_display_name = Author.objects.get(pk=current_author_id).displayName
-            if (post.author.displayName == current_display_name):
+            if post.author.displayName == current_display_name:
                 current_author_is_owner = True
             else:
                 current_author_is_owner = False
@@ -240,10 +240,44 @@ def post_details(request, post_id):
 
 
 def edit_post(request, post_id):
-    current_author_id = get_current_user_uuid(request)
-    if type(current_author_id) is UUID:
-        print("TODO")
+    comments = Comment.objects.filter(postid=post_id)
+    post = Post.objects.get(pk=post_id)
+    accessible = verify_current_user_to_post(post, request)
+    if accessible:
+
+        current_author_id = get_current_user_uuid(request)
+        if type(current_author_id) is UUID:
+            current_display_name = Author.objects.get(pk=current_author_id).displayName
+            if post.author.displayName == current_display_name:
+                current_author_is_owner = True
+            else:
+                current_author_is_owner = False
+
+            text_area_id = "commentInput" + post_id
+
+            visable_to_names = []
+            for visable_to in post.visibleTo.split(","):
+                visable_to_names.append(Author.objects.get(pk=visable_to).displayName)
+
+            print(post.contentType)  # test
+
+            return render(request, 'editpost.html', {'author': post.author, 'title': post.title,
+                                                        'description': post.description, 'categories': post.categories,
+                                                        'unlisted': post.unlisted,
+                                                        'content': post.content, 'visibility': post.visibility,
+                                                        'published': post.published, 'comments': comments,
+                                                        "contentType": post.contentType, 'postID': post.postid,
+                                                        "textAreaID": text_area_id, "visableToNames": visable_to_names})
+        else:
+            return render(request, 'homepage.html')
     else:
         raise Http404("Post does not exist")
 
-    return render(request, 'editpost.html', {})
+
+
+# People available to show
+# file
+
+# Very slow loading picture content
+# pressing change button must make changes
+# change new_post_helper to post_editor_helper?
