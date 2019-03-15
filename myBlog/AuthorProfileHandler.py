@@ -24,7 +24,7 @@ class AuthorProfileHandler(APIView):
         current_user_uuid = Helpers.get_current_user_uuid(request)
         if current_user_uuid == author.id:
             serializer = AuthorSerializer(author, data=data)
-            serializer.is_valid();
+            serializer.is_valid()
             if serializer.is_valid():
                 serializer.save()
                 return JsonResponse(serializer.data)
@@ -41,7 +41,7 @@ class AuthorProfileHandler(APIView):
             user.delete()
             return HttpResponse(status=204)
         else:
-            return HttpResponse(status=404)   
+            return HttpResponse(status=404)
 
 
 class MyProfileHandler(APIView):
