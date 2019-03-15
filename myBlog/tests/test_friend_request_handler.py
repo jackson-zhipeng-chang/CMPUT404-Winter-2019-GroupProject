@@ -3,7 +3,6 @@ from django.urls import reverse
 import json
 from myBlog.models import Author,Post,Comment,Friend
 from django.contrib.auth.models import User
-from django.db.models import Q
 
 class TestFriendRequestHandler(TestCase):
     def setUp(self):
