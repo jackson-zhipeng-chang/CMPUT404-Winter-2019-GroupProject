@@ -37,8 +37,17 @@ function deletePost(id)
         redirect: "follow", 
         referrer: "no-referrer", 
     })
-    .then(document.location.reload(true)) //https://stackoverflow.com/questions/3715047/how-to-reload-a-page-using-javascript
-    .then(alert("Successfully deleted!"));
+    .then(response => {
+        if (response.status === 204) 
+        { 
+            alert("Successfully deleted!");
+            document.location.reload(true); //https://stackoverflow.com/questions/3715047/how-to-reload-a-page-using-javascript
+        } 
+        else 
+        {
+            alert("Something went wrong: " +  response.status);
+        }
+    });
 }
 
 function commentPost(id)
