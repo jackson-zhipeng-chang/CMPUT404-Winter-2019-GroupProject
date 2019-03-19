@@ -12,14 +12,16 @@ from uuid import UUID
 from django.http import HttpResponse, HttpResponseNotFound, Http404
 
 def get_author_or_not_exits(current_user_uuid):
-    if (not Author.objects.filter(id=current_user_uuid).exists()):
-        return Response("Author coudn't find", status=404)
-    else:
+    try:
+        Author.objects.filter(id=current_user_uuid)
         return Author.objects.get(id=current_user_uuid)
+    except:
+        return Response("Author coudn't find", status=404)
+
 
 def get_host_from_request(request):
 # https://docs.djangoproject.com/en/2.1/ref/request-response/
-    host = request.scheme+"://"+request.get_host()
+    host = request.scheme+"://"+request.get_host()+"/"
     return host
 
 def get_current_user_uuid(request):
@@ -50,6 +52,7 @@ def verify_current_user_to_post(post, request):
     unlisted_post = post.unlisted
     if User.objects.filter(pk=request.user.id).exists():
         current_user_uuid = get_current_user_uuid(request)
+        isFriend = check_two_users_friends(post_author,current_user_uuid)
         if current_user_uuid == post_author:
             return True
         else:
@@ -58,7 +61,6 @@ def verify_current_user_to_post(post, request):
             elif post_visibility == 'FOAF':
                 return True
             elif post_visibility == 'FRIENDS':
-                isFriend = check_two_users_friends(post_author,current_user_uuid)
                 if isFriend:
                     return True
                 else:
@@ -189,9 +191,16 @@ def author_details(request,author_id):
         current_user_name = Author.objects.get(pk=current_user_id).displayName
         is_friend = is_my_friend(current_user_id,author_id)
         follow_status = get_follow_status(current_user_id,author_id)
+        friend = Author.objects.get(pk=author_id)
+        host = friend.host
+        url = friend.host + '/' + author_id
+        friend_name = friend.displayName
+        friend_github = friend.github
         return render(request,'authordetails.html',{'authorid':author_id,'current_user_id':current_user_id,
                                                     'is_friend':is_friend,'followStatus':follow_status,
-                                                    'current_user_name':current_user_name})
+                                                    'current_user_name':current_user_name,'friend_host':host,
+                                                    'friend_url':url,'friend_name':friend_name,
+                                                    'friend_github':friend_github})
     else:
         return render(request, 'homepage.html')
 

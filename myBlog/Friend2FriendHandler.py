@@ -11,7 +11,7 @@ from django.db.models import Q
 import urllib 
 
 class Friend2FriendHandler(APIView):
-    def get(self, request, user_id1, user_id2, format=None):
-        print(user_id1, user_id2)
+    def get(self, request, authorid1, service2, authorid2, format=None):
+        print(authorid1, service2, authorid2)
         return Response("Ok", status=status.HTTP_200_OK)
 

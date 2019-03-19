@@ -4,6 +4,13 @@
 <div id="firends_holder">
 </div>
 <script>
+
+    function clickToSendUnfollow(idx,data){
+        let author_id = data[idx].id;
+        sendUnFriendRequest(author_id);
+    }
+
+
 	function display_my_friendlist(data) {
 		if (data.length == 0){
 			let friend = document.createElement("div");
@@ -30,30 +37,64 @@
       		var name = document.createElement("p");
 			name.style.fontSize = "22px";
 			var name_link = document.createElement('a');
+
 			name.innerHTML = "Name: " + "<span>" + "<a href='/myBlog/authordetails/" + data[i].id + "/'>" + data[i].displayName + "</a>" + "</span>";
       		name.style.margin = "14px";
       		friend.appendChild(name);
 
       		var id = document.createElement("p");
-      		id.innerHTML = "Id: " + data[i].id;
-                  id.style.margin = "14px";
+
+      		var friend_id = data[i].id;
+      		id.innerHTML = "Id: " + friend_id;
+            id.style.margin = "14px";
       		friend.appendChild(id);
 
       		var divDescription = document.createElement("div");
-                  divDescription.style.margin = "14px"
+            divDescription.style.margin = "14px"
       		friend.appendChild(divDescription);
 
       		var url = document.createElement("p");
       		url.innerHTML ="URL: " + data[i].url;
-                  url.style.marginLeft = "48px";
+
+          url.style.marginLeft = "48px";
       		divDescription.appendChild(url);
 
       		var github = document.createElement("p");
 			github.innerHTML ="GitHub: " + data[i].github;
-                  github.style.marginLeft = "48px";
+
+            github.style.marginLeft = "48px";
       		divDescription.appendChild(github);
-            }
-      }
+
+            var btnDiv = document.createElement('div');
+            btnDiv.setAttribute('id','btn_Div');
+            btnDiv.classList.add("w3-white","w3-round","w3-margin","w3-right");
+            friend.appendChild(btnDiv);
+
+            var dropdownDiv = document.createElement('div');
+            btnDiv.appendChild(dropdownDiv);
+            dropdownDiv.classList.add('w3-dropdown-hover');
+
+            var unFriendBtn = document.createElement("BUTTON");
+            dropdownDiv.appendChild(unFriendBtn);
+            unFriendBtn.classList.add('w3-button', 'w3-theme-d1');
+
+            var dropdownContentDiv = document.createElement('div');
+            dropdownDiv.appendChild(dropdownContentDiv);
+            dropdownContentDiv.classList.add("w3-dropdown-content", "w3-card-4", "w3-bar-block");
+
+            var contentlink = document.createElement('BUTTON');
+            dropdownContentDiv.appendChild(contentlink);
+            contentlink.classList.add("w3-bar-item", "w3-button");
+            contentlink.innerHTML = 'Unfollow';
+            contentlink.setAttribute('id',i);
+
+            contentlink.addEventListener('click',function(){
+                clickToSendUnfollow(this.id,data);
+            })
+            var unfriendText = document.createTextNode('Friend');
+            unFriendBtn.appendChild(unfriendText);
+        }
+    }
 
 getAllFriends("/myBlog/myfriends/").then(display_my_friendlist);
 </script>

@@ -32,7 +32,16 @@ function sendFRrequest(fr_id,status){
         redirect: "follow",
         referrer: "no-referrer",
     })
-    .then(window.location.replace(get_host()+"myBlog/myfriendslist/"));
+    .then(response => {
+        if (response.status === 200)
+        {
+            window.location.replace(get_host()+"myBlog/myfriendslist/");
+        }
+        else
+        {
+            alert("Something went wrong: " +  response.status);
+        }
+    });
 }
 
 function content_page(data){

@@ -8,6 +8,6 @@ before_script:
   - cp .env.example .env
   - python manage.py migrate
 script:
-  coverage run manage.py test myBlog
+  coverage run manage.py test -v 3
 after_success:
   coveralls

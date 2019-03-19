@@ -78,7 +78,9 @@ function display_my_posts(data) {
         post.appendChild(line);
 
         var post_details_link = document.createElement("a");
+
         post_details_link.setAttribute('href','/myBlog/postdetails/'+ data.posts[i].postid+'/');
+
         post.appendChild(post_details_link);
         var title = document.createElement("h3");
         title.innerHTML = data.posts[i].title;

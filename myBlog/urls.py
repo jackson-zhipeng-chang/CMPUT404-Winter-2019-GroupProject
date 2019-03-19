@@ -36,9 +36,8 @@ urlpatterns = [
     path('author/posts/',PostHandler.PostToUserHandlerView.as_view(), name='posttouser'),
     path('author/<uuid:user_id>/posts/', PostHandler.PostToUserIDHandler.as_view(), name='posttouserid'),
     path('author/<uuid:user_id>/', AuthorProfileHandler.AuthorProfileHandler.as_view(), name='authorprofile'),
-    path('author/<uuid:user_id1>/friends/<uuid:user_id2>/', Friend2FriendHandler.Friend2FriendHandler.as_view(), name='friend2friend'),
     path('modify_post/<uuid:post_id>/',Helpers.modify_post,name='modify_post'),
-
+    path('author/<str:authorid1>/friends/<str:service2>/author/<str:authorid2>', Friend2FriendHandler.Friend2FriendHandler.as_view(), name='friend2friend'),
 
     path('', Helpers.home, name='home'),
     path('login/', Accounts.LoginView.as_view(), name='login'),

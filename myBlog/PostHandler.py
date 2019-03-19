@@ -73,8 +73,6 @@ class PostHandler(APIView):
             if current_user_uuid==post.author_id:
                 data = request.data
                 serializer = PostSerializer(post, data=data)
-                serializer.is_valid()
-                print(serializer.errors)
                 if serializer.is_valid():
                     serializer.save()
                     return JsonResponse(serializer.data)
@@ -95,12 +93,12 @@ class PostHandler(APIView):
                 return HttpResponse("You don't have the access to the post",status=404)
 
 
-# https://stackoverflow.com/questions/12615154/how-to-get-the-currently-logged-in-users-user-id-in-django
+# https://stackoverflow.com/questions/12615154/how-to-get-the-currently-logged-in-users-user-id-in-django answered Sep 27 '12 at 6:17 K Z
 # https://www.django-rest-framework.org/api-guide/views/
-# https://stackoverflow.com/questions/6567831/how-to-perform-or-condition-in-django-queryset
-# https://github.com/belatrix/BackendAllStars/blob/master/employees/views.py
-# https://github.com/belatrix/BackendAllStars/blob/master/employees/serializers.py
-# https://stackoverflow.com/questions/2658291/get-list-or-404-ordering-in-django
+# https://stackoverflow.com/questions/6567831/how-to-perform-or-condition-in-django-queryset answered Jul 4 '11 at 6:15 Lakshman Prasad, edited Oct 26 '13 at 2:13 Mechanical snail
+# https://github.com/belatrix/BackendAllStars/blob/master/employees/views.py by Sergio Infante
+# https://github.com/belatrix/BackendAllStars/blob/master/employees/serializers.py by Sergio Infante
+# https://stackoverflow.com/questions/2658291/get-list-or-404-ordering-in-django answered Apr 17 '10 at 12:21 Ludwik Trammer
 class PostToUserHandlerView(APIView):
     def get(self, request, format=None):
         current_user_uuid = Helpers.get_current_user_uuid(request)
@@ -122,17 +120,22 @@ class PostToUserHandlerView(APIView):
                 if (Post.objects.filter(Q(unlisted=False),Q(author_id=friend.id),Q(visibility='FRIENDS')).exists()):
                     friend_posts_list+=get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend.id), Q(visibility='FRIENDS'))
 
-            for friend in friends_list:
                 if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend.id), Q(visibility='PRIVATE')).exists()):
                     private_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend.id), Q(visibility='PRIVATE'))
                     for post in private_list:
                         if str(current_user_uuid) in post.visibleTo:
                             private_posts_list.append(post)
 
-            for friend in friends_list:
                 if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend.id), Q(visibility='SERVERONLY')).exists()):
                     if (Helpers.get_current_user_host(request)==friend.host):
                         serveronly_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend.id),Q(visibility='SERVERONLY'))
+           
+                friends_of_this_friend =  Helpers.get_friends(friend.id)
+                for friend_of_this_friend in friends_of_this_friend:
+                    if friend_of_this_friend.id != current_user_uuid:
+                        if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend_of_this_friend.id), Q(visibility='FOAF')).exists()):
+                            foaf_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend_of_this_friend.id),Q(visibility='FOAF'))
+
 
             posts_list = my_posts_list+public_posts_list+friend_posts_list+private_posts_list+serveronly_posts_list+foaf_posts_list
             posts_list.sort(key=lambda x: x.published, reverse=True) # https://stackoverflow.com/questions/403421/how-to-sort-a-list-of-objects-based-on-an-attribute-of-the-objects answered Dec 31 '08 at 16:42 by Triptych
@@ -144,7 +147,7 @@ class PostToUserHandlerView(APIView):
             return current_user_uuid
 
 
-# https://stackoverflow.com/questions/19360874/pass-url-argument-to-listview-queryset
+# https://stackoverflow.com/questions/19360874/pass-url-argument-to-listview-queryset answered Oct 14 '13 at 13:11 Aamir Adnan
 class PostToUserIDHandler(APIView):
     def get(self, request, user_id, format=None):
         current_user_uuid = Helpers.get_current_user_uuid(request)
@@ -172,6 +175,11 @@ class PostToUserIDHandler(APIView):
                     user_host = Author.objects.get(id=user_id)
                     if (Helpers.get_current_user_host(request)==user_host):
                         serveronly_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False),Q(author_id=user_id),Q(visibility='SERVERONLY'))
+                
+                friends_of_this_friend =  Helpers.get_friends(user_id)
+                for friend_of_this_friend in friends_of_this_friend:
+                    if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend_of_this_friend.id), Q(visibility='FOAF')).exists()):
+                        foaf_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend_of_this_friend.id),Q(visibility='FOAF'))
 
             posts_list = public_posts_list+friend_posts_list+private_posts_list+serveronly_posts_list+foaf_posts_list
             posts_list.sort(key=lambda x: x.published, reverse=True)

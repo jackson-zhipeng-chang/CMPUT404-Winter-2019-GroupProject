@@ -86,43 +86,6 @@ class FriendRequestHandler(APIView):
             else:
                 return Response("Opreation not allowed.", status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, format=None): #TODO: We actually don't need this function
-        data = request.data
-        try:
-            requestid = data['id']
-        except:
-            return Response('No request id', status=404)
-
-        if (not Friend.objects.filter(id=requestid).exists()):
-            responsBody={
-                "query": "friendrequestRespons",
-                "success":False,
-                "message":"Request not found"
-                }
-            return Response(responsBody, status=404)
-        else:
-            current_user_uuid = Helpers.get_current_user_uuid(request)
-            friendrequests=Friend.objects.get(id=requestid)
-            author_id = data['author']['id'].replace(data['author']['host']+'author/', "")
-            friend_id = data['friend']['id'].replace(data['friend']['host']+'author/', "")
-            sender_object = Author.objects.get(id=author_id)
-            reciver_object = Author.objects.get(id=friend_id)
-            friendship = Friend.objects.get_object_or_404(author=sender_object, friend=reciver_object)
-            current_status = friendship.status
-
-            if (current_user_uuid == friendrequests.author.id and (current_status == 'Pending' or current_status == 'Decline')):
-                friendrequests.delete()
-                return Response("Success unfriend, you have stopped following your friend", status=status.HTTP_200_OK)
-
-            elif (current_user_uuid == friendrequests.friend.id and current_status == 'Accept'):
-                friendrequests.status='Decline'
-                friendrequests.save()
-                return Response("Success unfriend, your friend is still following you", status=status.HTTP_200_OK)
-                
-            else:
-                return Response("Opreation not allowed.", status=status.HTTP_400_BAD_REQUEST)
-
-
 class MyFriends(APIView):
     def get(self, request, format=None):
         current_user_uuid = Helpers.get_current_user_uuid(request)
@@ -144,6 +107,9 @@ class UnFriend(APIView):
         # case that, A requests B, before B accepts/declines this request, A sends an unFriend request to B
         elif (Friend.objects.filter(Q(author=current_user_uuid),Q(friend=friendid),Q(status='Pending')).exists()):
             Friend.objects.filter(Q(author=current_user_uuid),Q(friend=friendid),Q(status='Pending')).delete()
-            return Response("Cancel friend quest",status=200)
+            return Response("Cancel friend request",status=200)
+        elif(Friend.objects.filter(Q(author=current_user_uuid),Q(friend=friendid),Q(status='Decline')).exists()):
+            Friend.objects.filter(Q(author=current_user_uuid), Q(friend=friendid), Q(status='Decline')).delete()
+            return Response("Delete friend request",status=200)
         else:
             return Response("You are not friend yet", status=400)

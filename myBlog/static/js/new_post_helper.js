@@ -196,7 +196,6 @@ function post(){
 
 }
 
-
 function post_modify(postid,ctype){
     let form =
     {
@@ -269,7 +268,4 @@ function post_modify(postid,ctype){
     });
 
 }
-
-
-
 

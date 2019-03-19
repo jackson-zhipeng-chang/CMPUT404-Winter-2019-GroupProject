@@ -30,11 +30,13 @@
         	},
        		redirect:"follow",
         	referrer:"no-referrer",
-		}).then(response=>{
+		})
+		.then(response=>{
 			if(response.status==200){
 				window.location.reload(true);
 			}
-		})
+
+		});
 	}
 
 	function edit_function(data){
