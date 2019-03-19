@@ -135,6 +135,10 @@ class PostSerializer(serializers.ModelSerializer):
         instance.visibility = validated_data.get('visibility', instance.visibility)
         instance.origin = validated_data.get('origin', instance.origin)
         instance.source = validated_data.get('source', instance.source)
+        ######
+        instance.categories = validated_data.get('categories',instance.categories)
+        instance.description=validated_data.get('description',instance.description)
+        instance.visibleTo=validated_data.get('visibleTo',instance.visibleTo)
         instance.save()
         return instance
 

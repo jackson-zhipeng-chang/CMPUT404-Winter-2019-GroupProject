@@ -1,32 +1,31 @@
 {% extends 'base.html' %}
 
-{% block title %}New Post{% endblock %}
+{% block title %}Modify Post{% endblock %}
 
 {% block content %}
 {% if user.is_authenticated %}
+
+
+
+
   <div>
     <h1 class="secondary-color">Hi {{ user.username }}! What's on your mind today?</h1>
     <div class="w3-card w3-round w3-white">
     <div class="w3-container w3-padding">
-        <form action="" method="POST" >Post type<br>
-        <select name="content-type" id=post-contenttype onchange="enableInput()">
-          <option value="text/plain" selected>Plain text</option>
-          <option value="text/markdown">Markdonw</option>
-          <option value="image/png;base64">image/png</option>
-          <option value="image/jpeg;base64">image/jpeg</option>
-        </select>
+        <form action="" method="PUT" >Post type<br>
+        <p id='contentType'>{{ input_data.contentType }} </p>
 
         <h4>Post title</h4>
-        <input class="w3-border w3-padding" type="text" name="Title" placeholder="My title" id=post-title><br>
+        <input class="w3-border w3-padding" type="text" name="Title" value="My title" id=post-title><br>
 
         <h4>Post content</h4>
-        <textarea style="width: 100%; height:10em;"class="w3-border w3-padding" type="text" name="Title" placeholder="What's on your mind?" id=post-content></textarea>
+        <textarea style="width: 100%; height:10em;"class="w3-border w3-padding" type="text" name="Title" value="What's on your mind?" id=post-content></textarea>
 
         <h4>Description</h4>
-        <input class="w3-border w3-padding" type="text" name="Title" placeholder="Description" id=post-description><br>
+        <input class="w3-border w3-padding" type="text" name="Title" value="Description" id=post-description><br>
         
         <h4>Categories</h4>
-        <input class="w3-border w3-padding" type="text" name="Title" placeholder="Categories" id=post-categories><br>
+        <input class="w3-border w3-padding" type="text" name="Title" value="Categories" id=post-categories><br>
         
         <form>Who do you want to share with?<br>
         <select name="visibility" id="post-visibility" onchange="enableVisibleTo()">
@@ -61,10 +60,37 @@
         No: <input name="unlisted" value="No" type="radio" checked/>
         <br><br>
         
-        <button type="button" class="w3-button w3-theme" onclick="post()"><i class="fa fa-pencil"></i>Post</button> 
+        <button type="button" id='post_btn'class="w3-button w3-theme" )" ><i class="fa fa-pencil"></i>Post</button> 
       </div>
     </div>
   </div>
+
+  <script type="text/javascript">
+  var input_data;
+  function getPostData(post_id){
+    url = '/myBlog/posts/'+ post_id + '/';
+    return fetch(url).then(response=>response.json()).then(function(data){
+      input_data = data;
+      console.log(input_data);
+
+      document.getElementById('contentType').innerHTML = input_data['contentType'];
+      enableInput_modify(input_data['contentType'])
+      document.getElementById('post-title').value = input_data['title'];
+      document.getElementById('post-content').value = input_data['content'];
+      document.getElementById('post-description').value = input_data['description'];
+      document.getElementById('post-categories').value = input_data['categories'];
+      let postBtn = document.getElementById('post_btn');
+      postBtn.addEventListener('click',function(){
+        post_modify("{{post_id}}",input_data['contentType']);
+      })
+
+    });
+  }
+  getPostData("{{post_id}}");
+
+</script>
+
+
   {% else %}
   <div class="w3-card w3-round w3-white" style="width:30%;margin:auto;margin-top: 5%;">
     <div class="w3-container w3-padding">

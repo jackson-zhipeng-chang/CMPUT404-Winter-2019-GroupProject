@@ -8,16 +8,14 @@
 
 
 <script>
-	function done_function(value,data){
+	function done_function(Namevalue,Githubvalue,data){
 		let url = "/myBlog/author/" + data.id+'/';
 		let requestFrom = {
 			"id":data.id,
-			"displayName":value,
+			"displayName":Namevalue,
 			"url":data.url,
 			"host":data.host,
-			"github":data.github
-
-
+			"github":Githubvalue
 		}
 		let body = JSON.stringify(requestFrom);
 		return fetch(url,{
@@ -37,23 +35,31 @@
 				window.location.reload(true);
 			}
 		})
-
-
-
-
 	}
 
-
-
 	function edit_function(data){
-
 		//chage name to textinput
 		var old_name = document.getElementById("displayname");
-		inputText = document.createElement('INPUT');
-		inputText.setAttribute('type','text');
-		inputText.setAttribute('value',data.displayName);
+		nameinputText = document.createElement('INPUT');
+		nameinputText.setAttribute('type','text');
+		nameinputText.setAttribute('value',data.displayName);
+		old_name.replaceChild(nameinputText,old_name.childNodes[0]);
 
-		old_name.replaceChild(inputText,old_name.childNodes[0]);
+
+
+		//change github to textinput
+		var old_github = document.getElementById("github");
+		githubinputText = document.createElement('INPUT');
+		githubinputText.setAttribute('type','text');
+		if (data.github != null){
+			githubinputText.setAttribute('value',data.github);
+			old_github.replaceChild(githubinputText,old_github.childNodes[0]);
+		}
+		else{
+			githubinputText.setAttribute('value',"");
+			old_github.appendChild(githubinputText);
+		}
+
 
 
 
@@ -66,23 +72,12 @@
 
 		old_button.parentNode.replaceChild(new_button,old_button);
 		new_button.addEventListener('click',function(){
-			done_function(inputText.value,data);
-			
-
-
+			done_function(nameinputText.value,githubinputText.value,data);
 		});
-
-
-
 
 	}
 
-
-
-
-
-
-	function display(data) {
+	function display_my_profile(data) {
 		var friend = document.createElement("div");
 		friend.classList.add("w3-container", "w3-card", "w3-white", "w3-round", "w3-margin");
 		friend.setAttribute('id','friendDiv');
@@ -105,7 +100,6 @@
         	edit_function(data);
         });
 
-
 		var name = document.createElement("h3");
 		name.setAttribute('id','displayname1')
 		name.innerHTML = "Name: "
@@ -113,9 +107,8 @@
 		friend.appendChild(name);
 
 		var name2 = document.createElement("h3");
-		name2.setAttribute('id','displayname')
+		name2.setAttribute('id','displayname');
 		name2.innerHTML = data.displayName;
-		//name2.style.margin = "14px";
 		friend.appendChild(name2);
 
 		document.getElementById("displayname1").style.display="inline-block";
@@ -123,37 +116,33 @@
 
 		var id = document.createElement("p");
 		id.innerHTML = "Id: " + data.id;
-		id.style.marginTop = "14px";
-		id.style.marginLeft = "75px";
+		id.style.marginLeft = "60px";
 		friend.appendChild(id);
 
-		var line = document.createElement("hr");
-		line.classList.add("w3-clear");
-		friend.appendChild(line);
-
 		var divDescription = document.createElement("div");
-		//divDescription.classList.add("w3-row-padding");
-		//divDescription.style.margin = "0 20px";
         divDescription.style.margin = "14px"
 		friend.appendChild(divDescription);
 
 		var url = document.createElement("p");
-		url.innerHTML ="url: " + data.url;
-		//url.classList.add("w3-row-padding");
-            url.style.marginLeft = "48px";
-		divDescription.appendChild(url);
-
+		url.innerHTML ="URL: " + data.url;
+        url.style.marginLeft = "60px";
+		friend.appendChild(url);
 
 		var github = document.createElement("p");
+		github.setAttribute('id','github_label')
+		github.innerHTML = "GitHub: ";
+		github.style.marginLeft = "60px";
+		friend.appendChild(github);
+
+		var github = document.createElement("p");
+		github.setAttribute('id','github')
 		github.innerHTML = data.github;
-		divDescription.appendChild(github);
-
-
-
-
+		friend.appendChild(github);
+		document.getElementById("github_label").style.display="inline-block";
+		document.getElementById("github").style.display="inline-block";
       }
 
-getProfile("/myBlog/myprofile/").then(display);
+getProfile("/myBlog/myprofile/").then(display_my_profile);
 
 </script>
 

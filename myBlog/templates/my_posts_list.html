@@ -25,8 +25,8 @@ function display_my_posts(data) {
       for (var i = 0; i < data.posts.length; i++) {
         let post = document.createElement("div");
         post.classList.add("w3-container", "w3-card", "w3-white", "w3-round", "w3-margin");
-
         holder.appendChild(post);
+
         var userLogo = document.createElement("i");
         userLogo.classList.add("fa", "fa-user");
         userLogo.classList.add("w3-left", "w3-circle");
@@ -41,10 +41,29 @@ function display_my_posts(data) {
           var trashLogo = document.createElement("i");
           trashLogo.classList.add("fa", "fa-trash", "w3-right", "w3-margin-right", "w3-button");
           trashLogo.style.width = "25px";
-          trashLogo.style.margin = "25px";
+          trashLogo.style.marginTop = "25px";
           trashLogo.onclick=function(){deletePost(post_id)} ;
           post.appendChild(trashLogo);
         }
+
+
+        var editLogo = document.createElement("i");
+        editLogo.classList.add("fa", "fa-pencil", "w3-right", "w3-margin-right", "w3-button");
+        editLogo.style.width = "25px";
+        editLogo.style.marginTop = "25px";
+        editLogo.setAttribute('id',i)
+        //editLogo.addEventListener('click',function(){
+            //editPost(this.id,data.post)
+        //})
+        editLogo.onclick=function(){editPost(post_id)};
+        post.appendChild(editLogo);
+
+
+
+
+
+
+
         var author = document.createElement("a");
         var friend_id = data.posts[i]['author']['id'];
         author.setAttribute('href','/myBlog/authordetails/'+friend_id+'/');
@@ -58,11 +77,14 @@ function display_my_posts(data) {
         line.classList.add("w3-clear");
         post.appendChild(line);
 
+        var post_details_link = document.createElement("a");
+        post_details_link.setAttribute('href','/myBlog/postdetails/'+ data.posts[i].postid+'/');
+        post.appendChild(post_details_link);
         var title = document.createElement("h3");
         title.innerHTML = data.posts[i].title;
         title.classList.add("w3-row-padding");
         title.style.margin = "0 20px";
-        post.appendChild(title);
+        post_details_link.appendChild(title);
 
         var line = document.createElement("hr");
         line.classList.add("w3-clear");
@@ -73,7 +95,7 @@ function display_my_posts(data) {
         divDescription.style.margin = "0 20px";
         post.appendChild(divDescription);
 
-        if (data.posts[i].contentType == "image/png;base64" || data.posts[i].contentType == "image/jepg;base64")
+        if (data.posts[i].contentType == "image/png;base64" || data.posts[i].contentType == "image/jpeg;base64")
         {
           var content = document.createElement("img");
           content.src = data.posts[i].content;
@@ -118,7 +140,7 @@ function display_my_posts(data) {
         divDescription.appendChild(commentButton);
 
       }
-    
+
       if (data.next != null)
       {
         var nextButton = document.createElement("button");

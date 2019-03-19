@@ -9,18 +9,18 @@ function get_host()
 
 function getAllPosts(url) 
 {
-      return fetch(url, {
-          method: "GET", 
-          mode: "cors", 
-          cache: "no-cache", 
-          credentials: "same-origin", 
-          headers: {
-              "Content-Type": "application/json"
-          },
-          redirect: "follow", 
-          referrer: "no-referrer", 
-      })
-      .then(response => response.json());
+    return fetch(url, {
+        method: "GET", 
+        mode: "cors", 
+        cache: "no-cache", 
+        credentials: "same-origin", 
+        headers: {
+            "Content-Type": "application/json"
+        },
+        redirect: "follow", 
+        referrer: "no-referrer", 
+    })
+    .then(response => response.json());
 }
 
 function deletePost(id)
@@ -41,6 +41,16 @@ function deletePost(id)
     .then(alert("Successfully deleted!"));
 }
 
+function editPost(post_id){
+    window.location.href="/myBlog/modify_post/" + post_id;
+    //console.log("post_id:",post_id);
+
+    }
+    
+
+
+
+
 function commentPost(id)
 {
     let commentForm =
@@ -51,10 +61,11 @@ function commentPost(id)
             "comment":"",
             "contentType":"text/plain"
         }
-    }
+    };
     commentForm.comment.comment= document.getElementById("commentInput"+id).value;
     let body = JSON.stringify(commentForm);
     let url = "/myBlog/posts/"+id+"/comments/";
+
     return fetch(url, {
         method: "POST", 
         mode: "cors", 
