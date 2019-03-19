@@ -43,9 +43,15 @@ class FriendRequestHandler(APIView):
                         friendrequest = Friend.objects.get(author=reciver_object, friend=sender_object)
                         friendrequest.status="Accept"
                         friendrequest.save()
-                        return Response("You are now friend with %s"%author_id, status=status.HTTP_200_OK) 
+                        return Response("You are now friend with %s"%author_id, status=status.HTTP_200_OK)
+                    elif Friend.objects.filter(author=reciver_object,friend=sender_object,status="Pending").exists():
+                        # if the one who I want to follow has followed me
+                        friendrequest = Friend.objects.get(author=reciver_object,friend=sender_object)
+                        friendrequest.status='Accept'
+                        friendrequest.save()
+                        return Response("You are new friend with{}".format(reciver_object.displayName,status=status.HTTP_200_OK))
                     elif (Friend.objects.filter(author=sender_object, friend=reciver_object, status="Pending").exists()): 
-                        return Response("Friend request already sent", status=status.HTTP_400_BAD_REQUEST)  
+                        return Response("Friend request already sent", status=status.HTTP_400_BAD_REQUEST)
                     else:
                         friendrequest = Friend.objects.create(author=sender_object, friend=reciver_object)
                         friendrequest.save()

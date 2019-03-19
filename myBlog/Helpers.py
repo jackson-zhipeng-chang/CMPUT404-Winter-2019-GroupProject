@@ -140,8 +140,11 @@ def is_my_friend(current_user_id, author_id):
         friend_object = get_object_or_404(Author, id=author_id)
         relation_curUser_to_frined = Friend.objects.filter(author=current_user_object, friend=friend_object,status="Accept")
         relation_friend_to_curUser = Friend.objects.filter(author=friend_object, friend=current_user_object,status="Accept")
+
         if relation_curUser_to_frined or relation_friend_to_curUser:
             return 'true'
+        # elif Friend.objects.filter(author=current_user_object,friend=friend_object,status='Pending').exists() and \
+        #         Friend.objects.filter(author=friend_object,friend=current_user_object,status='Pending').exists():
         else:
             return 'false'
     else:

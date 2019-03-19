@@ -211,7 +211,6 @@ function renderpage(data){
             dropdownContentDiv.appendChild(contentlink);
             contentlink.classList.add("w3-bar-item", "w3-button");
             contentlink.innerHTML = 'Unfollow';
-            // TODO: change function
             contentlink.addEventListener('click',function(){
                 sendUnFriendRequest(author_id);
             });
