@@ -27,4 +27,6 @@ class Friend2FriendHandler(APIView):
                 "friends": isFriend
             }
             return Response(response_body, status=status.HTTP_200_OK)
+        else:
+            return Response("User not found", status=404)
 
