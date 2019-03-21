@@ -9,7 +9,7 @@
 
 <script>
 	function done_function(Namevalue,Githubvalue,data){
-		let url = "/myBlog/author/" + data.id+'/';
+		let url = "/service/author/" + data.id+'/';
 		let requestFrom = {
 			"id":data.id,
 			"displayName":Namevalue,
@@ -143,7 +143,7 @@
 		document.getElementById("github").style.display="inline-block";
       }
 
-getProfile("/myBlog/myprofile/").then(display_my_profile);
+getProfile("/service/myprofile/").then(display_my_profile);
 
 </script>
 

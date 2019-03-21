@@ -2,7 +2,7 @@
 // https://makitweb.com/how-to-fire-ajax-request-on-regular-interval/
 function getFriendReuqest(){
     $.ajax({
-        url:"/myBlog/friendrequest/",
+        url:"/service/friendrequest/",
         type:"get",
         success:function(data){
             let reqeustNum =  data.length;

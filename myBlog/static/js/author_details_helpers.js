@@ -31,7 +31,7 @@ function getAuthorDetails(authorid,currentUserID,isFriend,currentUserName,follow
     authorHost = friend_host;
     authorGithub = friend_github;
     if (currentUserID != authorid){
-        let url = '/myBlog/author/'+authorid+'/posts/';
+        let url = '/service/author/'+authorid+'/posts/';
         return fetch(url,{
             method:"GET",
             mode:"cors",
@@ -45,7 +45,7 @@ function getAuthorDetails(authorid,currentUserID,isFriend,currentUserName,follow
         }).then(response => response.json());
     }
     else{
-        let url = '/myBlog/posts/mine/?size=10';
+        let url = '/service/posts/mine/?size=10';
         return fetch(url,{
             method:"GET",
             mode:"cors",
@@ -61,7 +61,7 @@ function getAuthorDetails(authorid,currentUserID,isFriend,currentUserName,follow
     }
 }
 function sendUnFriendRequest(author_id){
-    let url = '/myBlog/unfriend/'+author_id+'/';
+    let url = '/service/unfriend/'+author_id+'/';
     return fetch(url,{
         method:"delete",
         mode:"cors",
@@ -93,7 +93,7 @@ function sendFollowRequest(author_id,author_host,author_name,author_url,currentU
         }
     }
     let body = JSON.stringify(request_form);
-    let url = "/myBlog/friendrequest/";
+    let url = "/service/friendrequest/";
     return fetch(url,{
         method:"POST",
         mode:"cors",
@@ -125,7 +125,7 @@ function commentPost(id) {
         }
     commentForm.comment.comment = document.getElementById("commentInput" + id).value;
     let body = JSON.stringify(commentForm);
-    let url = "/myBlog/posts/" + id + "/comments/";
+    let url = "/service/posts/" + id + "/comments/";
     return fetch(url, {
         method: "POST",
         mode: "cors",
@@ -267,7 +267,7 @@ function renderpage(data){
             content.appendChild(postsDiv);
 
             var post_details_link = document.createElement("a");
-            post_details_link.setAttribute('href','/myBlog/postdetails/'+data.posts[i].postid+'/');
+            post_details_link.setAttribute('href','/service/postdetails/'+data.posts[i].postid+'/');
             postsDiv.appendChild(post_details_link);
             var title = document.createElement("h3");
             title.innerHTML = data.posts[i].title;

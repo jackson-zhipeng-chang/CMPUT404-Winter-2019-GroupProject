@@ -24,7 +24,7 @@ function getAllFriends(url)
 
 function deleteFriends(id)   //not yet done
 {
-    let url = "/myBlog/posts/"+id;
+    let url = "/service/posts/"+id;
     return fetch(url, {
         method: "DELETE", 
         mode: "cors", 
