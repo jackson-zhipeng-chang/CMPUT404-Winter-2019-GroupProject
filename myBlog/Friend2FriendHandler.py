@@ -13,7 +13,6 @@ from . import Helpers
 
 class Friend2FriendHandler(APIView):
     def get(self, request, authorid1, service2, authorid2, format=None):
-        print(authorid1, service2, authorid2)
         author1_obj = Helpers.get_author_or_not_exits(authorid1)
         author2_obj = Helpers.get_author_or_not_exits(authorid2)
         if (author1_obj is not False) and (author2_obj is not False):
