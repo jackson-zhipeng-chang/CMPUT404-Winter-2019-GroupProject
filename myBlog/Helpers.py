@@ -16,7 +16,7 @@ def get_author_or_not_exits(current_user_uuid):
         Author.objects.filter(id=current_user_uuid)
         return Author.objects.get(id=current_user_uuid)
     except:
-        return Response("Author coudn't find", status=404)
+        return False
 
 
 def get_host_from_request(request):
@@ -130,7 +130,7 @@ def home(request):
             github_url = "https://api.github.com/users/%s/events/public"%github_id
         else:
             github_url = "null"
-        posts_url = "/myBlog/author/posts/?size=10"
+        posts_url = "/service/author/posts/?size=10"
         return render(request, 'homepage.html', {"posts_url":posts_url, "github_url":github_url, "trashable":"false"})
     else:
         return render(request, 'homepage.html')
@@ -167,7 +167,7 @@ def new_post(request):
     return render(request, 'newpost.html')
 
 def my_posts(request):
-    posts_url = "/myBlog/posts/mine/?size=10"
+    posts_url = "/service/posts/mine/?size=10"
     return render(request, 'my_posts_list.html', {"posts_url":posts_url, "trashable":"true"})
 
 def friend_request(request):

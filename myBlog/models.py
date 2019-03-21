@@ -93,3 +93,13 @@ class Comment(models.Model):
     def __str__(self):
         return self.comment
 
+
+class Node(models.Model): 
+    host = models.URLField(primary_key=True)
+    shareImages = models.BooleanField(default=True)
+    sharePost = models.BooleanField(default=True)
+    username = models.CharField(max_length=400)
+    password = models.CharField(max_length=400)
+
+    def __str__(self):
+        return self.host

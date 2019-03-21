@@ -25,7 +25,7 @@ function getAllPosts(url)
 
 function deletePost(id)
 {
-    let url = "/myBlog/posts/"+id;
+    let url = "/service/posts/"+id;
     return fetch(url, {
         method: "DELETE", 
         mode: "cors", 
@@ -63,7 +63,7 @@ function commentPost(id)
     };
     commentForm.comment.comment= document.getElementById("commentInput"+id).value;
     let body = JSON.stringify(commentForm);
-    let url = "/myBlog/posts/"+id+"/comments/";
+    let url = "/service/posts/"+id+"/comments/";
 
     return fetch(url, {
         method: "POST", 
