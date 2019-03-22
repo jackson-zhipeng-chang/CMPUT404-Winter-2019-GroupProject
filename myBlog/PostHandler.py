@@ -100,6 +100,46 @@ class PostHandler(APIView):
 # https://github.com/belatrix/BackendAllStars/blob/master/employees/serializers.py by Sergio Infante
 # https://stackoverflow.com/questions/2658291/get-list-or-404-ordering-in-django answered Apr 17 '10 at 12:21 Ludwik Trammer
 class PostToUserHandlerView(APIView):
+    def post(self, request, postid, format=None):
+        '''
+        TODO
+        # This is needed for FOAF calls, it asks the other server to decide to send us a
+        # post or not based on friends.
+        # one of Greg's friends has to be be LARA's friend
+
+        # Here GREG tries to get a post from LARA that's marked as FOAF visibility
+        # the server will query greg's server to ensure that he is friends with 7de and 11c
+        # then it will get the users from its own server and see if they are friends of Lara
+        # Then it will go to at least 1 of these friend's servers and verify that they are friends of Greg
+        # once it is verified via the 3 hosts that Greg is a friend, then greg will get the data for lara's post
+        # POST to http://service/posts/{POST_ID} , sending the body
+
+        {
+            "query":"getPost",
+            "postid":"{POST_ID}",
+            "url":"http://service/posts/{POST_ID}",
+            "author":{ # requestor
+                # UUID
+                "id":"http://127.0.0.1:5454/author/de305d54-75b4-431b-adb2-eb6b9e546013",
+                "host":"http://127.0.0.1:5454/",
+                "displayName":"Jerry Johnson",
+                # url to the authors information
+                "url":"http://127.0.0.1:5454/author/de305d54-75b4-431b-adb2-eb6b9e546013",
+                # HATEOS
+                "github": "http://github.com/jjohnson"
+            },
+            # friends of author
+            "friends":[
+                "http://127.0.0.1:5454/author/7deee0684811f22b384ccb5991b2ca7e78abacde",
+                "http://127.0.0.1:5454/author/11c3783f15f7ade03430303573098f0d4d20797b",
+            ]
+        }
+        # then this returns with the generic GET http://service/posts/{POST_ID}
+        '''
+        
+        return JsonResponse(status=200)
+    
+    
     def get(self, request, format=None):
         current_user_uuid = Helpers.get_current_user_uuid(request)
         if type(current_user_uuid) == UUID:
