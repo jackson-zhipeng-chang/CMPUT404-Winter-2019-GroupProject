@@ -1,6 +1,6 @@
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
-from .models import Post, Author, Comment, Friend
+from .models import Post, Author, Comment, Friend, Node
 from rest_framework import status
 from django.contrib.auth import login, authenticate, logout
 from django.shortcuts import redirect
@@ -161,6 +161,13 @@ def get_follow_status(current_user_id, author_id):
             return current_status
     else:
         raise Response("User coudn't find", status=404)
+
+def check_remote_request(request):
+    requestHost = get_host_from_request(request)
+    if (Node.objects.filter(host=requestHost).exists()):
+        return True
+    else:
+        return False
 
 #-----------------------------------------Local endpoints-----------------------------------------#
 def new_post(request):

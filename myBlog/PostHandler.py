@@ -2,24 +2,44 @@ import markdown
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404, render,get_list_or_404
-from .models import Post, Author, Comment, Friend
+from .models import Post, Author, Comment, Friend, Node
 from .serializers import PostSerializer, CommentSerializer, AuthorSerializer, CustomPagination, FriendSerializer
 from rest_framework import status
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AnonymousUser
 from django.http import HttpResponse, JsonResponse
 from django.db.models import Q
 from rest_framework.parsers import JSONParser, MultiPartParser
 from . import Helpers
 from uuid import UUID
+import requests
+import json
 
 
 class NewPostHandler(APIView):
     def get(self, request, format=None):
-        posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(visibility='PUBLIC'))
-        paginator = CustomPagination()
-        results = paginator.paginate_queryset(posts_list, request)
-        serializer=PostSerializer(results, many=True)
-        return paginator.get_paginated_response(serializer.data) 
+        isRemote = Helpers.check_remote_request(request)
+        if isRemote:
+            remoteNode = Node.objects.get(host=Helpers.get_host_from_request(request))
+            remoteUser = remoteNode.nodeUser
+            if remoteUser == request.user:
+                posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(visibility='PUBLIC'))
+                paginator = CustomPagination()
+                results = paginator.paginate_queryset(posts_list, request)
+                serializer=PostSerializer(results, many=True)
+                return paginator.get_paginated_response(serializer.data) 
+            else:
+                return Response("You are not using the auth node user", status=401)
+
+        elif type(request.user) is not AnonymousUser:
+            posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(visibility='PUBLIC'))
+            paginator = CustomPagination()
+            results = paginator.paginate_queryset(posts_list, request)
+            serializer=PostSerializer(results, many=True)
+            return paginator.get_paginated_response(serializer.data) 
+
+        else:
+            return Response("Unauthorized", status=401)
+            
 
     def post(self, request, format=None):
         current_user_uuid = Helpers.get_current_user_uuid(request)
@@ -44,6 +64,44 @@ class NewPostHandler(APIView):
 # https://www.django-rest-framework.org/tutorial/2-requests-and-responses/
 # https://www.django-rest-framework.org/tutorial/1-serialization/
 class PostHandler(APIView):
+    def post(self, request, postid, format=None):
+        '''
+        # This is needed for FOAF calls, it asks the other server to decide to send us a
+        # post or not based on friends.
+        # one of Greg's friends has to be be LARA's friend
+
+        # Here GREG tries to get a post from LARA that's marked as FOAF visibility
+        # the server will query greg's server to ensure that he is friends with 7de and 11c
+        # then it will get the users from its own server and see if they are friends of Lara
+        # Then it will go to at least 1 of these friend's servers and verify that they are friends of Greg
+        # once it is verified via the 3 hosts that Greg is a friend, then greg will get the data for lara's post
+        # POST to http://service/posts/{POST_ID} , sending the body
+
+        {
+            "query":"getPost",
+            "postid":"{POST_ID}",
+            "url":"http://service/posts/{POST_ID}",
+            "author":{ # requestor
+                # UUID
+                "id":"http://127.0.0.1:5454/author/de305d54-75b4-431b-adb2-eb6b9e546013",
+                "host":"http://127.0.0.1:5454/",
+                "displayName":"Jerry Johnson",
+                # url to the authors information
+                "url":"http://127.0.0.1:5454/author/de305d54-75b4-431b-adb2-eb6b9e546013",
+                # HATEOS
+                "github": "http://github.com/jjohnson"
+            },
+            # friends of author
+            "friends":[
+                "http://127.0.0.1:5454/author/7deee0684811f22b384ccb5991b2ca7e78abacde",
+                "http://127.0.0.1:5454/author/11c3783f15f7ade03430303573098f0d4d20797b",
+            ]
+        }
+        # then this returns with the generic GET http://service/posts/{POST_ID}
+        '''
+        
+        return JsonResponse(status=200)
+
     def get(self, request, postid, format=None):
         if (not Post.objects.filter(pk=postid).exists()):
             return Response("Post couldn't find", status=404)
@@ -109,6 +167,7 @@ class PostToUserHandlerView(APIView):
             private_posts_list=[]
             serveronly_posts_list=[]
             foaf_posts_list=[]
+            remotePosts = []
             if (Post.objects.filter(Q(unlisted=False), Q(author_id=current_user_uuid)).exists()):
                 my_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=current_user_uuid))
 
@@ -138,9 +197,29 @@ class PostToUserHandlerView(APIView):
                     if friend_of_this_friend.id != current_user_uuid:
                         if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend_of_this_friend.id), Q(visibility='FOAF')).exists()):
                             foaf_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend_of_this_friend.id),Q(visibility='FOAF'))
+            
+            for node in Node.objects.all():
+                nodeURL = node.host+"service/posts/"
+                response = requests.get(nodeURL, auth=requests.auth.HTTPBasicAuth(node.remoteUsername, node.remotePassword))
+                data = json.loads(response.content.decode('utf8').replace("'", '"'))
+                for i in range (0,len(data["posts"])):
+                    remoteAuthorJson = data["posts"][i]["author"]
+                    remoteAuthorObj = Helpers.get_author_or_not_exits(remoteAuthorJson['id'])
+                    if remoteAuthorObj is False:
+                        user = User.objects.create_user(username=remoteAuthorJson["displayName"],password="password", is_active=False)
+                        userObj = get_object_or_404(User, username=remoteAuthorJson["displayName"])
+                        author = Author.objects.create(displayName=remoteAuthorJson["displayName"],user=userObj, host=remoteAuthorJson["host"])
+                        author.save()
+                        remoteAuthorObj = author
 
-
-            posts_list = my_posts_list+public_posts_list+friend_posts_list+private_posts_list+serveronly_posts_list+foaf_posts_list
+                    remotePostObj = Post.objects.create(title=data["posts"][i]["title"],source=data["posts"][i]["source"], 
+                        origin=data["posts"][i]["origin"], content=data["posts"][i]["content"],categories=data["posts"][i]["categories"], 
+                        contentType=data["posts"][i]["contentType"], author=remoteAuthorObj,visibility=data["posts"][i]["visibility"], 
+                        visibleTo=data["posts"][i]["visibleTo"], description=data["posts"][i]["description"],
+                        unlisted=data["posts"][i]["unlisted"], published=data["posts"][i]["published"])
+                    remotePosts.append(remotePostObj)
+                    
+            posts_list = my_posts_list+public_posts_list+friend_posts_list+private_posts_list+serveronly_posts_list+foaf_posts_list+remotePosts
             posts_list.sort(key=lambda x: x.published, reverse=True) # https://stackoverflow.com/questions/403421/how-to-sort-a-list-of-objects-based-on-an-attribute-of-the-objects answered Dec 31 '08 at 16:42 by Triptych
             paginator = CustomPagination()
             results = paginator.paginate_queryset(posts_list, request)
