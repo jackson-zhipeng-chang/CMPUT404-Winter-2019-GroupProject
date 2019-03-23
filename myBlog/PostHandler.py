@@ -256,6 +256,7 @@ class PostToUserIDHandler(APIView):
 
             posts_list = public_posts_list+friend_posts_list+private_posts_list+serveronly_posts_list+foaf_posts_list
             posts_list.sort(key=lambda x: x.published, reverse=True)
+            print(posts_list)
             paginator = CustomPagination()
             results = paginator.paginate_queryset(posts_list, request)
             serializer=PostSerializer(results, many=True)
@@ -299,5 +300,6 @@ def pull_remote_nodes(current_user_uuid):
                         publishedObj = dateutil.parser.parse(data["posts"][i]["published"])
                         remotePostObj.published = publishedObj
                         remotePostObj.save()
-        except:
-            pass
+        except Exception as e:
+            continue
+    return

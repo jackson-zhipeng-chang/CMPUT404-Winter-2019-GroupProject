@@ -128,32 +128,36 @@ def get_local_friends(current_user_uuid):
 
 def update_remote_friendship(current_user_uuid):
     friends_list = get_local_friends(current_user_uuid)
-    for node in Node.objects.all():
-        friendshipURL = node.host+"service/author/"+str(current_user_uuid)+"/friends/"
-        response = requests.get(friendshipURL, auth=requests.auth.HTTPBasicAuth(node.remoteUsername, node.remotePassword))
-        data = json.loads(response.content.decode('utf8').replace("'", '"'))
-        remoteFriends = data["authors"]
-        if len(remoteFriends) != 0:
-            for remoteFriendURL in remoteFriends:
-                remoteFriend_uuid = get_uuid_from_url(remoteFriendURL)
-                isFollowing = check_author1_follow_author2(current_user_uuid,remoteFriend_uuid)
-                if isFollowing:
-                    update_friendship_obj(current_user_uuid, remoteFriend_uuid, 'Accept')
+    try:
+        for node in Node.objects.all():
+            friendshipURL = node.host+"service/author/"+str(current_user_uuid)+"/friends/"
+            response = requests.get(friendshipURL, auth=requests.auth.HTTPBasicAuth(node.remoteUsername, node.remotePassword))
+            data = json.loads(response.content.decode('utf8').replace("'", '"'))
+            remoteFriends = data["authors"]
+            if len(remoteFriends) != 0:
+                for remoteFriendURL in remoteFriends:
+                    remoteFriend_uuid = get_uuid_from_url(remoteFriendURL)
+                    isFollowing = check_author1_follow_author2(current_user_uuid,remoteFriend_uuid)
+                    if isFollowing:
+                        update_friendship_obj(current_user_uuid, remoteFriend_uuid, 'Accept')
 
-        if len(friends_list) != 0:
-            for localFriend in friends_list:
-                if ((localFriend.host in node.host) or (localFriend.host == node.host)) and (localFriend.id not in remoteFriends):
-                    if (Friend.objects.filter(Q(author=localFriend.id), Q(status='Accept')).exists()):
-                        friendship = Friend.objects.get(Q(author=localFriend.id), Q(status='Accept'))
-                        last_modified_time = friendship.last_modified_time.replace(tzinfo=None)
-                        if ((datetime.datetime.utcnow() - last_modified_time).total_seconds () > 60):
-                            friendship.delete()
+            if len(friends_list) != 0:
+                for localFriend in friends_list:
+                    if ((localFriend.host in node.host) or (localFriend.host == node.host)) and (localFriend.id not in remoteFriends):
+                        if (Friend.objects.filter(Q(author=localFriend.id), Q(status='Accept')).exists()):
+                            friendship = Friend.objects.get(Q(author=localFriend.id), Q(status='Accept'))
+                            last_modified_time = friendship.last_modified_time.replace(tzinfo=None)
+                            if ((datetime.datetime.utcnow() - last_modified_time).total_seconds () > 60):
+                                friendship.delete()
 
-                    if (Friend.objects.filter(Q(friend=localFriend.id), Q(status='Accept')).exists()):
-                        friendship = Friend.objects.get(Q(friend=localFriend.id), Q(status='Accept'))
-                        last_modified_time = friendship.last_modified_time.replace(tzinfo=None)
-                        if ((datetime.datetime.utcnow() - last_modified_time).total_seconds () > 60):
-                            friendship.delete()
+                        if (Friend.objects.filter(Q(friend=localFriend.id), Q(status='Accept')).exists()):
+                            friendship = Friend.objects.get(Q(friend=localFriend.id), Q(status='Accept'))
+                            last_modified_time = friendship.last_modified_time.replace(tzinfo=None)
+                            if ((datetime.datetime.utcnow() - last_modified_time).total_seconds () > 60):
+                                friendship.delete()
+
+    except:
+        pass
 
 
 
