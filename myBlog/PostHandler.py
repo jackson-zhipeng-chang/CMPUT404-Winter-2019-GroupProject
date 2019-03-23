@@ -164,6 +164,12 @@ class PostToUserHandlerView(APIView):
         current_user_uuid = 0
         if isRemote:
             current_user_uuid = UUID(request.query_params['author_uuid'])
+            if not (Author.objects.filter(id = current_user_uuid).exists()):
+                remoteNode = Node.objects.get(nodeUser=request.user)
+                url = remoteNode.host + "service/author/" +str(current_user_uuid)
+                response = requests.get(url, auth=requests.auth.HTTPBasicAuth(remoteNode.remoteUsername, remoteNode.remotePassword))
+                remoteAuthorJson = json.loads(response.content.decode('utf8').replace("'", '"'))
+                remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
         else:
             current_user_uuid = Helpers.get_current_user_uuid(request)
             pull_remote_nodes(current_user_uuid)
