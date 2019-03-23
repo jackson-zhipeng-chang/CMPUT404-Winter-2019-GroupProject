@@ -109,11 +109,11 @@ function sendFollowRequest(author_id,author_host,author_name,author_url,currentU
         redirect:"follow",
         referrer:"no-referrer",
     })
-    //.then(function(){
+    .then(function(){
         //https://www.permadi.com/tutorial/jsInnerHTMLDOM/index.html
        //document.getElementById('follow_Btn').childNodes[0].nodeValue="Following";
         window.location.reload(true);
-    //})
+    })
 }
 
 // got data, render the page

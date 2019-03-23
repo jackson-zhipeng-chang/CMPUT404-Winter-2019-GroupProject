@@ -66,12 +66,13 @@ function commentPost(id, post_host)
     let url = post_host+"service/posts/"+id+"/comments/";
     return fetch(url, {
         method: "POST", 
-        mode: "no-cors", 
+        mode: "cors", 
         cache: "no-cache", 
         credentials: "same-origin", 
         body: body,
         headers: {
             "Content-Type": 'application/json',
+            "Accept": 'application/json',
             "x-csrftoken": csrf_token
         },
         redirect: "follow", 
