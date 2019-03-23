@@ -172,7 +172,6 @@ def check_remote_request(request):
         return False
 
 def get_or_create_author_if_not_exist(author_json):
-    print(author_json['id'])
     AuthorObj = get_author_or_not_exits(author_json['id'])
     if AuthorObj is False:
         user = User.objects.create_user(username=author_json["displayName"],password="password", is_active=False)

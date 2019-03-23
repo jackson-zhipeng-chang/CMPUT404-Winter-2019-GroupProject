@@ -297,8 +297,7 @@ def pull_remote_nodes():
                     #https://stackoverflow.com/questions/969285/how-do-i-translate-an-iso-8601-datetime-string-into-a-python-datetime-object community wiki 5 revs, 4 users 81% Wes Winham
                 publishedObj = dateutil.parser.parse(data["posts"][i]["published"])
                 remotePostObj.published = publishedObj
-            else:
-                remotePostObj=Post.objects.get(postid=data["posts"][i]["postid"])
-            remotePosts.append(remotePostObj)
+                remotePostObj.save()
+                remotePosts.append(remotePostObj)
 
     return remotePosts
