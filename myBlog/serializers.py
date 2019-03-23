@@ -7,11 +7,10 @@ from rest_framework.response import Response
 
 
 # Reference: https://www.django-rest-framework.org/api-guide/serializers/#modelserializer
-# https://stackoverflow.com/questions/35522768/django-serializer-imagefield-to-get-full-url
-# https://www.geeksforgeeks.org/python-uploading-images-in-django/
+# https://stackoverflow.com/questions/35522768/django-serializer-imagefield-to-get-full-url answered Feb 20 '16 at 11:57 blacklwhite
 # https://www.django-rest-framework.org/api-guide/fields/
 # https://www.django-rest-framework.org/api-guide/fields/#serializermethodfield
-# https://stackoverflow.com/questions/45446953/django-rest-framework-adding-a-custom-field-to-a-paginated-viewset
+# https://stackoverflow.com/questions/45446953/django-rest-framework-adding-a-custom-field-to-a-paginated-viewset answered Aug 1 '17 at 20:33 Bear Brown
 # https://www.django-rest-framework.org/api-guide/pagination/
 # https://www.django-rest-framework.org/api-guide/pagination/#pagenumberpagination
 # https://www.programcreek.com/python/example/92963/rest_framework.pagination.PageNumberPagination
@@ -70,7 +69,7 @@ class AuthorSerializer(serializers.ModelSerializer):
         fields = ('id','displayName', 'url','host', 'github')
 
     def get_url(self, obj):
-        url = obj.host+"/myBlog/author/"+str(obj.id)
+        url = obj.host+"service/author/"+str(obj.id)
         return url
 
     def update(self, instance, validated_data):
@@ -123,8 +122,8 @@ class PostSerializer(serializers.ModelSerializer):
         origin=self.context['origin']
         post = Post.objects.create(author=author, origin=origin, source=origin, **validated_data)
         newPost = Post.objects.get(postid=post.postid)
-        newPost.origin=post.origin+"/myBlog/posts/"+str(post.postid)
-        newPost.source=post.source+"/myBlog/posts/"+str(post.postid)
+        newPost.origin=post.origin+"service/posts/"+str(post.postid)
+        newPost.source=post.source+"service/posts/"+str(post.postid)
         newPost.save()
         return newPost
 # https://www.django-rest-framework.org/api-guide/serializers/#saving-instances
@@ -160,7 +159,7 @@ class AuthorProfileSerializer(serializers.ModelSerializer):
         fields = ('id','host','displayName', 'url', 'github', 'friends')
 
     def get_url(self, obj):
-        url = obj.host+"/myBlog/author/"+str(obj.id)
+        url = obj.host+"service/author/"+str(obj.id)
         return url
 
     def get_friends(self, obj):

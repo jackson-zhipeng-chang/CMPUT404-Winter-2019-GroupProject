@@ -1,6 +1,6 @@
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
-from .models import Post, Author, Comment, Friend
+from .models import Post, Author, Comment, Friend, Node
 from rest_framework import status
 from django.contrib.auth import login, authenticate, logout
 from django.shortcuts import redirect
@@ -10,17 +10,24 @@ from django.db.models import Q
 from django.shortcuts import render
 from uuid import UUID
 from django.http import HttpResponse, HttpResponseNotFound, Http404
+import requests
 import json
+import re
+import datetime
 
 def get_author_or_not_exits(current_user_uuid):
-    if (not Author.objects.filter(id=current_user_uuid).exists()):
-        return Response("Author coudn't find", status=404)
-    else:
+    if type(current_user_uuid) != UUID:
+        current_user_uuid = UUID(current_user_uuid)
+    try:
+        Author.objects.filter(id=current_user_uuid)
         return Author.objects.get(id=current_user_uuid)
+    except:
+        return False
+
 
 def get_host_from_request(request):
 # https://docs.djangoproject.com/en/2.1/ref/request-response/
-    host = request.scheme+"://"+request.get_host()
+    host = request.scheme+"://"+request.get_host()+"/"
     return host
 
 def get_current_user_uuid(request):
@@ -51,6 +58,7 @@ def verify_current_user_to_post(post, request):
     unlisted_post = post.unlisted
     if User.objects.filter(pk=request.user.id).exists():
         current_user_uuid = get_current_user_uuid(request)
+        isFriend = check_two_users_friends(post_author,current_user_uuid)
         if current_user_uuid == post_author:
             return True
         else:
@@ -59,7 +67,6 @@ def verify_current_user_to_post(post, request):
             elif post_visibility == 'FOAF':
                 return True
             elif post_visibility == 'FRIENDS':
-                isFriend = check_two_users_friends(post_author,current_user_uuid)
                 if isFriend:
                     return True
                 else:
@@ -85,8 +92,9 @@ def verify_current_user_to_post(post, request):
                     return False
     elif (not User.objects.filter(pk=request.user.id).exists()):
         return False
-        
+
 def get_friends(current_user_uuid):
+    update_remote_friendship(current_user_uuid)
     author_object = Author.objects.get(id=current_user_uuid)
     friendsDirect = Friend.objects.filter(Q(author=author_object), Q(status='Accept'))
     friendsIndirect = Friend.objects.filter(Q(friend=author_object), Q(status='Accept'))
@@ -97,7 +105,66 @@ def get_friends(current_user_uuid):
     for friend in friendsIndirect:
         if friend not in friends_list:
             friends_list.append(friend.author)
+
     return friends_list
+
+def get_uuid_from_url(url):
+    uuid = url.split("/service/author/")
+    return UUID(uuid[1])
+
+def get_local_friends(current_user_uuid):
+    author_object = Author.objects.get(id=current_user_uuid)
+    friendsDirect = Friend.objects.filter(Q(author=author_object), Q(status='Accept'))
+    friendsIndirect = Friend.objects.filter(Q(friend=author_object), Q(status='Accept'))
+    friends_uuid_list = []
+    for friend in friendsDirect:
+        if friend not in friends_uuid_list:
+            friends_uuid_list.append(friend.friend.id)
+    for friend in friendsIndirect:
+        if friend not in friends_uuid_list:
+            friends_uuid_list.append(friend.author.id)
+
+    return friends_uuid_list
+
+def update_remote_friendship(current_user_uuid):
+    friends_uuid_list = get_local_friends(current_user_uuid)
+    for node in Node.objects.all():
+        friendshipURL = node.host+"service/author/"+str(current_user_uuid)+"/friends/"
+        response = requests.get(friendshipURL, auth=requests.auth.HTTPBasicAuth(node.remoteUsername, node.remotePassword))
+        data = json.loads(response.content.decode('utf8').replace("'", '"'))
+        remoteFriends = data["authors"]
+        if len(remoteFriends) != 0:
+            for remoteFriendURL in remoteFriends:
+                remoteFriend_uuid = get_uuid_from_url(remoteFriendURL)
+                isFollowing = check_author1_follow_author2(current_user_uuid,remoteFriend_uuid)
+                if isFollowing:
+                    update_friendship_obj(current_user_uuid, remoteFriend_uuid, 'Accept')
+
+        if len(friends_uuid_list) != 0:
+            for localFriend_uuid in friends_uuid_list:
+                if localFriend_uuid not in remoteFriends:
+                    if (Friend.objects.filter(Q(author=localFriend_uuid), Q(status='Accept')).exists()):
+                        friendship = Friend.objects.get(Q(author=localFriend_uuid), Q(status='Accept'))
+                        last_modified_time = friendship.last_modified_time.replace(tzinfo=None)
+                        if ((datetime.datetime.utcnow() - last_modified_time).total_seconds () > 60):
+                            friendship.delete()
+
+                    if (Friend.objects.filter(Q(friend=localFriend_uuid), Q(status='Accept')).exists()):
+                        friendship = Friend.objects.get(Q(friend=localFriend_uuid), Q(status='Accept'))
+                        last_modified_time = friendship.last_modified_time.replace(tzinfo=None)
+                        if ((datetime.datetime.utcnow() - last_modified_time).total_seconds () > 60):
+                            friendship.delete()
+
+
+
+def update_friendship_obj(author, friend, newstatus):
+    try:
+        friendrequests = Friend.objects.get(author=author, friend=friend)
+        friendrequests.status=newstatus
+        friendrequests.save()
+    except:
+        pass
+
 
 def check_two_users_friends(author1_id,author2_id):
     author1_object = Author.objects.get(id=author1_id)
@@ -151,7 +218,7 @@ def is_my_friend(current_user_id, author_id):
             return 'false'
     else:
         raise Response("User coudn't find", status=404)
-        
+
 def get_follow_status(current_user_id, author_id):
     current_user_object = Author.objects.get(id=current_user_id)
     if type(current_user_id) is UUID:
@@ -166,6 +233,12 @@ def get_follow_status(current_user_id, author_id):
     else:
         raise Response("User coudn't find", status=404)
 
+def check_remote_request(request):
+    if (Node.objects.filter(nodeUser=request.user).exists()):
+        return True
+    else:
+        return False
+
 def get_or_create_author_if_not_exist(author_json):
     AuthorObj = get_author_or_not_exits(author_json['id'])
     if AuthorObj is False:
@@ -176,6 +249,7 @@ def get_or_create_author_if_not_exist(author_json):
         AuthorObj = author
 
     return AuthorObj
+
 
 #-----------------------------------------Local endpoints-----------------------------------------#
 def new_post(request):

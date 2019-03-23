@@ -20,7 +20,7 @@ from urllib.parse import urlparse
 from . import Helpers
 from django.conf import settings
 
-# https://stackoverflow.com/questions/37752440/relative-redirect-using-meta-http-equiv-refresh-with-gh-pages
+# https://stackoverflow.com/questions/37752440/relative-redirect-using-meta-http-equiv-refresh-with-gh-pages answered Jun 10 '16 at 19:13 David Jacquel
 # https://www.tutorialspoint.com/How-to-automatically-redirect-a-Web-Page-to-another-URL for redirecting
 # Code from: Reference: https://simpleisbetterthancomplex.com/tutorial/2017/02/18/how-to-create-user-sign-up-view.html
 # https://docs.djangoproject.com/en/2.1/topics/auth/default/
@@ -42,7 +42,7 @@ class LoginView(FormView):
     def form_invalid(self, form):
         return super().form_invalid(form)
 
-# https://stackoverflow.com/questions/9626535/get-protocol-host-name-from-url
+# https://stackoverflow.com/questions/9626535/get-protocol-host-name-from-url answered Mar 8 '12 at 23:17 kgr, edited Jul 22 '18 at 15:35 wim
 def signup(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)

@@ -38,7 +38,7 @@ class FriendRequestHandler(APIView):
                         friendrequest = Friend.objects.get(author=sender_object, friend=reciver_object)
                         friendrequest.status="Pending"
                         friendrequest.save()
-                        return Response("Friend request sent", status=status.HTTP_200_OK) 
+                        return Response("Friend request sent", status=status.HTTP_200_OK)
                     elif (Friend.objects.filter(author=reciver_object, friend=sender_object, status="Decline").exists()):
                         friendrequest = Friend.objects.get(author=reciver_object, friend=sender_object)
                         friendrequest.status="Accept"
@@ -50,18 +50,19 @@ class FriendRequestHandler(APIView):
                         friendrequest.status='Accept'
                         friendrequest.save()
                         return Response("You are new friend with{}".format(reciver_object.displayName,status=status.HTTP_200_OK))
-                    elif (Friend.objects.filter(author=sender_object, friend=reciver_object, status="Pending").exists()): 
+                    elif (Friend.objects.filter(author=sender_object, friend=reciver_object, status="Pending").exists()):
                         return Response("Friend request already sent", status=status.HTTP_400_BAD_REQUEST)
                     else:
                         friendrequest = Friend.objects.create(author=sender_object, friend=reciver_object)
                         friendrequest.save()
-                        return Response("Friend request sent", status=status.HTTP_200_OK)  
+                        return Response("Friend request sent", status=status.HTTP_200_OK)
+
                 else:
                     return Response("You are already friends", status=status.HTTP_400_BAD_REQUEST)
             else:
-                return Response("Please login to correct account", status=status.HTTP_400_BAD_REQUEST)
+                return Response("Please login to correct account",status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response("You are not sending the friendrequest with the correct format. Missing 'query': 'friendrequest'",status=status.HTTP_400_BAD_REQUEST)  
+            return Response("You are not sending the friendrequest with the correct format. Missing 'query': 'friendrequest'",status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, format=None):
         data = request.data
@@ -92,50 +93,13 @@ class FriendRequestHandler(APIView):
             else:
                 return Response("Opreation not allowed.", status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, format=None): #TODO: We actually don't need this function
-        data = request.data
-        try:
-            requestid = data['id']
-        except:
-            return Response('No request id', status=404)
-
-        if (not Friend.objects.filter(id=requestid).exists()):
-            responsBody={
-                "query": "friendrequestRespons",
-                "success":False,
-                "message":"Request not found"
-                }
-            return Response(responsBody, status=404)
-        else:
-            current_user_uuid = Helpers.get_current_user_uuid(request)
-            friendrequests=Friend.objects.get(id=requestid)
-            author_id = data['author']['id'].replace(data['author']['host']+'author/', "")
-            friend_id = data['friend']['id'].replace(data['friend']['host']+'author/', "")
-            sender_object = Author.objects.get(id=author_id)
-            reciver_object = Author.objects.get(id=friend_id)
-            friendship = Friend.objects.get_object_or_404(author=sender_object, friend=reciver_object)
-            current_status = friendship.status
-
-            if (current_user_uuid == friendrequests.author.id and (current_status == 'Pending' or current_status == 'Decline')):
-                friendrequests.delete()
-                return Response("Success unfriend, you have stopped following your friend", status=status.HTTP_200_OK)
-
-            elif (current_user_uuid == friendrequests.friend.id and current_status == 'Accept'):
-                friendrequests.status='Decline'
-                friendrequests.save()
-                return Response("Success unfriend, your friend is still following you", status=status.HTTP_200_OK)
-                
-            else:
-                return Response("Opreation not allowed.", status=status.HTTP_400_BAD_REQUEST)
-
-
 class MyFriends(APIView):
     def get(self, request, format=None):
         current_user_uuid = Helpers.get_current_user_uuid(request)
         friends_list = Helpers.get_friends(current_user_uuid)
         serializer = AuthorSerializer(friends_list, many=True)
         return JsonResponse(serializer.data, safe=False)
-            
+
 class UnFriend(APIView):
     def delete(self, request, friendid, format=None):
         current_user_uuid = Helpers.get_current_user_uuid(request)

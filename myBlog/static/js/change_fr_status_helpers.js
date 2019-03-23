@@ -18,7 +18,7 @@ function sendFRrequest(fr_id,status){
         'status':status
     }
     let body = JSON.stringify(change_status_form);
-    let url = "/myBlog/friendrequest/";
+    let url = "/service/friendrequest/";
     return fetch(url,{
         method:"PUT",
         mode:"cors",
@@ -32,7 +32,16 @@ function sendFRrequest(fr_id,status){
         redirect: "follow",
         referrer: "no-referrer",
     })
-    .then(window.location.replace(get_host()+"myBlog/myfriendslist/"));
+    .then(response => {
+        if (response.status === 200)
+        {
+            window.location.replace(get_host()+"service/myfriendslist/");
+        }
+        else
+        {
+            alert("Something went wrong: " +  response.status);
+        }
+    });
 }
 
 function content_page(data){
