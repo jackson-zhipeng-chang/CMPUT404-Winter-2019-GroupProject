@@ -162,9 +162,8 @@ class PostToUserHandlerView(APIView):
     def get(self, request, format=None):
         isRemote = Helpers.check_remote_request(request)
         if isRemote:
-            current_user_uuid = request.user.id
-            if type(current_user_uuid) != UUID:
-                current_user_uuid = Helpers.get_current_user_uuid(request)
+            print(request.query_params['author_uuid'])
+            current_user_uuid = request.query_params['author_uuid']
         else:
             current_user_uuid = Helpers.get_current_user_uuid(request)
 
@@ -206,7 +205,7 @@ class PostToUserHandlerView(APIView):
                         if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend_of_this_friend.id), Q(visibility='FOAF')).exists()):
                             foaf_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend_of_this_friend.id),Q(visibility='FOAF'))
             
-            remotePosts = pull_remote_nodes()
+            remotePosts = pull_remote_nodes(current_user_uuid)
             posts_list = my_posts_list+public_posts_list+friend_posts_list+private_posts_list+serveronly_posts_list+foaf_posts_list+remotePosts
             posts_list.sort(key=lambda x: x.published, reverse=True) # https://stackoverflow.com/questions/403421/how-to-sort-a-list-of-objects-based-on-an-attribute-of-the-objects answered Dec 31 '08 at 16:42 by Triptych
             paginator = CustomPagination()
@@ -278,10 +277,10 @@ class MyPostHandler(APIView):
             return current_user_uuid
 
 
-def pull_remote_nodes():
+def pull_remote_nodes(current_user_uuid):
     remotePosts = []
     for node in Node.objects.all():
-        nodeURL = node.host+"service/posts/"
+        nodeURL = node.host+"service/author/posts/?author_uuid="+str(current_user_uuid)
         response = requests.get(nodeURL, auth=requests.auth.HTTPBasicAuth(node.remoteUsername, node.remotePassword))
         data = json.loads(response.content.decode('utf8').replace("'", '"'))
         for i in range (0,len(data["posts"])):

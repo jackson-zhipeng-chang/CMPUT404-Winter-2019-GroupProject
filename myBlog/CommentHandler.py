@@ -41,7 +41,6 @@ class CommentHandler(APIView):
                 post = Post.objects.get(pk=postid)
                 current_user_uuid = Helpers.get_current_user_uuid(request)
                 author = Helpers.get_author_or_not_exits(current_user_uuid)
-                # data = {'comment':request.data['comment']['comment'], 'contentType':request.data['comment']['contentType']}
                 serializer = CommentSerializer(data=data['comment'], context={'author': author, 'postid':postid})
                 if serializer.is_valid():
                     serializer.save()

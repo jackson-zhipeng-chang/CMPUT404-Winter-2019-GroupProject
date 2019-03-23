@@ -74,7 +74,17 @@ function sendUnFriendRequest(author_id){
         },
         redirect:"follow",
         referrer:"no-referrer",
-    }).then(function(){window.location.reload(true)});
+    })
+    .then(response => {
+        if (response.status === 200) 
+        { 
+            document.location.reload(true); 
+        } 
+        else 
+        {
+            alert("Something went wrong: " +  response.status);
+        }
+    }); 
 }
 function sendFollowRequest(author_id,author_host,author_name,author_url,currentUserName){
     let host = get_host();
@@ -109,11 +119,16 @@ function sendFollowRequest(author_id,author_host,author_name,author_url,currentU
         redirect:"follow",
         referrer:"no-referrer",
     })
-    .then(function(){
-        //https://www.permadi.com/tutorial/jsInnerHTMLDOM/index.html
-       //document.getElementById('follow_Btn').childNodes[0].nodeValue="Following";
-        window.location.reload(true);
-    })
+    .then(response => {
+        if (response.status === 200) 
+        { 
+            document.location.reload(true); 
+        } 
+        else 
+        {
+            alert("Something went wrong: " +  response.status);
+        }
+    }); 
 }
 
 // got data, render the page
