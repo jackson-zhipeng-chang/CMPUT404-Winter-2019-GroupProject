@@ -146,13 +146,13 @@ def update_remote_friendship(current_user_uuid):
                     if (Friend.objects.filter(Q(author=localFriend_uuid), Q(status='Accept')).exists()):
                         friendship = Friend.objects.get(Q(author=localFriend_uuid), Q(status='Accept'))
                         last_modified_time = friendship.last_modified_time.replace(tzinfo=None)
-                        if ((last_modified_time - datetime.datetime.now()).total_seconds () > 60):
+                        if ((datetime.datetime.utcnow() - last_modified_time).total_seconds () > 60):
                             friendship.delete()
 
                     if (Friend.objects.filter(Q(friend=localFriend_uuid), Q(status='Accept')).exists()):
                         friendship = Friend.objects.get(Q(friend=localFriend_uuid), Q(status='Accept'))
                         last_modified_time = friendship.last_modified_time.replace(tzinfo=None)
-                        if ((last_modified_time - datetime.datetime.now()).total_seconds () > 60):
+                        if ((datetime.datetime.utcnow() - last_modified_time).total_seconds () > 60):
                             friendship.delete()
 
 
