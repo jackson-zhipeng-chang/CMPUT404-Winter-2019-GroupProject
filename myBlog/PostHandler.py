@@ -162,7 +162,6 @@ class PostToUserHandlerView(APIView):
     def get(self, request, format=None):
         isRemote = Helpers.check_remote_request(request)
         if isRemote:
-            print(request.query_params['author_uuid'])
             current_user_uuid = UUID(request.query_params['author_uuid'])
         else:
             current_user_uuid = Helpers.get_current_user_uuid(request)
@@ -206,7 +205,8 @@ class PostToUserHandlerView(APIView):
                         if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend_of_this_friend.id), Q(visibility='FOAF')).exists()):
                             foaf_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend_of_this_friend.id),Q(visibility='FOAF'))
             
-            remotePosts = pull_remote_nodes(current_user_uuid)
+            if not isRemote:
+                remotePosts = pull_remote_nodes(current_user_uuid)
 
             posts_list = my_posts_list+public_posts_list+friend_posts_list+private_posts_list+serveronly_posts_list+foaf_posts_list+remotePosts
             posts_list.sort(key=lambda x: x.published, reverse=True) # https://stackoverflow.com/questions/403421/how-to-sort-a-list-of-objects-based-on-an-attribute-of-the-objects answered Dec 31 '08 at 16:42 by Triptych

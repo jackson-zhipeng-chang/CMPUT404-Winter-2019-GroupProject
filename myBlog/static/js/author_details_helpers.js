@@ -105,6 +105,7 @@ function sendFollowRequest(author_id,author_host,author_name,author_url,currentU
     }
     let body = JSON.stringify(request_form);
     let url = author_host+"service/friendrequest/";
+    let url_local = host+"service/friendrequest/";
     return fetch(url,{
         method:"POST",
         mode:"cors",
@@ -121,8 +122,31 @@ function sendFollowRequest(author_id,author_host,author_name,author_url,currentU
     })
     .then(response => {
         if (response.status === 200) 
-        { 
-            document.location.reload(true); 
+        {     
+            return fetch(url_local,{
+            method:"POST",
+            mode:"cors",
+            cache:"no-cache",
+            credentials:"same-origin",
+            body:body,
+            headers:{
+                "Content-Type":"application/json",
+                "Accept": "application/json",
+                "x-csrftoken":csrf_token,
+            },
+            redirect:"follow",
+            referrer:"no-referrer",
+        })
+        .then(response => {
+            if (response.status === 200) 
+            { 
+                document.location.reload(true); 
+            } 
+            else 
+            {
+                alert("Something went wrong: " +  response.status);
+            }
+        }); 
         } 
         else 
         {
@@ -134,8 +158,7 @@ function sendFollowRequest(author_id,author_host,author_name,author_url,currentU
 // got data, render the page
 function renderpage(data){
     var content = document.getElementById('content');
-
-
+    
     var authorDiv = document.createElement('div');
     authorDiv.setAttribute('id','author_div');
     authorDiv.classList.add("w3-container","w3-card","w3-white","w3-round","w3-margin");

@@ -10,6 +10,9 @@ from django.db.models import Q
 from django.shortcuts import render
 from uuid import UUID
 from django.http import HttpResponse, HttpResponseNotFound, Http404
+import requests
+import json
+import re
 
 def get_author_or_not_exits(current_user_uuid):
     if type(current_user_uuid) != UUID:
@@ -90,6 +93,7 @@ def verify_current_user_to_post(post, request):
         return False
         
 def get_friends(current_user_uuid):
+    update_remote_friendship(current_user_uuid)
     author_object = Author.objects.get(id=current_user_uuid)
     friendsDirect = Friend.objects.filter(Q(author=author_object), Q(status='Accept'))
     friendsIndirect = Friend.objects.filter(Q(friend=author_object), Q(status='Accept'))
@@ -100,7 +104,61 @@ def get_friends(current_user_uuid):
     for friend in friendsIndirect:
         if friend not in friends_list:
             friends_list.append(friend.author)
+
     return friends_list
+
+def get_uuid_from_url(url):
+    uuid = url.split("/service/author/")
+    return UUID(uuid[1])
+
+def get_local_friends(current_user_uuid):
+    author_object = Author.objects.get(id=current_user_uuid)
+    friendsDirect = Friend.objects.filter(Q(author=author_object), Q(status='Accept'))
+    friendsIndirect = Friend.objects.filter(Q(friend=author_object), Q(status='Accept'))
+    friends_uuid_list = []
+    for friend in friendsDirect:
+        if friend not in friends_uuid_list:
+            friends_uuid_list.append(friend.friend.id)
+    for friend in friendsIndirect:
+        if friend not in friends_uuid_list:
+            friends_uuid_list.append(friend.author.id)
+
+    return friends_uuid_list
+
+def update_remote_friendship(current_user_uuid):
+    friends_uuid_list = get_local_friends(current_user_uuid)
+    for node in Node.objects.all():
+        friendshipURL = node.host+"service/author/"+str(current_user_uuid)+"/friends/"
+        response = requests.get(friendshipURL, auth=requests.auth.HTTPBasicAuth(node.remoteUsername, node.remotePassword))
+        data = json.loads(response.content.decode('utf8').replace("'", '"'))
+        remoteFriends = data["authors"]
+        if len(remoteFriends) != 0:
+            for remoteFriendURL in remoteFriends:
+                remoteFriend_uuid = get_uuid_from_url(remoteFriendURL)
+                isFollowing = check_author1_follow_author2(current_user_uuid,remoteFriend_uuid)
+                if isFollowing:
+                    update_friendship_obj(current_user_uuid, remoteFriend_uuid, 'Accept')
+
+        if len(friends_uuid_list) != 0:
+            for localFriend_uuid in friends_uuid_list:
+                if localFriend_uuid not in remoteFriends:
+                    remoteFriend_uuid = get_uuid_from_url(remoteFriendURL)
+                    if (Friend.objects.filter(Q(author=current_user_uuid), Q(status='Accept')).exists()):
+                        Friend.objects.filter(Q(author=current_user_uuid), Q(status='Accept')).delete()
+
+                    if (Friend.objects.filter(Q(author=remoteFriend_uuid), Q(status='Accept')).exists()):
+                        Friend.objects.filter(Q(author=remoteFriend_uuid), Q(status='Accept')).delete()
+
+
+
+def update_friendship_obj(author, friend, newstatus):
+    try:
+        friendrequests = Friend.objects.get(author=author, friend=friend)
+        friendrequests.status=newstatus
+        friendrequests.save()
+    except:
+        pass
+
 
 def check_two_users_friends(author1_id,author2_id):
     author1_object = Author.objects.get(id=author1_id)
