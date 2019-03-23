@@ -68,7 +68,8 @@ function sendUnFriendRequest(author_id){
         cache:"no-cache",
         credentials:"same-origin",
         headers:{
-            "Content-Type":"application/json",
+            "Content-Type":"application/json;charset=utf-8",
+            "Accept": "application/json",
             "x-csrftoken":csrf_token,
         },
         redirect:"follow",
@@ -94,16 +95,15 @@ function sendFollowRequest(author_id,author_host,author_name,author_url,currentU
     }
     let body = JSON.stringify(request_form);
     let url = author_host+"service/friendrequest/";
-    console.log("here");
-    console.log(url);
     return fetch(url,{
         method:"POST",
-        mode:"no-cors",
+        mode:"cors",
         cache:"no-cache",
         credentials:"same-origin",
         body:body,
         headers:{
             "Content-Type":"application/json",
+            "Accept": "application/json",
             "x-csrftoken":csrf_token,
         },
         redirect:"follow",
@@ -112,44 +112,10 @@ function sendFollowRequest(author_id,author_host,author_name,author_url,currentU
     //.then(function(){
         //https://www.permadi.com/tutorial/jsInnerHTMLDOM/index.html
        //document.getElementById('follow_Btn').childNodes[0].nodeValue="Following";
-        //window.location.reload(true);
+        window.location.reload(true);
     //})
 }
 
-function commentPost(id) {
-    let commentForm =
-        {
-            "query": "addComment",
-            "comment":
-                {
-                    "comment": "",
-                    "contentType": "text/plain"
-                }
-        }
-    commentForm.comment.comment = document.getElementById("commentInput" + id).value;
-    let body = JSON.stringify(commentForm);
-    let url = "/service/posts/" + id + "/comments/";
-    return fetch(url, {
-        method: "POST",
-        mode: "cors",
-        cache: "no-cache",
-        credentials: "same-origin",
-        body: body,
-        headers: {
-            "Content-Type": "application/json",
-            "x-csrftoken": csrf_token
-        },
-        redirect: "follow",
-        referrer: "no-referrer",
-    })
-        .then(response => {
-            if (response.status === 200) {
-                document.location.reload(true);
-            } else {
-                alert("Something went wrong: " + response.status);
-            }
-        });
-}
 // got data, render the page
 function renderpage(data){
     var content = document.getElementById('content');

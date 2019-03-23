@@ -50,7 +50,7 @@ function deletePost(id)
     });
 }
 
-function commentPost(id)
+function commentPost(id, post_host)
 {
     let commentForm =
     {
@@ -63,16 +63,15 @@ function commentPost(id)
     };
     commentForm.comment.comment= document.getElementById("commentInput"+id).value;
     let body = JSON.stringify(commentForm);
-    let url = "/service/posts/"+id+"/comments/";
-
+    let url = post_host+"service/posts/"+id+"/comments/";
     return fetch(url, {
         method: "POST", 
-        mode: "cors", 
+        mode: "no-cors", 
         cache: "no-cache", 
         credentials: "same-origin", 
         body: body,
         headers: {
-            "Content-Type": "application/json",
+            "Content-Type": 'application/json',
             "x-csrftoken": csrf_token
         },
         redirect: "follow", 
