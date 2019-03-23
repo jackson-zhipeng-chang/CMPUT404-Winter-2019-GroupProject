@@ -285,20 +285,21 @@ def pull_remote_nodes(current_user_uuid):
         nodeURL = node.host+"service/author/posts/?author_uuid="+str(current_user_uuid)
         response = requests.get(nodeURL, auth=requests.auth.HTTPBasicAuth(node.remoteUsername, node.remotePassword))
         data = json.loads(response.content.decode('utf8').replace("'", '"'))
-        for i in range (0,len(data["posts"])):
-            remoteAuthorJson = data["posts"][i]["author"]
-            remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
-            # Create the post object for final list
-            if not Post.objects.filter(postid=data["posts"][i]["postid"]).exists():
-                remotePostObj = Post.objects.create(postid=data["posts"][i]["postid"], title=data["posts"][i]["title"],source=data["posts"][i]["source"], 
-                    origin=data["posts"][i]["origin"], content=data["posts"][i]["content"],categories=data["posts"][i]["categories"], 
-                    contentType=data["posts"][i]["contentType"], author=remoteAuthorObj,visibility=data["posts"][i]["visibility"], 
-                    visibleTo=data["posts"][i]["visibleTo"], description=data["posts"][i]["description"],
-                    unlisted=data["posts"][i]["unlisted"], published=data["posts"][i]["published"])
-                    #https://stackoverflow.com/questions/969285/how-do-i-translate-an-iso-8601-datetime-string-into-a-python-datetime-object community wiki 5 revs, 4 users 81% Wes Winham
-                publishedObj = dateutil.parser.parse(data["posts"][i]["published"])
-                remotePostObj.published = publishedObj
-                remotePostObj.save()
-                remotePosts.append(remotePostObj)
+        if int(data["count"]) != 0: 
+            for i in range (0,len(data["posts"])):
+                remoteAuthorJson = data["posts"][i]["author"]
+                remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
+                # Create the post object for final list
+                if not Post.objects.filter(postid=data["posts"][i]["postid"]).exists():
+                    remotePostObj = Post.objects.create(postid=data["posts"][i]["postid"], title=data["posts"][i]["title"],source=data["posts"][i]["source"], 
+                        origin=data["posts"][i]["origin"], content=data["posts"][i]["content"],categories=data["posts"][i]["categories"], 
+                        contentType=data["posts"][i]["contentType"], author=remoteAuthorObj,visibility=data["posts"][i]["visibility"], 
+                        visibleTo=data["posts"][i]["visibleTo"], description=data["posts"][i]["description"],
+                        unlisted=data["posts"][i]["unlisted"], published=data["posts"][i]["published"])
+                        #https://stackoverflow.com/questions/969285/how-do-i-translate-an-iso-8601-datetime-string-into-a-python-datetime-object community wiki 5 revs, 4 users 81% Wes Winham
+                    publishedObj = dateutil.parser.parse(data["posts"][i]["published"])
+                    remotePostObj.published = publishedObj
+                    remotePostObj.save()
+                    remotePosts.append(remotePostObj)
 
     return remotePosts
