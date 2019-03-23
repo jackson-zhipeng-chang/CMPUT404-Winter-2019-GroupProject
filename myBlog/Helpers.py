@@ -197,7 +197,7 @@ def home(request):
         else:
             github_url = "null"
         displayName = user_author.displayName
-        posts_url = "/myBlog/author/posts/?size=10"
+        posts_url = "/service/author/posts/?size=10"
         return render(request, 'homepage.html', {"posts_url":posts_url, "github_url":github_url, "trashable":"false",
                                                  'displayName':displayName,'user_id':current_user_uuid})
     else:
@@ -256,7 +256,7 @@ def new_post(request):
     return render(request, 'newpost.html')
 
 def my_posts(request):
-    posts_url = "/myBlog/posts/mine/?size=10"
+    posts_url = "/service/posts/mine/?size=10"
     current_user_id = get_current_user_uuid(request)
     current_user = Author.objects.get(pk=current_user_id)
     current_user_name = current_user.displayName

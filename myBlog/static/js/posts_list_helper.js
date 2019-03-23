@@ -53,17 +53,17 @@ function deletePost(id)
 
 function commentPost(id,user_id,displayName,github_url){
     //TODO : another comment contenttype?
-    let host = get_host();
+    var host = get_host();
     let commentForm =
     {
         "query": "addComment",
-        "post":host+"myBlog/"+user_id,
+        "post":host+"service/"+user_id,
         "comment": {
             "author":{
                 "id":user_id,
                 "host":host,
                 "displayName":displayName,
-                "url":host+user_id,
+                "url":host+'author/'+user_id,
                 "github":github_url
             },
             "comment":"",
@@ -73,7 +73,7 @@ function commentPost(id,user_id,displayName,github_url){
     console.log(commentForm);
     commentForm.comment.comment= document.getElementById("commentInput"+id).value;
     let body = JSON.stringify(commentForm);
-    let url = post_host+"service/posts/"+id+"/comments/";
+    let url = host+"service/posts/"+id+"/comments/";
     return fetch(url, {
         method: "POST",
         mode: "cors",
