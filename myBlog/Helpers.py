@@ -139,16 +139,6 @@ def update_remote_friendship(current_user_uuid):
                 if isFollowing:
                     update_friendship_obj(current_user_uuid, remoteFriend_uuid, 'Accept')
 
-        if len(friends_uuid_list) != 0:
-            for localFriend_uuid in friends_uuid_list:
-                if localFriend_uuid not in remoteFriends:
-                    if (Friend.objects.filter(Q(author=localFriend_uuid), Q(status='Accept')).exists()):
-                        Friend.objects.filter(Q(author=localFriend_uuid), Q(status='Accept')).delete()
-
-                    if (Friend.objects.filter(Q(friend=localFriend_uuid), Q(status='Accept')).exists()):
-                        Friend.objects.filter(Q(friend=localFriend_uuid), Q(status='Accept')).delete()
-
-
 
 def update_friendship_obj(author, friend, newstatus):
     try:
