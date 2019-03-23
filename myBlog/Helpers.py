@@ -13,6 +13,7 @@ from django.http import HttpResponse, HttpResponseNotFound, Http404
 import requests
 import json
 import re
+import datetime
 
 def get_author_or_not_exits(current_user_uuid):
     if type(current_user_uuid) != UUID:
@@ -138,6 +139,24 @@ def update_remote_friendship(current_user_uuid):
                 isFollowing = check_author1_follow_author2(current_user_uuid,remoteFriend_uuid)
                 if isFollowing:
                     update_friendship_obj(current_user_uuid, remoteFriend_uuid, 'Accept')
+
+        if len(friends_uuid_list) != 0:
+            for localFriend_uuid in friends_uuid_list:
+                if localFriend_uuid not in remoteFriends:
+                    if (Friend.objects.filter(Q(author=localFriend_uuid), Q(status='Accept')).exists()):
+                        friendship = Friend.objects.get(Q(author=localFriend_uuid), Q(status='Accept'))
+                        last_modified_time = friendship.last_modified_time.replace(tzinfo=None)
+                        if ((datetime.datetime.now() - last_modified_time).total_seconds () > 60):
+                            friendship.delete()
+                            print((datetime.datetime.now() - last_modified_time).total_seconds ())
+
+                    if (Friend.objects.filter(Q(friend=localFriend_uuid), Q(status='Accept')).exists()):
+                        friendship = Friend.objects.get(Q(friend=localFriend_uuid), Q(status='Accept'))
+                        last_modified_time = friendship.last_modified_time.replace(tzinfo=None)
+                        if ((datetime.datetime.now() - last_modified_time).total_seconds () > 60):
+                            friendship.delete()
+                            print((datetime.datetime.now() - last_modified_time).total_seconds ())
+
 
 
 def update_friendship_obj(author, friend, newstatus):
