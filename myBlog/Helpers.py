@@ -129,8 +129,10 @@ def home(request):
             github_url = "https://api.github.com/users/%s/events/public"%github_id
         else:
             github_url = "null"
+        displayName = user_author.displayName
         posts_url = "/myBlog/author/posts/?size=10"
-        return render(request, 'homepage.html', {"posts_url":posts_url, "github_url":github_url, "trashable":"false"})
+        return render(request, 'homepage.html', {"posts_url":posts_url, "github_url":github_url, "trashable":"false",
+                                                 'displayName':displayName,'user_id':current_user_uuid})
     else:
         return render(request, 'homepage.html')
 
@@ -164,13 +166,29 @@ def get_follow_status(current_user_id, author_id):
     else:
         raise Response("User coudn't find", status=404)
 
+def get_or_create_author_if_not_exist(author_json):
+    AuthorObj = get_author_or_not_exits(author_json['id'])
+    if AuthorObj is False:
+        user = User.objects.create_user(username=author_json["displayName"],password="password", is_active=False)
+        userObj = get_object_or_404(User, username=author_json["displayName"])
+        author = Author.objects.create(id=author_json['id'], displayName=author_json["displayName"],user=userObj, host=author_json["host"])
+        author.save()
+        AuthorObj = author
+
+    return AuthorObj
+
 #-----------------------------------------Local endpoints-----------------------------------------#
 def new_post(request):
     return render(request, 'newpost.html')
 
 def my_posts(request):
     posts_url = "/myBlog/posts/mine/?size=10"
-    return render(request, 'my_posts_list.html', {"posts_url":posts_url, "trashable":"true"})
+    current_user_id = get_current_user_uuid(request)
+    current_user = Author.objects.get(pk=current_user_id)
+    current_user_name = current_user.displayName
+    current_user_github = current_user.github
+    return render(request, 'my_posts_list.html', {"posts_url":posts_url, "trashable":"true","user_id":current_user_id,
+                                                  "displayName":current_user_name,"github_url":current_user_github})
 
 def friend_request(request):
     return render(request,'friendrequest.html')
@@ -186,6 +204,7 @@ def author_details(request,author_id):
     current_user_id = get_current_user_uuid(request)
     if type(current_user_id) is UUID:
         current_user_name = Author.objects.get(pk=current_user_id).displayName
+        current_user_github = Author.objects.get(pk=current_user_id).github
         is_friend = is_my_friend(current_user_id,author_id)
         follow_status = get_follow_status(current_user_id,author_id)
         friend = Author.objects.get(pk=author_id)
@@ -197,7 +216,7 @@ def author_details(request,author_id):
                                                     'is_friend':is_friend,'followStatus':follow_status,
                                                     'current_user_name':current_user_name,'friend_host':host,
                                                     'friend_url':url,'friend_name':friend_name,
-                                                    'friend_github':friend_github})
+                                                    'friend_github':friend_github,'current_user_github':current_user_github})
     else:
         return render(request, 'homepage.html')
 
@@ -215,6 +234,7 @@ def post_details(request, post_id):
         current_author_id = get_current_user_uuid(request)
         if type(current_author_id) is UUID:
             current_display_name = Author.objects.get(pk=current_author_id).displayName
+            current_user_github = Author.objects.get(pk=current_author_id).github
             if (post.author.displayName == current_display_name):
                 current_author_is_owner = True
             else:
@@ -234,7 +254,8 @@ def post_details(request, post_id):
                                                         'published': post.published, 'comments': comments,
                                                         "contentIsPicture": content_is_picture, 'postID': post.postid,
                                                         "currentAuthorIsOwner": current_author_is_owner,
-                                                        "textAreaID": text_area_id})
+                                                        "textAreaID": text_area_id,"current_user_id":current_author_id,
+                                                        "current_user_name":current_display_name,"current_user_github":current_user_github})
         else:
             return render(request, 'homepage.html')
     else:

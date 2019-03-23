@@ -2,7 +2,7 @@ var is_friend_bool;
 var author_id;
 var current_user_id;
 var follow_status;
-var aPosts;
+var current_user_github;
 var cuurent_user_name;
 
 var authorName;
@@ -20,7 +20,7 @@ function get_host(){
 }
 
 // get author details which are the author's info & his posts
-function getAuthorDetails(authorid,currentUserID,isFriend,currentUserName,followStatus,friend_host,friend_url,friend_name,friend_github){
+function getAuthorDetails(authorid,currentUserID,isFriend,currentUserName,followStatus,friend_host,friend_url,friend_name,friend_github,user_github){
     author_id = authorid;
     current_user_id = currentUserID;
     is_friend_bool = isFriend;
@@ -30,6 +30,7 @@ function getAuthorDetails(authorid,currentUserID,isFriend,currentUserName,follow
     authorUrl = friend_url;
     authorHost = friend_host;
     authorGithub = friend_github;
+    current_user_github = user_github;
     if (currentUserID != authorid){
         let url = '/myBlog/author/'+authorid+'/posts/';
         return fetch(url,{
@@ -113,40 +114,6 @@ function sendFollowRequest(author_id,author_host,author_name,author_url,currentU
     })
 }
 
-function commentPost(id) {
-    let commentForm =
-        {
-            "query": "addComment",
-            "comment":
-                {
-                    "comment": "",
-                    "contentType": "text/plain"
-                }
-        }
-    commentForm.comment.comment = document.getElementById("commentInput" + id).value;
-    let body = JSON.stringify(commentForm);
-    let url = "/myBlog/posts/" + id + "/comments/";
-    return fetch(url, {
-        method: "POST",
-        mode: "cors",
-        cache: "no-cache",
-        credentials: "same-origin",
-        body: body,
-        headers: {
-            "Content-Type": "application/json",
-            "x-csrftoken": csrf_token
-        },
-        redirect: "follow",
-        referrer: "no-referrer",
-    })
-        .then(response => {
-            if (response.status === 200) {
-                document.location.reload(true);
-            } else {
-                alert("Something went wrong: " + response.status);
-            }
-        });
-}
 // got data, render the page
 function renderpage(data){
     var content = document.getElementById('content');
@@ -324,7 +291,7 @@ function renderpage(data){
             commentButton.insertAdjacentHTML("beforeend", "<i class='fa fa-comment'></i>  Comment");
             let post_id = posts.postid;
             commentButton.onclick = function () {
-                commentPost(post_id)
+                commentPost(post_id,current_user_id,cuurent_user_name,current_user_github);
             };
             divDescription.appendChild(commentButton);
 
