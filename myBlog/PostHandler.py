@@ -169,13 +169,13 @@ class PostToUserHandlerView(APIView):
 
         if type(current_user_uuid) == UUID:
             Helpers.update_remote_friendship(current_user_uuid)
+            pull_remote_nodes(current_user_uuid)
             my_posts_list=[]
             public_posts_list = []
             friend_posts_list=[]  
             private_posts_list=[]
             serveronly_posts_list=[]
             foaf_posts_list=[]
-            remotePosts = []
 
             if (Post.objects.filter(Q(unlisted=False), Q(author_id=current_user_uuid)).exists()):
                 my_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=current_user_uuid))
@@ -207,10 +207,7 @@ class PostToUserHandlerView(APIView):
                         if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend_of_this_friend.id), Q(visibility='FOAF')).exists()):
                             foaf_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend_of_this_friend.id),Q(visibility='FOAF'))
             
-            if not isRemote:
-                remotePosts = pull_remote_nodes(current_user_uuid)
-
-            posts_list = my_posts_list+public_posts_list+friend_posts_list+private_posts_list+serveronly_posts_list+foaf_posts_list+remotePosts
+            posts_list = my_posts_list+public_posts_list+friend_posts_list+private_posts_list+serveronly_posts_list+foaf_posts_list
             posts_list.sort(key=lambda x: x.published, reverse=True) # https://stackoverflow.com/questions/403421/how-to-sort-a-list-of-objects-based-on-an-attribute-of-the-objects answered Dec 31 '08 at 16:42 by Triptych
             paginator = CustomPagination()
             results = paginator.paginate_queryset(posts_list, request)
@@ -282,26 +279,25 @@ class MyPostHandler(APIView):
 
 
 def pull_remote_nodes(current_user_uuid):
-    remotePosts = []
     for node in Node.objects.all():
-        nodeURL = node.host+"service/author/posts/?author_uuid="+str(current_user_uuid)
-        response = requests.get(nodeURL, auth=requests.auth.HTTPBasicAuth(node.remoteUsername, node.remotePassword))
-        data = json.loads(response.content.decode('utf8').replace("'", '"'))
-        if int(data["count"]) != 0: 
-            for i in range (0,len(data["posts"])):
-                remoteAuthorJson = data["posts"][i]["author"]
-                remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
-                # Create the post object for final list
-                if not Post.objects.filter(postid=data["posts"][i]["postid"]).exists():
-                    remotePostObj = Post.objects.create(postid=data["posts"][i]["postid"], title=data["posts"][i]["title"],source=data["posts"][i]["source"], 
-                        origin=data["posts"][i]["origin"], content=data["posts"][i]["content"],categories=data["posts"][i]["categories"], 
-                        contentType=data["posts"][i]["contentType"], author=remoteAuthorObj,visibility=data["posts"][i]["visibility"], 
-                        visibleTo=data["posts"][i]["visibleTo"], description=data["posts"][i]["description"],
-                        unlisted=data["posts"][i]["unlisted"], published=data["posts"][i]["published"])
-                        #https://stackoverflow.com/questions/969285/how-do-i-translate-an-iso-8601-datetime-string-into-a-python-datetime-object community wiki 5 revs, 4 users 81% Wes Winham
-                    publishedObj = dateutil.parser.parse(data["posts"][i]["published"])
-                    remotePostObj.published = publishedObj
-                    remotePostObj.save()
-                    remotePosts.append(remotePostObj)
-
-    return remotePosts
+        try:
+            nodeURL = node.host+"service/author/posts/?author_uuid="+str(current_user_uuid)
+            response = requests.get(nodeURL, auth=requests.auth.HTTPBasicAuth(node.remoteUsername, node.remotePassword))
+            data = json.loads(response.content.decode('utf8').replace("'", '"'))
+            if int(data["count"]) != 0: 
+                for i in range (0,len(data["posts"])):
+                    remoteAuthorJson = data["posts"][i]["author"]
+                    remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
+                    # Create the post object for final list
+                    if not Post.objects.filter(postid=data["posts"][i]["postid"]).exists():
+                        remotePostObj = Post.objects.create(postid=data["posts"][i]["postid"], title=data["posts"][i]["title"],source=data["posts"][i]["source"], 
+                            origin=data["posts"][i]["origin"], content=data["posts"][i]["content"],categories=data["posts"][i]["categories"], 
+                            contentType=data["posts"][i]["contentType"], author=remoteAuthorObj,visibility=data["posts"][i]["visibility"], 
+                            visibleTo=data["posts"][i]["visibleTo"], description=data["posts"][i]["description"],
+                            unlisted=data["posts"][i]["unlisted"], published=data["posts"][i]["published"])
+                            #https://stackoverflow.com/questions/969285/how-do-i-translate-an-iso-8601-datetime-string-into-a-python-datetime-object community wiki 5 revs, 4 users 81% Wes Winham
+                        publishedObj = dateutil.parser.parse(data["posts"][i]["published"])
+                        remotePostObj.published = publishedObj
+                        remotePostObj.save()
+        except:
+            pass
