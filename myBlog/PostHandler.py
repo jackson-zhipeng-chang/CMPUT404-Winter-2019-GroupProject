@@ -161,12 +161,14 @@ class PostHandler(APIView):
 class PostToUserHandlerView(APIView):
     def get(self, request, format=None):
         isRemote = Helpers.check_remote_request(request)
+        current_user_uuid = 0
         if isRemote:
             current_user_uuid = UUID(request.query_params['author_uuid'])
         else:
             current_user_uuid = Helpers.get_current_user_uuid(request)
 
         if type(current_user_uuid) == UUID:
+            Helpers.update_remote_friendship(current_user_uuid)
             my_posts_list=[]
             public_posts_list = []
             friend_posts_list=[]  
