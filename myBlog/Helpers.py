@@ -128,9 +128,10 @@ def get_local_friends(current_user_uuid):
 
 def update_remote_friendship(current_user_uuid):
     friends_list = get_local_friends(current_user_uuid)
-    try:
-        for node in Node.objects.all():
-            friendshipURL = node.host+"service/author/"+str(current_user_uuid)+"/friends/"
+    for node in Node.objects.all():
+        friendshipURL = node.host+"service/author/"+str(current_user_uuid)+"/friends/"
+        print(friendshipURL)
+        try:
             response = requests.get(friendshipURL, auth=requests.auth.HTTPBasicAuth(node.remoteUsername, node.remotePassword))
             data = json.loads(response.content.decode('utf8').replace("'", '"'))
             remoteFriends = data["authors"]
@@ -155,11 +156,8 @@ def update_remote_friendship(current_user_uuid):
                             last_modified_time = friendship.last_modified_time.replace(tzinfo=None)
                             if ((datetime.datetime.utcnow() - last_modified_time).total_seconds () > 60):
                                 friendship.delete()
-
-    except:
-        pass
-
-
+        except:
+            pass
 
 def update_friendship_obj(author, friend, newstatus):
     try:
