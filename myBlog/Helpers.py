@@ -1,6 +1,6 @@
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
-from .models import Post, Author, Comment, Friend
+from .models import Post, Author, Comment, Friend, Node
 from rest_framework import status
 from django.contrib.auth import login, authenticate, logout
 from django.shortcuts import redirect
@@ -10,8 +10,14 @@ from django.db.models import Q
 from django.shortcuts import render
 from uuid import UUID
 from django.http import HttpResponse, HttpResponseNotFound, Http404
+import requests
+import json
+import re
+import datetime
 
 def get_author_or_not_exits(current_user_uuid):
+    if type(current_user_uuid) != UUID:
+        current_user_uuid = UUID(current_user_uuid)
     try:
         Author.objects.filter(id=current_user_uuid)
         return Author.objects.get(id=current_user_uuid)
@@ -88,6 +94,7 @@ def verify_current_user_to_post(post, request):
         return False
         
 def get_friends(current_user_uuid):
+    update_remote_friendship(current_user_uuid)
     author_object = Author.objects.get(id=current_user_uuid)
     friendsDirect = Friend.objects.filter(Q(author=author_object), Q(status='Accept'))
     friendsIndirect = Friend.objects.filter(Q(friend=author_object), Q(status='Accept'))
@@ -98,7 +105,68 @@ def get_friends(current_user_uuid):
     for friend in friendsIndirect:
         if friend not in friends_list:
             friends_list.append(friend.author)
+
     return friends_list
+
+def get_uuid_from_url(url):
+    uuid = url.split("/service/author/")
+    return UUID(uuid[1])
+
+def get_local_friends(current_user_uuid):
+    author_object = Author.objects.get(id=current_user_uuid)
+    friendsDirect = Friend.objects.filter(Q(author=author_object), Q(status='Accept'))
+    friendsIndirect = Friend.objects.filter(Q(friend=author_object), Q(status='Accept'))
+    friends_list = []
+    for friend in friendsDirect:
+        if friend not in friends_list:
+            friends_list.append(friend.friend)
+    for friend in friendsIndirect:
+        if friend not in friends_list:
+            friends_list.append(friend.author)
+
+    return friends_list
+
+def update_remote_friendship(current_user_uuid):
+    friends_list = get_local_friends(current_user_uuid)
+    for node in Node.objects.all():
+        friendshipURL = node.host+"service/author/"+str(current_user_uuid)+"/friends/"
+        try:
+            response = requests.get(friendshipURL, auth=requests.auth.HTTPBasicAuth(node.remoteUsername, node.remotePassword))
+            data = json.loads(response.content.decode('utf8').replace("'", '"'))
+            remoteFriendsURL = data["authors"]
+            if len(remoteFriendsURL) != 0:
+                for remoteFriendURL in remoteFriendsURL:
+                    remoteFriend_uuid = get_uuid_from_url(remoteFriendURL)
+                    isFollowing = check_author1_follow_author2(current_user_uuid,remoteFriend_uuid)
+                    if isFollowing:
+                        update_friendship_obj(current_user_uuid, remoteFriend_uuid, 'Accept')
+
+            if len(friends_list) != 0:
+                for localFriend in friends_list:
+                    localFriendURL = localFriend.host+"service/author/"+str(localFriend.id)
+                    if ((localFriend.host in node.host) or (localFriend.host == node.host)) and (localFriendURL not in remoteFriendsURL):
+                        if (Friend.objects.filter(Q(author=localFriend.id), Q(status='Accept')).exists()):
+                            friendship = Friend.objects.get(Q(author=localFriend.id), Q(status='Accept'))
+                            last_modified_time = friendship.last_modified_time.replace(tzinfo=None)
+                            if ((datetime.datetime.utcnow() - last_modified_time).total_seconds () > 60):
+                                friendship.delete()
+
+                        if (Friend.objects.filter(Q(friend=localFriend.id), Q(status='Accept')).exists()):
+                            friendship = Friend.objects.get(Q(friend=localFriend.id), Q(status='Accept'))
+                            last_modified_time = friendship.last_modified_time.replace(tzinfo=None)
+                            if ((datetime.datetime.utcnow() - last_modified_time).total_seconds () > 60):
+                                friendship.delete()
+        except:
+            pass
+
+def update_friendship_obj(author, friend, newstatus):
+    try:
+        friendrequests = Friend.objects.get(author=author, friend=friend)
+        friendrequests.status=newstatus
+        friendrequests.save()
+    except:
+        pass
+
 
 def check_two_users_friends(author1_id,author2_id):
     author1_object = Author.objects.get(id=author1_id)
@@ -161,6 +229,24 @@ def get_follow_status(current_user_id, author_id):
             return current_status
     else:
         raise Response("User coudn't find", status=404)
+
+def check_remote_request(request):
+    if (Node.objects.filter(nodeUser=request.user).exists()):
+        return True
+    else:
+        return False
+
+def get_or_create_author_if_not_exist(author_json):
+    AuthorObj = get_author_or_not_exits(author_json['id'])
+    if AuthorObj is False:
+        user = User.objects.create_user(username=author_json["displayName"],password="password", is_active=False)
+        userObj = get_object_or_404(User, username=author_json["displayName"])
+        author = Author.objects.create(id=author_json['id'], displayName=author_json["displayName"],user=userObj, host=author_json["host"])
+        author.save()
+        AuthorObj = author
+
+    return AuthorObj
+
 
 #-----------------------------------------Local endpoints-----------------------------------------#
 def new_post(request):
