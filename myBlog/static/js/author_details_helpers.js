@@ -93,10 +93,12 @@ function sendFollowRequest(author_id,author_host,author_name,author_url,currentU
         }
     }
     let body = JSON.stringify(request_form);
-    let url = "/service/friendrequest/";
+    let url = author_host+"service/friendrequest/";
+    console.log("here");
+    console.log(url);
     return fetch(url,{
         method:"POST",
-        mode:"cors",
+        mode:"no-cors",
         cache:"no-cache",
         credentials:"same-origin",
         body:body,
@@ -106,11 +108,12 @@ function sendFollowRequest(author_id,author_host,author_name,author_url,currentU
         },
         redirect:"follow",
         referrer:"no-referrer",
-    }).then(function(){
+    })
+    //.then(function(){
         //https://www.permadi.com/tutorial/jsInnerHTMLDOM/index.html
        //document.getElementById('follow_Btn').childNodes[0].nodeValue="Following";
-        window.location.reload(true);
-    })
+        //window.location.reload(true);
+    //})
 }
 
 function commentPost(id) {
