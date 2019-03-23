@@ -282,12 +282,8 @@ class MyPostHandler(APIView):
 def pull_remote_nodes(current_user_uuid):
     remotePosts = []
     for node in Node.objects.all():
-        nodeURL = node.host+"service/author/posts/"
-        params = {
-            'author_uuid': current_user_uuid,
-        }
-        response = requests.get(nodeURL, auth=requests.auth.HTTPBasicAuth(node.remoteUsername, node.remotePassword), params=params)
-        print(response)
+        nodeURL = node.host+"service/author/posts/?author_uuid="+str(current_user_uuid)
+        response = requests.get(nodeURL, auth=requests.auth.HTTPBasicAuth(node.remoteUsername, node.remotePassword))
         data = json.loads(response.content.decode('utf8').replace("'", '"'))
         for i in range (0,len(data["posts"])):
             remoteAuthorJson = data["posts"][i]["author"]

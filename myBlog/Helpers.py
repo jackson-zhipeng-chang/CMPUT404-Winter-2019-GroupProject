@@ -165,8 +165,7 @@ def get_follow_status(current_user_id, author_id):
         raise Response("User coudn't find", status=404)
 
 def check_remote_request(request):
-    requestHost = get_host_from_request(request)
-    if (Node.objects.filter(host=requestHost).exists()):
+    if (Node.objects.filter(nodeUser=request.user).exists()):
         return True
     else:
         return False
