@@ -54,6 +54,9 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware'
 ]
 
+CORS_ORIGIN_ALLOW_ALL = True   
+
+
 ROOT_URLCONF = 'mysite.urls'
 
 LOGIN_REDIRECT_URL = '/service/all'
@@ -181,5 +184,9 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
-    )
+    ),
+    'DEFAULT_PARSER_CLASSES': (
+        'rest_framework.parsers.FormParser',
+        'rest_framework.parsers.MultiPartParser'
+     )
 }
