@@ -12,6 +12,8 @@ from uuid import UUID
 from django.http import HttpResponse, HttpResponseNotFound, Http404
 
 def get_author_or_not_exits(current_user_uuid):
+    if type(current_user_uuid) != UUID:
+        current_user_uuid = UUID(current_user_uuid)
     try:
         Author.objects.filter(id=current_user_uuid)
         return Author.objects.get(id=current_user_uuid)
@@ -168,6 +170,18 @@ def check_remote_request(request):
         return True
     else:
         return False
+
+def get_or_create_author_if_not_exist(author_json):
+    AuthorObj = get_author_or_not_exits(author_json['id'])
+    if AuthorObj is False:
+        user = User.objects.create_user(username=author_json["displayName"],password="password", is_active=False)
+        userObj = get_object_or_404(User, username=author_json["displayName"])
+        author = Author.objects.create(id=author_json['id'], displayName=author_json["displayName"],user=userObj, host=author_json["host"])
+        author.save()
+        AuthorObj = author
+
+    return AuthorObj
+
 
 #-----------------------------------------Local endpoints-----------------------------------------#
 def new_post(request):

@@ -13,6 +13,7 @@ from . import Helpers
 from uuid import UUID
 import requests
 import json
+import dateutil.parser
 
 
 class NewPostHandler(APIView):
@@ -43,7 +44,7 @@ class NewPostHandler(APIView):
 
     def post(self, request, format=None):
         current_user_uuid = Helpers.get_current_user_uuid(request)
-        author = Helpers.get_author_or_not_exits(current_user_uuid)
+        author = Author.objects.get(id=current_user_uuid)
         origin = Helpers.get_host_from_request(request)
         data = request.data
         if (data["contentType"] == "text/markdown"):
@@ -159,7 +160,14 @@ class PostHandler(APIView):
 # https://stackoverflow.com/questions/2658291/get-list-or-404-ordering-in-django answered Apr 17 '10 at 12:21 Ludwik Trammer
 class PostToUserHandlerView(APIView):
     def get(self, request, format=None):
-        current_user_uuid = Helpers.get_current_user_uuid(request)
+        isRemote = Helpers.check_remote_request(request)
+        if isRemote:
+            current_user_uuid = request.user.id
+            if type(current_user_uuid) != UUID:
+                current_user_uuid = Helpers.get_current_user_uuid(request)
+        else:
+            current_user_uuid = Helpers.get_current_user_uuid(request)
+
         if type(current_user_uuid) == UUID:
             my_posts_list=[]
             public_posts_list = []
@@ -198,27 +206,7 @@ class PostToUserHandlerView(APIView):
                         if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend_of_this_friend.id), Q(visibility='FOAF')).exists()):
                             foaf_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend_of_this_friend.id),Q(visibility='FOAF'))
             
-            for node in Node.objects.all():
-                nodeURL = node.host+"service/posts/"
-                response = requests.get(nodeURL, auth=requests.auth.HTTPBasicAuth(node.remoteUsername, node.remotePassword))
-                data = json.loads(response.content.decode('utf8').replace("'", '"'))
-                for i in range (0,len(data["posts"])):
-                    remoteAuthorJson = data["posts"][i]["author"]
-                    remoteAuthorObj = Helpers.get_author_or_not_exits(remoteAuthorJson['id'])
-                    if remoteAuthorObj is False:
-                        user = User.objects.create_user(username=remoteAuthorJson["displayName"],password="password", is_active=False)
-                        userObj = get_object_or_404(User, username=remoteAuthorJson["displayName"])
-                        author = Author.objects.create(displayName=remoteAuthorJson["displayName"],user=userObj, host=remoteAuthorJson["host"])
-                        author.save()
-                        remoteAuthorObj = author
-
-                    remotePostObj = Post.objects.create(title=data["posts"][i]["title"],source=data["posts"][i]["source"], 
-                        origin=data["posts"][i]["origin"], content=data["posts"][i]["content"],categories=data["posts"][i]["categories"], 
-                        contentType=data["posts"][i]["contentType"], author=remoteAuthorObj,visibility=data["posts"][i]["visibility"], 
-                        visibleTo=data["posts"][i]["visibleTo"], description=data["posts"][i]["description"],
-                        unlisted=data["posts"][i]["unlisted"], published=data["posts"][i]["published"])
-                    remotePosts.append(remotePostObj)
-                    
+            remotePosts = pull_remote_nodes()
             posts_list = my_posts_list+public_posts_list+friend_posts_list+private_posts_list+serveronly_posts_list+foaf_posts_list+remotePosts
             posts_list.sort(key=lambda x: x.published, reverse=True) # https://stackoverflow.com/questions/403421/how-to-sort-a-list-of-objects-based-on-an-attribute-of-the-objects answered Dec 31 '08 at 16:42 by Triptych
             paginator = CustomPagination()
@@ -288,3 +276,28 @@ class MyPostHandler(APIView):
             return paginator.get_paginated_response(serializer.data)  
         else:
             return current_user_uuid
+
+
+def pull_remote_nodes():
+    remotePosts = []
+    for node in Node.objects.all():
+        nodeURL = node.host+"service/posts/"
+        response = requests.get(nodeURL, auth=requests.auth.HTTPBasicAuth(node.remoteUsername, node.remotePassword))
+        data = json.loads(response.content.decode('utf8').replace("'", '"'))
+        for i in range (0,len(data["posts"])):
+            remoteAuthorJson = data["posts"][i]["author"]
+            remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
+            # Create the post object for final list
+            if not Post.objects.filter(postid=data["posts"][i]["postid"]).exists():
+                remotePostObj = Post.objects.create(postid=data["posts"][i]["postid"], title=data["posts"][i]["title"],source=data["posts"][i]["source"], 
+                    origin=data["posts"][i]["origin"], content=data["posts"][i]["content"],categories=data["posts"][i]["categories"], 
+                    contentType=data["posts"][i]["contentType"], author=remoteAuthorObj,visibility=data["posts"][i]["visibility"], 
+                    visibleTo=data["posts"][i]["visibleTo"], description=data["posts"][i]["description"],
+                    unlisted=data["posts"][i]["unlisted"], published=data["posts"][i]["published"])
+                    #https://stackoverflow.com/questions/969285/how-do-i-translate-an-iso-8601-datetime-string-into-a-python-datetime-object community wiki 5 revs, 4 users 81% Wes Winham
+                publishedObj = dateutil.parser.parse(data["posts"][i]["published"])
+                remotePostObj.published = publishedObj
+                remotePostObj.save()
+                remotePosts.append(remotePostObj)
+
+    return remotePosts

@@ -122,8 +122,8 @@ class PostSerializer(serializers.ModelSerializer):
         origin=self.context['origin']
         post = Post.objects.create(author=author, origin=origin, source=origin, **validated_data)
         newPost = Post.objects.get(postid=post.postid)
-        newPost.origin=post.origin+"/service/posts/"+str(post.postid)
-        newPost.source=post.source+"/service/posts/"+str(post.postid)
+        newPost.origin=post.origin+"service/posts/"+str(post.postid)
+        newPost.source=post.source+"service/posts/"+str(post.postid)
         newPost.save()
         return newPost
 # https://www.django-rest-framework.org/api-guide/serializers/#saving-instances
