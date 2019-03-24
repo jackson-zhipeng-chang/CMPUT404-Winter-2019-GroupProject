@@ -12,6 +12,7 @@ from rest_framework.parsers import JSONParser, MultiPartParser
 from . import Helpers
 from uuid import UUID
 import requests
+from requests.auth import HTTPBasicAuth
 import json
 import dateutil.parser
 
@@ -202,12 +203,16 @@ class PostToUserHandlerView(APIView):
     def get(self, request, format=None):
         isRemote = Helpers.check_remote_request(request)
         current_user_uuid = 0
+        shareImages = True
+        sharePosts = True
         if isRemote:
             current_user_uuid = UUID(request.query_params['author_uuid'])
+            remoteNode = Node.objects.get(nodeUser=request.user)
+            shareImages = remoteNode.shareImages
+            sharePosts = remoteNode.sharePost
             if not (Author.objects.filter(id = current_user_uuid).exists()):
-                remoteNode = Node.objects.get(nodeUser=request.user)
-                url = remoteNode.host + "service/author/" +str(current_user_uuid)
-                response = requests.get(url, auth=requests.auth.HTTPBasicAuth(remoteNode.remoteUsername, remoteNode.remotePassword))
+                authorProfileURL = remoteNode.host + "service/author/" +str(current_user_uuid)
+                response = requests.get(authorProfileURL, auth=HTTPBasicAuth(remoteNode.remoteUsername, remoteNode.remotePassword))
                 remoteAuthorJson = json.loads(response.content.decode('utf8').replace("'", '"'))
                 remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
         else:
@@ -227,7 +232,7 @@ class PostToUserHandlerView(APIView):
                 my_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=current_user_uuid))
 
             if (Post.objects.filter(Q(unlisted=False), ~Q(author_id=current_user_uuid), Q(visibility='PUBLIC')).exists()):
-                public_posts_list = get_list_or_404(Post.objects.order_by('-published'), ~Q(author_id=current_user_uuid), Q(unlisted=False), Q(visibility='PUBLIC'))
+                    public_posts_list = get_list_or_404(Post.objects.order_by('-published'), ~Q(author_id=current_user_uuid), Q(unlisted=False), Q(visibility='PUBLIC'))
 
             friends_list = Helpers.get_friends(current_user_uuid)
             for friend in friends_list:
@@ -254,6 +259,17 @@ class PostToUserHandlerView(APIView):
                             foaf_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend_of_this_friend.id),Q(visibility='FOAF'))
             
             posts_list = my_posts_list+public_posts_list+friend_posts_list+private_posts_list+serveronly_posts_list+foaf_posts_list
+
+            if (not shareImages) and sharePosts:
+                for post in posts_list:
+                    if (post.contentType == 'image/png;base64') or (post.contentType == 'image/jpeg;base64'):
+                        posts_list.remove(post)
+
+            elif (not sharePosts) and shareImages:
+                for post in posts_list:
+                    if (post.contentType == 'text/plain') or (post.contentType == 'text/markdown'):
+                        posts_list.remove(post)
+
             posts_list.sort(key=lambda x: x.published, reverse=True) # https://stackoverflow.com/questions/403421/how-to-sort-a-list-of-objects-based-on-an-attribute-of-the-objects answered Dec 31 '08 at 16:42 by Triptych
             paginator = CustomPagination()
             results = paginator.paginate_queryset(posts_list, request)
@@ -302,7 +318,6 @@ class PostToUserIDHandler(APIView):
 
             posts_list = public_posts_list+friend_posts_list+private_posts_list+serveronly_posts_list+foaf_posts_list
             posts_list.sort(key=lambda x: x.published, reverse=True)
-            print(posts_list)
             paginator = CustomPagination()
             results = paginator.paginate_queryset(posts_list, request)
             serializer=PostSerializer(results, many=True)
@@ -329,21 +344,22 @@ def pull_remote_nodes(current_user_uuid):
     for node in Node.objects.all():
         try:
             nodeURL = node.host+"service/author/posts/?author_uuid="+str(current_user_uuid)
-            response = requests.get(nodeURL, auth=requests.auth.HTTPBasicAuth(node.remoteUsername, node.remotePassword))
-            data = json.loads(response.content.decode('utf8').replace("'", '"'))
-            if int(data["count"]) != 0: 
-                for i in range (0,len(data["posts"])):
-                    remoteAuthorJson = data["posts"][i]["author"]
+            # http://docs.python-requests.org/en/master/user/authentication/ ©MMXVIII. A Kenneth Reitz Project.
+            response = requests.get(nodeURL, auth=HTTPBasicAuth(node.remoteUsername, node.remotePassword))
+            postJson = json.loads(response.content.decode('utf8').replace("'", '"'))
+            if int(postJson["count"]) != 0: 
+                for i in range (0,len(postJson["posts"])):
+                    remoteAuthorJson = postJson["posts"][i]["author"]
                     remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
                     # Create the post object for final list
-                    if not Post.objects.filter(postid=data["posts"][i]["postid"]).exists():
-                        remotePostObj = Post.objects.create(postid=data["posts"][i]["postid"], title=data["posts"][i]["title"],source=data["posts"][i]["source"], 
-                            origin=data["posts"][i]["origin"], content=data["posts"][i]["content"],categories=data["posts"][i]["categories"], 
-                            contentType=data["posts"][i]["contentType"], author=remoteAuthorObj,visibility=data["posts"][i]["visibility"], 
-                            visibleTo=data["posts"][i]["visibleTo"], description=data["posts"][i]["description"],
-                            unlisted=data["posts"][i]["unlisted"], published=data["posts"][i]["published"])
+                    if not Post.objects.filter(postid=postJson["posts"][i]["postid"]).exists():
+                        remotePostObj = Post.objects.create(postid=postJson["posts"][i]["postid"], title=postJson["posts"][i]["title"],source=node.host, 
+                            origin=postJson["posts"][i]["origin"], content=postJson["posts"][i]["content"],categories=postJson["posts"][i]["categories"], 
+                            contentType=postJson["posts"][i]["contentType"], author=remoteAuthorObj,visibility=postJson["posts"][i]["visibility"], 
+                            visibleTo=postJson["posts"][i]["visibleTo"], description=postJson["posts"][i]["description"],
+                            unlisted=postJson["posts"][i]["unlisted"], published=postJson["posts"][i]["published"])
                             #https://stackoverflow.com/questions/969285/how-do-i-translate-an-iso-8601-datetime-string-into-a-python-datetime-object community wiki 5 revs, 4 users 81% Wes Winham
-                        publishedObj = dateutil.parser.parse(data["posts"][i]["published"])
+                        publishedObj = dateutil.parser.parse(postJson["posts"][i]["published"])
                         remotePostObj.published = publishedObj
                         remotePostObj.save()
         except Exception as e:
