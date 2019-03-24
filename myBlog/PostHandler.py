@@ -217,6 +217,7 @@ class PostToUserHandlerView(APIView):
                 remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
         else:
             current_user_uuid = Helpers.get_current_user_uuid(request)
+            delete_remote_nodes_post()
             pull_remote_nodes(current_user_uuid)
 
         if type(current_user_uuid) == UUID:
@@ -274,6 +275,7 @@ class PostToUserHandlerView(APIView):
             paginator = CustomPagination()
             results = paginator.paginate_queryset(posts_list, request)
             serializer=PostSerializer(results, many=True)
+            delete_remote_nodes_post()
             return paginator.get_paginated_response(serializer.data) 
         else:
             return Response("User UUID not found", status=404)
@@ -353,7 +355,7 @@ def pull_remote_nodes(current_user_uuid):
                     remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
                     # Create the post object for final list
                     if not Post.objects.filter(postid=postJson["posts"][i]["postid"]).exists():
-                        remotePostObj = Post.objects.create(postid=postJson["posts"][i]["postid"], title=postJson["posts"][i]["title"],source=node.host, 
+                        remotePostObj = Post.objects.create(postid=postJson["posts"][i]["postid"], title=postJson["posts"][i]["title"],source=node.host+"service/posts/"+postJson["posts"][i]["postid"], 
                             origin=postJson["posts"][i]["origin"], content=postJson["posts"][i]["content"],categories=postJson["posts"][i]["categories"], 
                             contentType=postJson["posts"][i]["contentType"], author=remoteAuthorObj,visibility=postJson["posts"][i]["visibility"], 
                             visibleTo=postJson["posts"][i]["visibleTo"], description=postJson["posts"][i]["description"],
@@ -364,4 +366,10 @@ def pull_remote_nodes(current_user_uuid):
                         remotePostObj.save()
         except Exception as e:
             continue
-    return
+
+
+def delete_remote_nodes_post():
+    # https://stackoverflow.com/questions/8949145/filter-django-database-for-field-containing-any-value-in-an-array answered Jan 20 '12 at 23:36 Ismail Badawi
+    for node in Node.objects.all():
+        posts = Post.objects.filter(source__contains=node.host)
+        posts.delete()
