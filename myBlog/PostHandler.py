@@ -210,7 +210,6 @@ class PostToUserHandlerView(APIView):
             remoteNode = Node.objects.get(nodeUser=request.user)
             shareImages = remoteNode.shareImages
             sharePosts = remoteNode.sharePost
-            delete_remote_nodes_post()
             if not (Author.objects.filter(id = current_user_uuid).exists()):
                 authorProfileURL = remoteNode.host + "service/author/" +str(current_user_uuid)
                 response = requests.get(authorProfileURL, auth=HTTPBasicAuth(remoteNode.remoteUsername, remoteNode.remotePassword))
@@ -218,10 +217,10 @@ class PostToUserHandlerView(APIView):
                 remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
         else:
             current_user_uuid = Helpers.get_current_user_uuid(request)
-            delete_remote_nodes_post()
             pull_remote_nodes(current_user_uuid)
 
         if type(current_user_uuid) == UUID:
+            delete_remote_nodes_post()
             Helpers.update_remote_friendship(current_user_uuid)
             my_posts_list=[]
             public_posts_list = []
@@ -259,18 +258,14 @@ class PostToUserHandlerView(APIView):
                     if friend_of_this_friend.id != current_user_uuid:
                         if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend_of_this_friend.id), Q(visibility='FOAF')).exists()):
                             foaf_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend_of_this_friend.id),Q(visibility='FOAF'))
-            
+
+            my_posts_list = Helpers.filter_posts_to_remote_nodes(my_posts_list, shareImages, sharePosts)
+            public_posts_list = Helpers.filter_posts_to_remote_nodes(public_posts_list, shareImages, sharePosts)
+            friend_posts_list = Helpers.filter_posts_to_remote_nodes(friend_posts_list, shareImages, sharePosts)
+            private_posts_list = Helpers.filter_posts_to_remote_nodes(private_posts_list, shareImages, sharePosts)
+            serveronly_posts_list = Helpers.filter_posts_to_remote_nodes(serveronly_posts_list, shareImages, sharePosts)
+            foaf_posts_list = Helpers.filter_posts_to_remote_nodes(foaf_posts_list, shareImages, sharePosts)
             posts_list = my_posts_list+public_posts_list+friend_posts_list+private_posts_list+serveronly_posts_list+foaf_posts_list
-
-            if (not shareImages) and sharePosts:
-                for post in posts_list:
-                    if (post.contentType == 'image/png;base64') or (post.contentType == 'image/jpeg;base64'):
-                        posts_list.remove(post)
-
-            elif (not sharePosts) and shareImages:
-                for post in posts_list:
-                    if (post.contentType == 'text/plain') or (post.contentType == 'text/markdown'):
-                        posts_list.remove(post)
 
             posts_list.sort(key=lambda x: x.published, reverse=True) # https://stackoverflow.com/questions/403421/how-to-sort-a-list-of-objects-based-on-an-attribute-of-the-objects answered Dec 31 '08 at 16:42 by Triptych
             paginator = CustomPagination()

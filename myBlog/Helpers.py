@@ -248,6 +248,17 @@ def get_or_create_author_if_not_exist(author_json):
 
     return AuthorObj
 
+def filter_posts_to_remote_nodes(posts_list, shareImages, sharePosts):
+    if (not shareImages) and sharePosts:
+        for post in posts_list:
+            if (post.contentType == 'image/png;base64') or (post.contentType == 'image/jpeg;base64'):
+                posts_list.remove(post)
+
+    elif (not sharePosts) and shareImages:
+        for post in posts_list:
+            if (post.contentType == 'text/plain') or (post.contentType == 'text/markdown'):
+                posts_list.remove(post)
+    return posts_list
 
 #-----------------------------------------Local endpoints-----------------------------------------#
 def new_post(request):
