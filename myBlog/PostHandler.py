@@ -275,7 +275,6 @@ class PostToUserHandlerView(APIView):
             paginator = CustomPagination()
             results = paginator.paginate_queryset(posts_list, request)
             serializer=PostSerializer(results, many=True)
-            delete_remote_nodes_post()
             return paginator.get_paginated_response(serializer.data) 
         else:
             return Response("User UUID not found", status=404)
@@ -371,5 +370,6 @@ def pull_remote_nodes(current_user_uuid):
 def delete_remote_nodes_post():
     # https://stackoverflow.com/questions/8949145/filter-django-database-for-field-containing-any-value-in-an-array answered Jan 20 '12 at 23:36 Ismail Badawi
     for node in Node.objects.all():
-        posts = Post.objects.filter(source__contains=node.host)
-        posts.delete()
+        Post.objects.filter(origin__contains=node.host).delete()
+        Post.objects.filter(source__contains=node.host).delete()
+
