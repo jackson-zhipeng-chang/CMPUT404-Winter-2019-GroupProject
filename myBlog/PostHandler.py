@@ -265,12 +265,12 @@ class PostToUserHandlerView(APIView):
             if (not shareImages) and sharePosts:
                 for post in posts_list:
                     if (post.contentType != 'image/png;base64') and (post.contentType != 'image/jpeg;base64'):
-                        filtered_share_list.add(post)
+                        filtered_share_list.append(post)
 
             elif (not sharePosts) and shareImages:
                 for post in posts_list:
                     if (post.contentType != 'text/plain') and (post.contentType != 'text/markdown'):
-                        filtered_share_list.add(post)
+                        filtered_share_list.append(post)
 
             elif (not sharePosts) and (not shareImages):
                 filtered_share_list = []
