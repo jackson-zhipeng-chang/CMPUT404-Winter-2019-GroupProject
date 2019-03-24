@@ -210,6 +210,7 @@ class PostToUserHandlerView(APIView):
             remoteNode = Node.objects.get(nodeUser=request.user)
             shareImages = remoteNode.shareImages
             sharePosts = remoteNode.sharePost
+            delete_remote_nodes_post()
             if not (Author.objects.filter(id = current_user_uuid).exists()):
                 authorProfileURL = remoteNode.host + "service/author/" +str(current_user_uuid)
                 response = requests.get(authorProfileURL, auth=HTTPBasicAuth(remoteNode.remoteUsername, remoteNode.remotePassword))
@@ -217,10 +218,10 @@ class PostToUserHandlerView(APIView):
                 remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
         else:
             current_user_uuid = Helpers.get_current_user_uuid(request)
+            delete_remote_nodes_post()
             pull_remote_nodes(current_user_uuid)
 
         if type(current_user_uuid) == UUID:
-            delete_remote_nodes_post()
             Helpers.update_remote_friendship(current_user_uuid)
             my_posts_list=[]
             public_posts_list = []
