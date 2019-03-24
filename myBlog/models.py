@@ -100,8 +100,14 @@ class Node(models.Model):
     shareImages = models.BooleanField(default=True)
     sharePost = models.BooleanField(default=True)
     nodeUser = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.host
+
+class RemoteUser(models.Model):
+    node = models.ForeignKey(Node, related_name='related_node', on_delete=models.CASCADE)
     remoteUsername = models.CharField(max_length=400, null=True, blank=True)
     remotePassword = models.CharField(max_length=400, null=True, blank=True)
 
     def __str__(self):
-        return self.host
+        return self.node.host
