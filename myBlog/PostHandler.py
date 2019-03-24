@@ -259,17 +259,28 @@ class PostToUserHandlerView(APIView):
                         if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend_of_this_friend.id), Q(visibility='FOAF')).exists()):
                             foaf_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend_of_this_friend.id),Q(visibility='FOAF'))
 
-            my_posts_list = Helpers.filter_posts_to_remote_nodes(my_posts_list, shareImages, sharePosts)
-            public_posts_list = Helpers.filter_posts_to_remote_nodes(public_posts_list, shareImages, sharePosts)
-            friend_posts_list = Helpers.filter_posts_to_remote_nodes(friend_posts_list, shareImages, sharePosts)
-            private_posts_list = Helpers.filter_posts_to_remote_nodes(private_posts_list, shareImages, sharePosts)
-            serveronly_posts_list = Helpers.filter_posts_to_remote_nodes(serveronly_posts_list, shareImages, sharePosts)
-            foaf_posts_list = Helpers.filter_posts_to_remote_nodes(foaf_posts_list, shareImages, sharePosts)
             posts_list = my_posts_list+public_posts_list+friend_posts_list+private_posts_list+serveronly_posts_list+foaf_posts_list
 
-            posts_list.sort(key=lambda x: x.published, reverse=True) # https://stackoverflow.com/questions/403421/how-to-sort-a-list-of-objects-based-on-an-attribute-of-the-objects answered Dec 31 '08 at 16:42 by Triptych
+            filtered_share_list = []
+            if (not shareImages) and sharePosts:
+                for post in posts_list:
+                    if (post.contentType != 'image/png;base64') and (post.contentType != 'image/jpeg;base64'):
+                        filtered_share_list.add(post)
+
+            elif (not sharePosts) and shareImages:
+                for post in posts_list:
+                    if (post.contentType != 'text/plain') and (post.contentType != 'text/markdown'):
+                        filtered_share_list.add(post)
+
+            elif (not sharePosts) and (not shareImages):
+                filtered_share_list = []
+
+            elif shareImages and sharePosts:
+                filtered_share_list = posts_list
+
+            filtered_share_list.sort(key=lambda x: x.published, reverse=True) # https://stackoverflow.com/questions/403421/how-to-sort-a-list-of-objects-based-on-an-attribute-of-the-objects answered Dec 31 '08 at 16:42 by Triptych
             paginator = CustomPagination()
-            results = paginator.paginate_queryset(posts_list, request)
+            results = paginator.paginate_queryset(filtered_share_list, request)
             serializer=PostSerializer(results, many=True)
             return paginator.get_paginated_response(serializer.data) 
         else:
