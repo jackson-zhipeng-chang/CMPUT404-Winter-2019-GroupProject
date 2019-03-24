@@ -121,7 +121,7 @@ function sendFollowRequest(author_id,author_host,author_name,author_url,currentU
         referrer:"no-referrer",
     })
     .then(response => {
-        if (response.status === 200) 
+        if (response.status === 200 && url_local!= url) 
         {     
             return fetch(url_local,{
             method:"POST",
@@ -148,6 +148,10 @@ function sendFollowRequest(author_id,author_host,author_name,author_url,currentU
             }
         }); 
         } 
+
+        else if (response.status === 200 && url_local == url){
+            document.location.reload(true); 
+        } 
         else 
         {
             alert("Something went wrong: " +  response.status);
@@ -158,7 +162,7 @@ function sendFollowRequest(author_id,author_host,author_name,author_url,currentU
 // got data, render the page
 function renderpage(data){
     var content = document.getElementById('content');
-    
+
     var authorDiv = document.createElement('div');
     authorDiv.setAttribute('id','author_div');
     authorDiv.classList.add("w3-container","w3-card","w3-white","w3-round","w3-margin");
