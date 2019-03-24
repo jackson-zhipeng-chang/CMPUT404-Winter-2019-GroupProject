@@ -200,7 +200,10 @@ def home(request):
         else:
             github_url = "null"
         posts_url = "/service/author/posts/?size=10"
-        return render(request, 'homepage.html', {"posts_url":posts_url, "github_url":github_url, "trashable":"false"})
+        displayName = user_author.displayName
+        user_github = user_author.github
+        return render(request, 'homepage.html', {"posts_url":posts_url, "github_url":github_url, "trashable":"false",
+                                                 'displayName':displayName,'user_id':current_user_uuid,'user_github':user_github})
     else:
         return render(request, 'homepage.html')
 

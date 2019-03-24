@@ -121,7 +121,10 @@
                 commentButton.insertAdjacentHTML("beforeend", "<i class='fa fa-comment'></i>  Comment");
                 let post_id = data.posts[i].postid;
                 let post_host = data.posts[i].author.host;
-                commentButton.onclick=function(){commentPost(post_id, post_host)} ;
+                let user_id = "{{ user_id }}";
+                let displayName = "{{ displayName }}";
+                let user_github = "{{ user_github }}";
+                commentButton.onclick=function(){commentPost(post_id, post_host,user_id,displayName,user_github)} ;
                 divDescription.appendChild(commentButton);
 
             }
