@@ -210,6 +210,7 @@ class PostToUserHandlerView(APIView):
             remoteNode = Node.objects.get(nodeUser=request.user)
             shareImages = remoteNode.shareImages
             sharePosts = remoteNode.sharePost
+            delete_remote_nodes_post()
             if not (Author.objects.filter(id = current_user_uuid).exists()):
                 authorProfileURL = remoteNode.host + "service/author/" +str(current_user_uuid)
                 response = requests.get(authorProfileURL, auth=HTTPBasicAuth(remoteNode.remoteUsername, remoteNode.remotePassword))
@@ -217,6 +218,7 @@ class PostToUserHandlerView(APIView):
                 remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
         else:
             current_user_uuid = Helpers.get_current_user_uuid(request)
+            delete_remote_nodes_post()
             pull_remote_nodes(current_user_uuid)
 
         if type(current_user_uuid) == UUID:
@@ -257,22 +259,29 @@ class PostToUserHandlerView(APIView):
                     if friend_of_this_friend.id != current_user_uuid:
                         if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend_of_this_friend.id), Q(visibility='FOAF')).exists()):
                             foaf_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend_of_this_friend.id),Q(visibility='FOAF'))
-            
+
             posts_list = my_posts_list+public_posts_list+friend_posts_list+private_posts_list+serveronly_posts_list+foaf_posts_list
 
+            filtered_share_list = []
             if (not shareImages) and sharePosts:
                 for post in posts_list:
-                    if (post.contentType == 'image/png;base64') or (post.contentType == 'image/jpeg;base64'):
-                        posts_list.remove(post)
+                    if (post.contentType != 'image/png;base64') and (post.contentType != 'image/jpeg;base64'):
+                        filtered_share_list.append(post)
 
             elif (not sharePosts) and shareImages:
                 for post in posts_list:
-                    if (post.contentType == 'text/plain') or (post.contentType == 'text/markdown'):
-                        posts_list.remove(post)
+                    if (post.contentType != 'text/plain') and (post.contentType != 'text/markdown'):
+                        filtered_share_list.append(post)
 
-            posts_list.sort(key=lambda x: x.published, reverse=True) # https://stackoverflow.com/questions/403421/how-to-sort-a-list-of-objects-based-on-an-attribute-of-the-objects answered Dec 31 '08 at 16:42 by Triptych
+            elif (not sharePosts) and (not shareImages):
+                filtered_share_list = []
+
+            elif shareImages and sharePosts:
+                filtered_share_list = posts_list
+
+            filtered_share_list.sort(key=lambda x: x.published, reverse=True) # https://stackoverflow.com/questions/403421/how-to-sort-a-list-of-objects-based-on-an-attribute-of-the-objects answered Dec 31 '08 at 16:42 by Triptych
             paginator = CustomPagination()
-            results = paginator.paginate_queryset(posts_list, request)
+            results = paginator.paginate_queryset(filtered_share_list, request)
             serializer=PostSerializer(results, many=True)
             return paginator.get_paginated_response(serializer.data) 
         else:
@@ -353,7 +362,7 @@ def pull_remote_nodes(current_user_uuid):
                     remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
                     # Create the post object for final list
                     if not Post.objects.filter(postid=postJson["posts"][i]["postid"]).exists():
-                        remotePostObj = Post.objects.create(postid=postJson["posts"][i]["postid"], title=postJson["posts"][i]["title"],source=node.host, 
+                        remotePostObj = Post.objects.create(postid=postJson["posts"][i]["postid"], title=postJson["posts"][i]["title"],source=node.host+"service/posts/"+postJson["posts"][i]["postid"], 
                             origin=postJson["posts"][i]["origin"], content=postJson["posts"][i]["content"],categories=postJson["posts"][i]["categories"], 
                             contentType=postJson["posts"][i]["contentType"], author=remoteAuthorObj,visibility=postJson["posts"][i]["visibility"], 
                             visibleTo=postJson["posts"][i]["visibleTo"], description=postJson["posts"][i]["description"],
@@ -364,4 +373,11 @@ def pull_remote_nodes(current_user_uuid):
                         remotePostObj.save()
         except Exception as e:
             continue
-    return
+
+
+def delete_remote_nodes_post():
+    # https://stackoverflow.com/questions/8949145/filter-django-database-for-field-containing-any-value-in-an-array answered Jan 20 '12 at 23:36 Ismail Badawi
+    for node in Node.objects.all():
+        Post.objects.filter(origin__contains=node.host).delete()
+        Post.objects.filter(source__contains=node.host).delete()
+

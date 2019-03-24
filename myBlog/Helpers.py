@@ -11,6 +11,7 @@ from django.shortcuts import render
 from uuid import UUID
 from django.http import HttpResponse, HttpResponseNotFound, Http404
 import requests
+from requests.auth import HTTPBasicAuth
 import json
 import re
 import datetime
@@ -131,7 +132,7 @@ def update_remote_friendship(current_user_uuid):
     for node in Node.objects.all():
         friendshipURL = node.host+"service/author/"+str(current_user_uuid)+"/friends/"
         try:
-            response = requests.get(friendshipURL, auth=requests.auth.HTTPBasicAuth(node.remoteUsername, node.remotePassword))
+            response = requests.get(friendshipURL, auth=HTTPBasicAuth(node.remoteUsername, node.remotePassword))
             data = json.loads(response.content.decode('utf8').replace("'", '"'))
             remoteFriendsURL = data["authors"]
             if len(remoteFriendsURL) != 0:
@@ -246,7 +247,6 @@ def get_or_create_author_if_not_exist(author_json):
         AuthorObj = author
 
     return AuthorObj
-
 
 #-----------------------------------------Local endpoints-----------------------------------------#
 def new_post(request):
