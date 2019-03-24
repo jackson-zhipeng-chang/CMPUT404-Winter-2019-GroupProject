@@ -10,6 +10,7 @@ from django.db.models import Q
 from django.shortcuts import render
 from uuid import UUID
 from django.http import HttpResponse, HttpResponseNotFound, Http404
+import json
 
 def get_author_or_not_exits(current_user_uuid):
     try:
@@ -255,11 +256,13 @@ def edit_post(request, post_id):
 
             text_area_id = "commentInput" + post_id
 
-            visable_to_names = []
-            for visable_to in post.visibleTo.split(","):
-                visable_to_names.append(Author.objects.get(pk=visable_to).displayName)
+            visible_to_names = []
+            visible_to_ids = []
 
-            print(post.contentType)  # test
+            if post.visibleTo != 'null':
+                for visible_to in post.visibleTo.split(","):
+                    visible_to_names.append(Author.objects.get(pk=visible_to).displayName)
+                    visible_to_ids.append(Author.objects.get(pk=visible_to).id.urn.replace("urn:uuid:", ""))
 
             return render(request, 'editpost.html', {'author': post.author, 'title': post.title,
                                                         'description': post.description, 'categories': post.categories,
@@ -267,7 +270,10 @@ def edit_post(request, post_id):
                                                         'content': post.content, 'visibility': post.visibility,
                                                         'published': post.published, 'comments': comments,
                                                         "contentType": post.contentType, 'postID': post.postid,
-                                                        "textAreaID": text_area_id, "visableToNames": visable_to_names})
+                                                        "textAreaID": text_area_id,
+                                                        "visibleToNames": visible_to_names,
+                                                        "visibleToIDs": visible_to_ids
+                                                     })
         else:
             return render(request, 'homepage.html')
     else:

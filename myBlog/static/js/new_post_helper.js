@@ -59,19 +59,40 @@ function enableInput()
     document.getElementById("post-content").value = "";
 }
 
-function set_friends_list (){
+function set_friends_list (selectFriendsIDs=""){
 
     get_friends_list().then(function(response) {
-        if (response.length ==0){
+        console.log(response);
+        if (response.length === 0){
             document.getElementById("friendsoptions").setAttribute("data-placeholder", "Looks like you don't have any friends...");
             $('#friendsoptions').trigger("chosen:updated");
         }
         else{
+            if (selectFriendsIDs.length > 0){
+                selectFriendsIDs = selectFriendsIDs;
+            }
+            console.log(selectFriendsIDs);
+            console.log(selectFriendsIDs.length);
             document.getElementById("friendsoptions").setAttribute("data-placeholder", "Please typing a name to filter... ");
             for (var i = 0; i < response.length; i++){
                 let value =response[i].id;
                 let innerText=response[i].displayName;
-                let option = '<option value='+value+'>'+innerText+'</option>';
+                let option;
+                if (selectFriendsIDs.length === 0){
+                    console.log("11");
+                    option = '<option value=' + value + '>' + innerText + '</option>';
+                } else {
+                    for (selectFriendsID in selectFriendsIDs) {
+                        if (selectFriendsID === response[i].displayName.id) {
+                            console.log("22");
+                            option = '<option value=' + value + ' selected>' + innerText + '</option>';
+                        } else {
+                            console.log("33");
+                            option = '<option value=' + value + '>' + innerText + '</option>';
+                        }
+                    }
+                }
+
                 var newOption = $(option);
                 $('#friendsoptions').append(newOption);
                 $('#friendsoptions').trigger("chosen:updated");

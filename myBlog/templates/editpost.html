@@ -36,7 +36,7 @@
                         <input class="w3-border w3-padding" type="text" name="Title" placeholder="My title" id=post-title value="{{title}}"><br>
 
                         <h4>Post content</h4>
-                        <textarea style="width: 100%; height:10em;"class="w3-border w3-padding" type="text" name="Title" placeholder="What's on your mind?" id=post-content>{{content}}</textarea>
+                        <textarea style="width: 100%; height:10em;"class="w3-border w3-padding" type="text" name="Title" placeholder="What's on your mind?" id=post-content maxlength="10">{{content}}</textarea>
 
                         <h4>Description</h4>
                         <input class="w3-border w3-padding" type="text" name="Title" placeholder="Description" id=post-description value="{{description}}"><br>
@@ -77,32 +77,15 @@
 
                         <!-- Reference: https://stackoverflow.com/questions/30190588/html-select-multiple-as-dropdown answered Feb 10 '17 at 19:35 mgroat-->
                         <form method="post" enctype="multipart/form-data">
-                            <select id= "friendsoptions" data-placeholder="Only avaliable when PRIVATE TO selected" multiple="true" class="chosen-select" name="friends" disabled="true">
+                            {% if visibility == "PRIVATE" %}
+                                <select id= "friendsoptions" data-placeholder="Only avaliable when PRIVATE TO selected" multiple="true" class="chosen-select" name="friends">
+                            {% else %}
+                                <select id= "friendsoptions" data-placeholder="Only avaliable when PRIVATE TO selected" multiple="true" class="chosen-select" name="friends" disabled="true">
+                            {% endif %}
                             </select>
                             <script>$(".chosen-select").chosen({width: "35%"});</script>
-                            <!--<script>
-                                list_item = document.getElementsByClassName("chosen-choices")[0];
-                                visableToNames = "{{ visableToNames }}";
-                                for (name in visableToNames){
-                                    name_element = document.createElement("li");
-                                    name_element.classList.add("search-choice");
-
-                                    display_name = document.createElement("span");
-                                    display_name.innerText = name;
-
-                                    close_button = document.createElement("a");
-                                    close_button.classList.add("search-choice-close");
-                                    close_button.setAttribute('data-option-array-index', '0');
-
-                                    name_element.appendChild(display_name);
-                                    name_element.appendChild(close_button);
-                                    list_item.insertBefore(name_element, list_item.childNodes[0]);
-                                }
-                                //list_item.appendChild(name_element);
-
-                                //console.log("{{ visibleTos }}")
-                            </script> -->
                         </form>
+                        <script> set_friends_list("{{ visibleToIDs|safe }}"); </script>
                         <!-- Reference:
                         https://harvesthq.github.io/chosen/#change-update-events
                         https://stackoverflow.com/questions/30190588/html-select-multiple-as-dropdown answered Feb 10 '17 at 19:35 mgroat
