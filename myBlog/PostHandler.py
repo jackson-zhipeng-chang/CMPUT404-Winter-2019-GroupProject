@@ -210,6 +210,7 @@ class PostToUserHandlerView(APIView):
             remoteNode = Node.objects.get(nodeUser=request.user)
             shareImages = remoteNode.shareImages
             sharePosts = remoteNode.sharePost
+            delete_remote_nodes_post()
             if not (Author.objects.filter(id = current_user_uuid).exists()):
                 authorProfileURL = remoteNode.host + "service/author/" +str(current_user_uuid)
                 response = requests.get(authorProfileURL, auth=HTTPBasicAuth(remoteNode.remoteUsername, remoteNode.remotePassword))
