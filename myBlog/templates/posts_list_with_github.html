@@ -97,6 +97,18 @@
                 line.classList.add("w3-clear");
                 divDescription.appendChild(line);
 
+                var sourceText = document.createElement("p");
+                sourceText.innerHTML = "Source: "+ data.posts[i].source;
+                divDescription.appendChild(sourceText);
+
+                var originText = document.createElement("p");
+                originText.innerHTML = "Origin: "+ data.posts[i].origin;
+                divDescription.appendChild(originText);
+
+                var line = document.createElement("hr");
+                line.classList.add("w3-clear");
+                divDescription.appendChild(line);
+
                 var commentText = document.createElement("h4");
                 commentText.innerHTML = "Comments";
                 divDescription.appendChild(commentText);
