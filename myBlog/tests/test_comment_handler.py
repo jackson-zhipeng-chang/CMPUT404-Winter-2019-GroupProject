@@ -77,5 +77,35 @@ class TestCommentHandler(TestCase):
             }
         }, 'application/json')
         self.assertEquals(response.status_code,403)
- 
+        # # add comments on a private post
+        # self.client1.post(self.new_post_url, {
+        #     'title': 'POST2',
+        #     'description': 'post for testing',
+        #     'contentType': 'text/plain',
+        #     'category': 'test',
+        #     'visibility': 'PRIVATE',
+        #     'content': 'test',
+        #     'unlisted': False,
+        #     'visibleTo': "",
+        # }, 'application/json')
+        # post = Post.objects.get(author=self.author1,title='POST2')
+        # post_id = post.postid
+        # post_origin = post.origin
+        # comment_url = reverse('comment', args=[post_id])
+        # response = self.client2.post(comment_url, {
+        #     "query": "addComment",
+        #     "post": post_origin,
+        #     "comment": {
+        #         "author": {
+        #             "id": self.author2.id,
+        #             "host": self.author2.host,
+        #             "displayName": self.author2.displayName,
+        #             "url": self.author2.host + '/' + str(self.author2.id),
+        #             "github": self.author2.github
+        #         },
+        #         "comment": "comment from author2",
+        #         "contentType": "text/markdown"
+        #     }
+        # }, 'application/json')
+        # self.assertEquals(response.status_code,403)
 
