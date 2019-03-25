@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404, render,get_list_or_404
-from .models import Post, Author, Comment, Friend
+from .models import Post, Author, Comment, Friend, Node, RemoteUser
 from .serializers import PostSerializer, CommentSerializer, AuthorSerializer, CustomPagination, FriendSerializer
 from rest_framework.parsers import JSONParser
 from rest_framework import status
@@ -32,28 +32,33 @@ class FriendRequestHandler(APIView):
             sender_object = Author.objects.get(id=author_id)
             reciver_object = Author.objects.get(id=friend_id)
             friend_already = Helpers.check_two_users_friends(author_id,friend_id)
-            if (str(current_user_uuid) == author_id):
-                if (not friend_already):
-                    if (Friend.objects.filter(author=sender_object, friend=reciver_object, status="Decline").exists()):
-                        friendrequest = Friend.objects.get(author=sender_object, friend=reciver_object)
-                        friendrequest.status="Pending"
-                        friendrequest.save()
-                        return Response("Friend request sent", status=status.HTTP_200_OK) 
-                    elif (Friend.objects.filter(author=reciver_object, friend=sender_object, status="Decline").exists()):
-                        friendrequest = Friend.objects.get(author=reciver_object, friend=sender_object)
-                        friendrequest.status="Accept"
-                        friendrequest.save()
-                        return Response("You are now friend with %s"%author_id, status=status.HTTP_200_OK) 
-                    elif (Friend.objects.filter(author=sender_object, friend=reciver_object, status="Pending").exists()): 
-                        return Response("Friend request already sent", status=status.HTTP_400_BAD_REQUEST)  
-                    else:
-                        friendrequest = Friend.objects.create(author=sender_object, friend=reciver_object)
-                        friendrequest.save()
-                        return Response("Friend request sent", status=status.HTTP_200_OK)  
+            if (not friend_already):
+                if (Friend.objects.filter(author=sender_object, friend=reciver_object, status="Decline").exists()):
+                    friendrequest = Friend.objects.get(author=sender_object, friend=reciver_object)
+                    friendrequest.status="Pending"
+                    friendrequest.save()
+                    return Response("Friend request sent", status=status.HTTP_200_OK) 
+                elif (Friend.objects.filter(author=reciver_object, friend=sender_object, status="Decline").exists()):
+                    friendrequest = Friend.objects.get(author=reciver_object, friend=sender_object)
+                    friendrequest.status="Accept"
+                    friendrequest.save()
+                    return Response("You are now friend with %s"%author_id, status=status.HTTP_200_OK)
+
+                elif Friend.objects.filter(author=reciver_object, friend=sender_object, status="Pending").exists():
+                    # if the one who I want to follow has followed me
+                    friendrequest = Friend.objects.get(author=reciver_object, friend=sender_object)
+                    friendrequest.status = 'Accept'
+                    friendrequest.save()
+                    return Response("You are new friend with{}".format(reciver_object.displayName, status=status.HTTP_200_OK))
+
+                elif (Friend.objects.filter(author=sender_object, friend=reciver_object, status="Pending").exists()): 
+                    return Response("Friend request already sent", status=status.HTTP_400_BAD_REQUEST)  
                 else:
-                    return Response("You are already friends", status=status.HTTP_400_BAD_REQUEST)
+                    friendrequest = Friend.objects.create(author=sender_object, friend=reciver_object)
+                    friendrequest.save()
+                    return Response("Friend request sent", status=status.HTTP_200_OK)  
             else:
-                return Response("Please login to correct account", status=status.HTTP_400_BAD_REQUEST)
+                return Response("You are already friends", status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response("You are not sending the friendrequest with the correct format. Missing 'query': 'friendrequest'",status=status.HTTP_400_BAD_REQUEST)  
 
@@ -107,6 +112,9 @@ class UnFriend(APIView):
         # case that, A requests B, before B accepts/declines this request, A sends an unFriend request to B
         elif (Friend.objects.filter(Q(author=current_user_uuid),Q(friend=friendid),Q(status='Pending')).exists()):
             Friend.objects.filter(Q(author=current_user_uuid),Q(friend=friendid),Q(status='Pending')).delete()
-            return Response("Cancel friend quest",status=200)
+            return Response("Cancel friend request",status=200)
+        elif(Friend.objects.filter(Q(author=current_user_uuid),Q(friend=friendid),Q(status='Decline')).exists()):
+            Friend.objects.filter(Q(author=current_user_uuid), Q(friend=friendid), Q(status='Decline')).delete()
+            return Response("Delete friend request",status=200)
         else:
             return Response("You are not friend yet", status=400)

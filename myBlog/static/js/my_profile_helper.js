@@ -1,10 +1,3 @@
-function get_host()
-{
-    var url = window.location.href;
-    var arr = url.split("/");
-    var result = arr[0] + "//" + arr[2];
-    return result
-}
 
 function getProfile(url) 
 {
@@ -24,7 +17,7 @@ function getProfile(url)
 
 function editProfile(id)   //not yet done
 {
-    let url = "/myBlog/posts/"+id;
+    let url = "/service/posts/"+id;
     return fetch(url, {
         method: "POST", 
         mode: "cors", 

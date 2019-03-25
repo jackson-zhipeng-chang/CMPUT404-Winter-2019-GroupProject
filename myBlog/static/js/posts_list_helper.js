@@ -1,11 +1,5 @@
 // https://stackoverflow.com/questions/6941533/get-protocol-domain-and-port-from-url
-function get_host()
-{
-    var url = window.location.href;
-    var arr = url.split("/");
-    var result = arr[0] + "//" + arr[2];
-    return result
-}
+
 
 function getAllPosts(url) 
 {
@@ -25,7 +19,7 @@ function getAllPosts(url)
 
 function deletePost(id)
 {
-    let url = "/myBlog/posts/"+id;
+    let url = "/service/posts/"+id;
     return fetch(url, {
         method: "DELETE", 
         mode: "cors", 
@@ -37,25 +31,43 @@ function deletePost(id)
         redirect: "follow", 
         referrer: "no-referrer", 
     })
-    .then(document.location.reload(true)) //https://stackoverflow.com/questions/3715047/how-to-reload-a-page-using-javascript
-    .then(alert("Successfully deleted!"));
+    .then(response => {
+        if (response.status === 204) 
+        { 
+            alert("Successfully deleted!");
+            document.location.reload(true); //https://stackoverflow.com/questions/3715047/how-to-reload-a-page-using-javascript
+        } 
+        else 
+        {
+            alert("Something went wrong: " +  response.status);
+        }
+    });
 }
 
-function commentPost(id)
+function commentPost(id, post_host,user_id,displayName,user_github)
 {
+    var host = get_host();
     let commentForm =
     {
         "query": "addComment",
+        "post":post_host+"posts/"+id,
         "comment":
         {
+            "author":{
+                "id":user_id,
+                "host":host,
+                "displayName":displayName,
+                "url":host+'author/'+user_id,
+                "github":user_github
+
+            },
             "comment":"",
             "contentType":"text/plain"
         }
     };
     commentForm.comment.comment= document.getElementById("commentInput"+id).value;
     let body = JSON.stringify(commentForm);
-    let url = "/myBlog/posts/"+id+"/comments/";
-
+    let url = post_host+"service/posts/"+id+"/comments/";
     return fetch(url, {
         method: "POST", 
         mode: "cors", 
@@ -63,7 +75,8 @@ function commentPost(id)
         credentials: "same-origin", 
         body: body,
         headers: {
-            "Content-Type": "application/json",
+            "Content-Type": 'application/json',
+            "Accept": 'application/json',
             "x-csrftoken": csrf_token
         },
         redirect: "follow", 
@@ -71,8 +84,8 @@ function commentPost(id)
     })
     .then(response => {
         if (response.status === 200) 
-        { 
-            document.location.reload(true); 
+        {
+            document.location.reload(true);
         } 
         else 
         {

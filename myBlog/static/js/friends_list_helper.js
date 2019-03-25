@@ -1,10 +1,4 @@
-function get_host()
-{
-    var url = window.location.href;
-    var arr = url.split("/");
-    var result = arr[0] + "//" + arr[2];
-    return result
-}
+
 
 function getAllFriends(url) 
 {
@@ -24,7 +18,7 @@ function getAllFriends(url)
 
 function deleteFriends(id)   //not yet done
 {
-    let url = "/myBlog/posts/"+id;
+    let url = "/service/posts/"+id;
     return fetch(url, {
         method: "DELETE", 
         mode: "cors", 
@@ -36,6 +30,14 @@ function deleteFriends(id)   //not yet done
         redirect: "follow", 
         referrer: "no-referrer", 
     })
-    .then(document.location.reload(true)) //https://stackoverflow.com/questions/3715047/how-to-reload-a-page-using-javascript
-    .then(alert("Successfully deleted!"));
+    .then(response => {
+        if (response.status === 204) 
+        { 
+            document.location.reload(true); //https://stackoverflow.com/questions/3715047/how-to-reload-a-page-using-javascript
+        } 
+        else 
+        {
+            alert("Something went wrong: " +  response.status);
+        }
+    });
 }

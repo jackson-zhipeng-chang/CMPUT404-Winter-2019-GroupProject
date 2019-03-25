@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'myBlog',
+    'corsheaders',
     'rest_framework_swagger',
     'rest_framework'
 ]
@@ -48,12 +49,17 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware'
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware'
 ]
+
+CORS_ORIGIN_ALLOW_ALL = True   
+
 
 ROOT_URLCONF = 'mysite.urls'
 
-LOGIN_REDIRECT_URL = '/myBlog/all'
+LOGIN_REDIRECT_URL = '/service/all'
 LOGOUT_REDIRECT_URL = '/'
 
 TEMPLATES = [
@@ -178,5 +184,10 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
-    )
+    ),
+    'DEFAULT_PARSER_CLASSES': (
+        'rest_framework.parsers.FormParser',
+        'rest_framework.parsers.MultiPartParser',
+        'rest_framework.parsers.JSONParser'
+     )
 }

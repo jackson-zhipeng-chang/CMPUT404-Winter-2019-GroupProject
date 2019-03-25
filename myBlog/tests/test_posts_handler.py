@@ -8,7 +8,7 @@ import datetime
 
 
 
-class TestViews(TestCase):
+class TestPostsHandler(TestCase):
     def setUp(self):
         # https://stackoverflow.com/questions/2619102/djangos-self-client-login-does-not-work-in-unit-tests
         # create first user author client
@@ -32,11 +32,47 @@ class TestViews(TestCase):
         self.new_post_url = reverse('new_post')
         self.post_to_user_url = reverse('posttouser')
 
+
+    def test_New_Post_Handler_GET_API(self):
+        self.client.post(self.new_post_url, {
+            'title': 'POST1',
+            'description': 'post for testing',
+            'contentType': 'text/plain',
+            'category': 'test',
+            'author': {
+                'id': self.author.id,
+                'host': self.author.host,
+                'displayName': self.author.displayName,
+                'github': self.author.github
+            },
+            'visibility': 'PUBLIC',
+            'content': 'test',
+            'unlisted': False,
+            'visibleTo': "",
+        }, 'application/json')
+        self.client.post(self.new_post_url, {
+            'title': 'md1',
+            'description': 'md post',
+            'contentType': 'text/markdown',
+            'visibility': 'PUBLIC',
+            'content': '# Endpoint: /service/posts/',
+            'category': 'test',
+            'unlisted': False,
+            'visibleTo': "",
+        }, 'application/json')
+        response = self.other_client.get(self.new_post_url)
+        responseBody = json.loads(response.content)
+        self.assertEquals(responseBody['posts'][0]['title'],'md1')
+        self.assertEquals(responseBody['posts'][1]['title'],'POST1')
+        self.assertEquals(response.status_code,200)
+
     def test_New_Post_Handler_POST_API(self):
+        # post plain text
         response = self.client.post(self.new_post_url,{
             'title': 'POST1',
             'description': 'post for testing',
             'contentType': 'text/plain',
+            'category':'test',
             'author':{
                 'id':self.author.id,
                 'host':self.author.host,
@@ -44,9 +80,40 @@ class TestViews(TestCase):
                 'github':self.author.github
             },
             'visibility': 'PUBLIC',
-            'content': 'test'
+            'content': 'test',
+            'unlisted':False,
+            'visibleTo':"",
         },'application/json')
         self.assertEquals(response.status_code, 200)
+        responseBody = {
+                "query": "addPost",
+                "success":True,
+                "message":"Post Added"
+                }
+        self.assertEquals(json.loads(response.content),responseBody)
+
+        # post markdown
+        response1 = self.client.post(self.new_post_url,{
+            'title':'md1',
+            'description':'md post',
+            'contentType':'text/markdown',
+            'visibility':'PUBLIC',
+            'content':'# Endpoint: /service/posts/',
+            'category': 'test',
+            'unlisted': False,
+            'visibleTo': "",
+        },'application/json')
+        self.assertEquals(response1.status_code, 200)
+
+        # test 400 bad request for PostSerializer not valid
+        response2 = self.client.post(self.new_post_url,{
+            "title":"invalid",
+            'description':'invalid post',
+            'contentType':"text/plain",
+            'content':'valid post',
+        },'application/json')
+        self.assertEquals(response2.status_code,400)
+
 
     def test_Post_Handler_GET_OTHER_AUTHOR_POST_API(self):
         # test of post_handler class
@@ -63,17 +130,19 @@ class TestViews(TestCase):
                     'github':self.other_author.github
                 },
                 'visibility': 'PUBLIC',
-                'description': 'test description'
+                'description': 'test description',
+                'unlisted':True
 
         },'application/json')
 
         post1 = Post.objects.get(title='original post1')
         post1_postid = post1.postid
         modify_post_url = reverse('modify_post',args=[post1_postid])
-
         response = self.client.get(modify_post_url)
-
         self.assertEquals(response.status_code,200)
+        bad_url = reverse('modify_post',args=['9bfaff04-2dc6-4399-978c-234d83d4b3f3'])
+        response1 = self.client.get(bad_url)
+        self.assertEquals(response1.status_code,404)
 
     def test_Post_Handler_GET_MY_POST_API(self):
         # test visit my post and it is private to me
@@ -136,11 +205,22 @@ class TestViews(TestCase):
             'content': 'This is a test post'
         }),content_type='application/json')
         self.assertEquals(response.status_code,200)
-        # emmmm...
         post = Post.objects.get(pk=post1_postid)
         self.assertEquals(post.title,'modified my title')
         response_get=self.other_client.get(modify_post_url)
         self.assertEquals(response_get.status_code,404)
+
+        # update a wrong id post
+        wrong_url = reverse('modify_post',args=['9bfaff04-2dc6-4399-978c-234d83d4b3f3'])
+        wrong_response = self.client.put(wrong_url,{
+            'title': 'modified my title',
+            'visibility': 'PRIVATE',
+            'description': 'test description',
+            'contentType': 'text/plain',
+            'content': 'This is a test post'
+        },content_type='application/json')
+        self.assertEquals(wrong_response.status_code,404)
+
 
     def test_Post_Handler_DELETE_API(self):
         # create a post first, test status code == 204
@@ -175,6 +255,11 @@ class TestViews(TestCase):
 
         # test if the post still exist or not
         self.assertFalse(Post.objects.filter(pk=post_id).exists())
+
+        wrong_url = reverse('modify_post',args=['9bfaff04-2dc6-4399-978c-234d83d4b3f3'])
+        wrong_response = self.client.delete(wrong_url)
+        self.assertEquals(wrong_response.status_code,404)
+        self.assertEquals(json.loads(wrong_response.content),"Post coudn't find")
 
     def test_Comment_Handler_POST_API(self):
         # create a public post first , then test if user can add comment on it
@@ -239,24 +324,23 @@ class TestViews(TestCase):
         post1_id = post1.postid
 
         comment_url_private = reverse('comment',args=[post1_id])
-        # TODO: look for structure in how to post comments data
-        response1=self.client.post(comment_url_private,{
-            'query': 'addComment',
-            'post': 'testserver',
-            'comment': {
-                'author': {
-                    'id': self.author.id,
-                    'host': 'xxx',
-                    'displayName': self.author.displayName,
-                    'url': 'xxx',
-                    'github': self.author.github
-                },
-                'comment': 'this is comment from author1',
-                'contentType': 'text/plain',
-                'published': datetime.datetime.now(),
-            }
-        },'application/json')
-        self.assertEquals(response1.status_code,403)
+        # response1=self.client.post(comment_url_private,{
+        #     'query': 'addComment',
+        #     'post': 'testserver',
+        #     'comment': {
+        #         'author': {
+        #             'id': self.author.id,
+        #             'host': 'xxx',
+        #             'displayName': self.author.displayName,
+        #             'url': 'xxx',
+        #             'github': self.author.github
+        #         },
+        #         'comment': 'this is comment from author1',
+        #         'contentType': 'text/plain',
+        #         'published': datetime.datetime.now(),
+        #     }
+        # },'application/json')
+        # self.assertEquals(response1.status_code,403)
 
         response2 = self.other_client.post(comment_url_private, {
             'query': 'addComment',
@@ -278,7 +362,6 @@ class TestViews(TestCase):
         self.assertEquals(response2.status_code,200)
 
     def test_Comment_Handler_GET_API(self):
-        # TODO: search how to do get request with query in url in django
         # first, post a post, add comments on it, then test if we can get the comments
 
         # create a post
@@ -332,7 +415,6 @@ class TestViews(TestCase):
         # another author tries to visit all these posts
 
         posts_num = 10
-        # TODO: change author data structure; may need to modify. what does size means?
         # post ten posts and get a list of these posts' ids.
         for i in range(posts_num):
             self.client.post(self.new_post_url, {
@@ -341,11 +423,11 @@ class TestViews(TestCase):
                 'categories': 'test',
                 'contentType': 'text/plain',
                 'author':{
-                'id':self.author.id,
-                'host':self.author.host,
-                'displayName':self.author.displayName,
-                'github':self.author.github
-            },
+                    'id':self.author.id,
+                    'host':self.author.host,
+                    'displayName':self.author.displayName,
+                    'github':self.author.github
+                },
                 'visibility': 'PUBLIC',
                 'description': 'test description'
             },'application/json')
@@ -385,10 +467,96 @@ class TestViews(TestCase):
         content = json.loads(response1.content)
         self.assertEquals(response1.status_code,200)
 
-    # def test_login_view(self):
-    #     client = Client()
-    #     usr = User.objects.create(username='login_tester')
-    #     usr.set_password('myblogiscool')
-    #     usr.save()
-    #     login_url = reverse('login')
-    #     response = client.post(login_url)
+    def test_get_my_post(self):
+        total_post = 5
+        for i in range(total_post):
+            response=self.client.post(self.new_post_url,{
+                "title":"post"+str(i),
+                "content":"post"+str(i)+" content",
+                "contentType":"text/plain",
+                "visibility":"PUBLIC",
+                "categories":"test",
+                "description":"test",
+                "unlisted": False
+            },"application/json")
+            self.assertEquals(response.status_code,200)
+
+        url = reverse('myposts_view')
+        response = self.client.get(url)
+        self.assertEquals(response.status_code,200)
+
+    def test_get_post_to_me(self):
+        url = reverse('friendrequest')
+        self.client.post(url,{
+            "query":"friendrequest",
+            "author":{
+                "id":self.author.id,
+                "host":self.author.host,
+                "displayName":self.author.displayName,
+                "url":self.author.host+'/'+str(self.author.id)
+            },
+            "friend":{
+                "id":self.other_author.id,
+                "host":self.other_author.host,
+                "displayName":self.other_author.displayName,
+                "url":self.other_author.host+'/'+str(self.other_author.id)
+            }
+        },'application/json')
+        fr_id = Friend.objects.get(author=self.author,friend=self.other_author).id
+        self.other_client.put(url,{
+            "id":fr_id,
+            "status":"Accept"
+        },"application/json")
+
+        post_url = reverse("new_post")
+        self.client.post(post_url,{
+            'title': 'POST1',
+            'description': 'post for testing',
+            'contentType': 'text/plain',
+            'category': 'test',
+            'author': {
+                'id': self.author.id,
+                'host': self.author.host,
+                'displayName': self.author.displayName,
+                'github': self.author.github
+            },
+            'visibility': 'FRIENDS',
+            'content': 'test',
+            'unlisted': False,
+            'visibleTo': "",
+        }, 'application/json')
+
+        posttouser_url = reverse('posttouser')
+        response=self.other_client.get(posttouser_url)
+        self.assertEquals(response.status_code,200)
+        self.assertEquals(json.loads(response.content)['posts'][0]['author']['id'],str(self.author.id))
+
+        self.client.post(post_url,{
+            'title': 'POST1',
+            'description': 'post for testing',
+            'contentType': 'text/plain',
+            'category': 'test',
+            'author': {
+                'id': self.author.id,
+                'host': self.author.host,
+                'displayName': self.author.displayName,
+                'github': self.author.github
+            },
+            'visibility': 'PRIVATE',
+            'content': 'test',
+            'unlisted': False,
+            'visibleTo': self.other_author.id,
+        }, 'application/json')
+        posttouser_url = reverse('posttouser')
+        response = self.other_client.get(posttouser_url)
+        self.assertEquals(response.status_code,200)
+        self.assertEquals(json.loads(response.content)['posts'][0]['author']['id'],str(self.author.id))
+
+        posttouserid_url = reverse('posttouserid',args=[self.author.id])
+        response = self.other_client.get(posttouserid_url)
+        self.assertEquals(response.status_code,200)
+        self.assertEquals(json.loads(response.content)['posts'][0]['author']['id'],str(self.author.id))
+
+
+
+

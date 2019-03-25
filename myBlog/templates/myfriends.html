@@ -7,7 +7,6 @@
     function clickToSendUnfollow(idx,data){
         let author_id = data[idx].id;
         sendUnFriendRequest(author_id);
-
     }
 
 	function display_my_friendlist(data) {
@@ -35,7 +34,7 @@
 
       		var name = document.createElement("p");
 			name.style.fontSize = "22px";
-			name.innerHTML = "Name: " + "<span>" + "<a href='/myBlog/authordetails/" + data[i].id + "/'>" + data[i].displayName + "</a>" + "</span>";
+			name.innerHTML = "Name: " + "<span>" + "<a href='/service/authordetails/" + data[i].id + "/'>" + data[i].displayName + "</a>" + "</span>";
       		name.style.margin = "14px";
       		friend.appendChild(name);
 
@@ -90,7 +89,7 @@
         }
     }
 
-getAllFriends("/myBlog/myfriends/").then(display_my_friendlist);
+getAllFriends("/service/myfriends/").then(display_my_friendlist);
 </script>
 {% else %}
 <div class="w3-card w3-round w3-white" style="width:30%;margin:auto;margin-top: 5%;">

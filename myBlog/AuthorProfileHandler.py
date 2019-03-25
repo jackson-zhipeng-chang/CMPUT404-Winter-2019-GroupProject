@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404, render,get_list_or_404
-from .models import Post, Author, Comment, Friend
+from .models import Post, Author, Comment, Friend, Node, RemoteUser
 from .serializers import PostSerializer, CommentSerializer, AuthorSerializer, CustomPagination, FriendSerializer
 from rest_framework import status
 from django.contrib.auth.models import User
@@ -24,7 +24,7 @@ class AuthorProfileHandler(APIView):
         current_user_uuid = Helpers.get_current_user_uuid(request)
         if current_user_uuid == author.id:
             serializer = AuthorSerializer(author, data=data)
-            serializer.is_valid();
+            serializer.is_valid()
             if serializer.is_valid():
                 serializer.save()
                 return JsonResponse(serializer.data)
@@ -41,7 +41,7 @@ class AuthorProfileHandler(APIView):
             user.delete()
             return HttpResponse(status=204)
         else:
-            return HttpResponse(status=404)   
+            return HttpResponse(status=404)
 
 
 class MyProfileHandler(APIView):

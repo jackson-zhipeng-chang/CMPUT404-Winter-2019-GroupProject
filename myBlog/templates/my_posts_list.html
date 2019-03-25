@@ -56,7 +56,7 @@ function display_my_posts(data) {
 
         var author = document.createElement("a");
         var friend_id = data.posts[i]['author']['id'];
-        author.setAttribute('href','/myBlog/authordetails/'+friend_id+'/');
+        author.setAttribute('href','/service/authordetails/'+friend_id+'/');
         author.innerHTML = data.posts[i].author.displayName;
         author.style.fontSize='25px';
         author.style.marginTop = "11px";
@@ -68,7 +68,7 @@ function display_my_posts(data) {
         post.appendChild(line);
 
         var post_details_link = document.createElement("a");
-        post_details_link.setAttribute('href','/myBlog/postdetails/'+data.posts[i].postid+'/');
+        post_details_link.setAttribute('href','/service/postdetails/'+data.posts[i].postid+'/');
         post.appendChild(post_details_link);
         var title = document.createElement("h3");
         title.innerHTML = data.posts[i].title;
@@ -126,7 +126,11 @@ function display_my_posts(data) {
         commentButton.classList.add("w3-button", "w3-theme-d1", "w3-margin-bottom", "w3-right");
         commentButton.insertAdjacentHTML("beforeend", "<i class='fa fa-comment'></i>  Comment");
         let post_id = data.posts[i].postid;
-        commentButton.onclick=function(){commentPost(post_id)} ;
+        let post_host = data.posts[i].author.host;
+        let user_id = "{{ user_id }}";
+        let displayName = "{{ displayName }}";
+        let user_github = "{{ user_github }}";
+        commentButton.onclick=function(){commentPost(post_id,post_host,user_id,displayName,user_github)} ;
         divDescription.appendChild(commentButton);
 
       }

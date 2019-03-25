@@ -32,27 +32,27 @@
 <div class="w3-top">
     <div class="w3-bar w3-theme-d2 w3-left-align w3-large">
         <a class="w3-bar-item w3-button w3-hide-medium w3-hide-large w3-right w3-padding-large w3-hover-white w3-large w3-theme-d2" href="javascript:void(0);" onclick="openNav()"><i class="fa fa-bars"></i></a>
-        <a href="/myBlog/all" class="w3-bar-item w3-button w3-padding-large w3-theme-d4"><i class="fa fa-home w3-margin-right">   </i><img src="{% static 'images/lagoon.png' %}" style='height:24px;'></a>
+        <a href="/service/all" class="w3-bar-item w3-button w3-padding-large w3-theme-d4"><i class="fa fa-home w3-margin-right">   </i><img src="{% static 'images/lagoon.png' %}" style='height:24px;'></a>
 
         {% if user.is_authenticated %}
-            <a href="/myBlog/newpost" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" title="Create new post"><i class="fa fa-file-text"></i></a>
+            <a href="/service/newpost" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" title="News"><i class="fa fa-pencil"></i></a>
             <div class="w3-dropdown-hover w3-hide-small" id="dropdown-hover">
-                <button class="w3-button w3-padding-large" title="Notifications" onclick="window.location.href ='/myBlog/frlist';">
+                <button class="w3-button w3-padding-large" title="Notifications" onclick="window.location.href ='/service/frlist';">
                     <i class="fa fa-bell"></i>
                     <span class="w3-badge w3-right w3-small w3-green" id="FR">0</span>
                 </button>
                 <div class="w3-dropdown-content w3-card-4 w3-bar-block " id="FRdropdown" style="width:300px">
-                    <a href="/myBlog/frlist/" class="w3-bar-item w3-button" id="dropdown">Zero new friend request</a>
+                    <a href="/service/frlist/" class="w3-bar-item w3-button" id="dropdown">Zero new friend request</a>
 
                 </div>
             </div>
             <div class="w3-dropdown-hover w3-hide-small w3-right">
                 <button class="w3-button w3-padding-large" title="Account">{{user.username}}<i class="fa fa-user w3-margin-left"></i></button>
                 <div class="w3-dropdown-content w3-card-4 w3-bar-block " style="right:0;width:100px">
-                    <a href="/myBlog/myposts" class="w3-bar-item w3-button">My Posts</a>
-                    <a href="/myBlog/myfriendslist/" class="w3-bar-item w3-button">My Friends</a>
-                    <a href="/myBlog/myprofilepage" class="w3-bar-item w3-button">My Profile</a>
-                    <a href="/myBlog/logout" class="w3-bar-item w3-button">Log Out</a></div>
+                    <a href="/service/myposts" class="w3-bar-item w3-button">My Posts</a>
+                    <a href="/service/myfriendslist/" class="w3-bar-item w3-button">My Friends</a>
+                    <a href="/service/myprofilepage" class="w3-bar-item w3-button">My Profile</a>
+                    <a href="/service/logout" class="w3-bar-item w3-button">Log Out</a></div>
             </div>
             <script src="{% static 'js/send_periodic_request_helpers.js' %}"></script>
         {% endif %}
