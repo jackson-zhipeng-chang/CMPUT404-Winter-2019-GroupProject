@@ -242,7 +242,7 @@ class PostToUserHandlerView(APIView):
             delete_remote_nodes_post()
             pull_remote_nodes(current_user_uuid)
 
-        if type(current_user_uuid) == UUID:
+        if type(current_user_uuid) is UUID:
             Helpers.update_remote_friendship(current_user_uuid)
             my_posts_list=[]
             public_posts_list = []
@@ -272,7 +272,7 @@ class PostToUserHandlerView(APIView):
                             private_posts_list.append(post)
 
                 if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend.id), Q(visibility='SERVERONLY')).exists()):
-                    if (Helpers.get_current_user_host(request)==friend.host):
+                    if (Helpers.get_current_user_host(current_user_uuid)==friend.host):
                         serveronly_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend.id),Q(visibility='SERVERONLY'))
            
                 friends_of_this_friend =  Helpers.get_friends(friend.id)
@@ -305,6 +305,7 @@ class PostToUserHandlerView(APIView):
             results = paginator.paginate_queryset(filtered_share_list, request)
             serializer=PostSerializer(results, many=True)
             return paginator.get_paginated_response(serializer.data) 
+
         else:
             return Response("User UUID not found", status=404)
 
@@ -338,7 +339,7 @@ class PostToUserIDHandler(APIView):
 
                 if (Post.objects.filter(Q(unlisted=False),Q(author_id=user_id), Q(visibility='SERVERONLY')).exists()):
                     user_host = Author.objects.get(id=user_id)
-                    if (Helpers.get_current_user_host(request)==user_host):
+                    if (Helpers.get_current_user_host(current_user_uuid)==user_host):
                         serveronly_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False),Q(author_id=user_id),Q(visibility='SERVERONLY'))
                 
                 friends_of_this_friend =  Helpers.get_friends(user_id)

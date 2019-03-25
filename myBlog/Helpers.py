@@ -43,16 +43,9 @@ def get_current_user_uuid(request):
             author = get_object_or_404(Author, user=current_user)
             return author.id
 
-def get_current_user_host(request):
-    if (not User.objects.filter(pk=request.user.id).exists()):
-        raise Response("User coudn't find", status=404)
-    else:
-        current_user = User.objects.get(pk=request.user.id)
-        if (not Author.objects.filter(user=current_user).exists()):
-            raise Response("User coudn't find", status=404)
-        else:
-            author = get_object_or_404(Author, user=current_user)
-            return author.host
+def get_current_user_host(current_user_uuid):
+    if (not Author.objects.filter(id=current_user_uuid).exists()):
+        return Author.objects.get(id=current_user_uuid).host
 
 def verify_current_user_to_post(post, request):
     post_visibility = post.visibility
