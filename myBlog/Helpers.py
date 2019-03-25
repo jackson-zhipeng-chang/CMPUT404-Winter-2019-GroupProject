@@ -1,6 +1,6 @@
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
-from .models import Post, Author, Comment, Friend, Node
+from .models import Post, Author, Comment, Friend, Node, RemoteUser
 from rest_framework import status
 from django.contrib.auth import login, authenticate, logout
 from django.shortcuts import redirect
@@ -132,7 +132,8 @@ def update_remote_friendship(current_user_uuid):
     for node in Node.objects.all():
         friendshipURL = node.host+"service/author/"+str(current_user_uuid)+"/friends/"
         try:
-            response = requests.get(friendshipURL, auth=HTTPBasicAuth(node.remoteUsername, node.remotePassword))
+            remote_to_node = RemoteUser.objects.get(node=node)
+            response = requests.get(friendshipURL, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
             data = json.loads(response.content.decode('utf8').replace("'", '"'))
             remoteFriendsURL = data["authors"]
             if len(remoteFriendsURL) != 0:
@@ -149,13 +150,13 @@ def update_remote_friendship(current_user_uuid):
                         if (Friend.objects.filter(Q(author=localFriend.id), Q(status='Accept')).exists()):
                             friendship = Friend.objects.get(Q(author=localFriend.id), Q(status='Accept'))
                             last_modified_time = friendship.last_modified_time.replace(tzinfo=None)
-                            if ((datetime.datetime.utcnow() - last_modified_time).total_seconds () > 60):
+                            if ((datetime.datetime.utcnow() - last_modified_time).total_seconds () > 30):
                                 friendship.delete()
 
                         if (Friend.objects.filter(Q(friend=localFriend.id), Q(status='Accept')).exists()):
                             friendship = Friend.objects.get(Q(friend=localFriend.id), Q(status='Accept'))
                             last_modified_time = friendship.last_modified_time.replace(tzinfo=None)
-                            if ((datetime.datetime.utcnow() - last_modified_time).total_seconds () > 60):
+                            if ((datetime.datetime.utcnow() - last_modified_time).total_seconds () > 30):
                                 friendship.delete()
         except:
             pass
@@ -167,7 +168,6 @@ def update_friendship_obj(author, friend, newstatus):
         friendrequests.save()
     except:
         pass
-
 
 def check_two_users_friends(author1_id,author2_id):
     author1_object = Author.objects.get(id=author1_id)
