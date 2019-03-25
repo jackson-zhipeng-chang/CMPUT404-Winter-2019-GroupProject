@@ -65,7 +65,6 @@ function commentPost(id, post_host,user_id,displayName,user_github)
             "contentType":"text/plain"
         }
     };
-    console.log(commentForm);
     commentForm.comment.comment= document.getElementById("commentInput"+id).value;
     let body = JSON.stringify(commentForm);
     let url = post_host+"service/posts/"+id+"/comments/";
@@ -86,7 +85,7 @@ function commentPost(id, post_host,user_id,displayName,user_github)
     .then(response => {
         if (response.status === 200) 
         {
-            //document.location.reload(true);
+            document.location.reload(true);
         } 
         else 
         {

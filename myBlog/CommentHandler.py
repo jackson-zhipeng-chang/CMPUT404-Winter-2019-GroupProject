@@ -51,7 +51,6 @@ class CommentHandler(APIView):
                     return Response(responsBody, status=status.HTTP_200_OK)
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             except Exception as e:
-                print(e)
                 responsBody={
                 "query": "addCoemment",
                 "success":False,

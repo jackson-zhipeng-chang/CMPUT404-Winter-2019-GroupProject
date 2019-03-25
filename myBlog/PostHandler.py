@@ -367,11 +367,20 @@ def pull_remote_nodes(current_user_uuid):
                             origin=postJson["posts"][i]["origin"], content=postJson["posts"][i]["content"],categories=postJson["posts"][i]["categories"], 
                             contentType=postJson["posts"][i]["contentType"], author=remoteAuthorObj,visibility=postJson["posts"][i]["visibility"], 
                             visibleTo=postJson["posts"][i]["visibleTo"], description=postJson["posts"][i]["description"],
-                            unlisted=postJson["posts"][i]["unlisted"], published=postJson["posts"][i]["published"])
+                            unlisted=postJson["posts"][i]["unlisted"])
                             #https://stackoverflow.com/questions/969285/how-do-i-translate-an-iso-8601-datetime-string-into-a-python-datetime-object community wiki 5 revs, 4 users 81% Wes Winham
                         publishedObj = dateutil.parser.parse(postJson["posts"][i]["published"])
                         remotePostObj.published = publishedObj
                         remotePostObj.save()
+                    if len(postJson["posts"][i]["comments"]) != 0:
+                        for j in range (0, len(postJson["posts"][i]["comments"])):
+                            remotePostCommentAuthorJson = postJson["posts"][i]["comments"][j]["author"]
+                            remotePostCommentAuthorObj = Helpers.get_or_create_author_if_not_exist(remotePostCommentAuthorJson)
+                            remotePostCommentObj = Comment.objects.create(id=postJson["posts"][i]["comments"][j]["id"], postid=postJson["posts"][i]["comments"][j]["postid"],
+                            author = remotePostCommentAuthorObj, comment=postJson["posts"][i]["comments"][j]["comment"],contentType=postJson["posts"][i]["comments"][j]["contentType"])
+                            commentPublishedObj = dateutil.parser.parse(postJson["posts"][i]["comments"][j]["published"])
+                            remotePostCommentObj.published = commentPublishedObj
+                            remotePostCommentObj.save()
         except Exception as e:
             continue
 
@@ -379,6 +388,13 @@ def pull_remote_nodes(current_user_uuid):
 def delete_remote_nodes_post():
     # https://stackoverflow.com/questions/8949145/filter-django-database-for-field-containing-any-value-in-an-array answered Jan 20 '12 at 23:36 Ismail Badawi
     for node in Node.objects.all():
-        Post.objects.filter(origin__contains=node.host).delete()
-        Post.objects.filter(source__contains=node.host).delete()
+        orginRelatedPosts = Post.objects.filter(origin__contains=node.host)
+        sourceRelatedPosts = Post.objects.filter(source__contains=node.host)
+        for post in orginRelatedPosts:
+            Comment.objects.filter(postid=post.postid).delete()
 
+        for post in sourceRelatedPosts:
+            Comment.objects.filter(postid=post.postid).delete()
+
+        orginRelatedPosts.delete()
+        sourceRelatedPosts.delete()
