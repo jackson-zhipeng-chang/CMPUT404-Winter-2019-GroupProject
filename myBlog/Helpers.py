@@ -16,6 +16,7 @@ import json
 import re
 import datetime
 
+
 def get_author_or_not_exits(current_user_uuid):
     if type(current_user_uuid) != UUID:
         current_user_uuid = UUID(current_user_uuid)
@@ -341,3 +342,52 @@ def post_details(request, post_id):
             return render(request, 'homepage.html')
     else:
         raise Http404("Post does not exist")
+
+
+def edit_post(request, post_id):
+    comments = Comment.objects.filter(postid=post_id)
+    post = Post.objects.get(pk=post_id)
+    accessible = verify_current_user_to_post(post, request)
+    if accessible:
+
+        current_author_id = get_current_user_uuid(request)
+        if type(current_author_id) is UUID:
+            current_display_name = Author.objects.get(pk=current_author_id).displayName
+            if post.author.displayName == current_display_name:
+                current_author_is_owner = True
+            else:
+                current_author_is_owner = False
+
+            text_area_id = "commentInput" + post_id
+
+            visible_to_names = []
+            visible_to_ids = []
+
+            if post.visibleTo != 'null':
+                for visible_to in post.visibleTo.split(","):
+                    visible_to_names.append(Author.objects.get(pk=visible_to).displayName)
+                    visible_to_ids.append(Author.objects.get(pk=visible_to).id.urn.replace("urn:uuid:", ""))
+
+            return render(request, 'editpost.html', {'author': post.author, 'title': post.title,
+                                                        'description': post.description, 'categories': post.categories,
+                                                        'unlisted': post.unlisted,
+                                                        'content': post.content, 'visibility': post.visibility,
+                                                        'published': post.published, 'comments': comments,
+                                                        "contentType": post.contentType, 'postID': post.postid,
+                                                        "textAreaID": text_area_id,
+                                                        "visibleToNames": visible_to_names,
+                                                        "visibleToIDs": visible_to_ids
+                                                     })
+        else:
+            return render(request, 'homepage.html')
+    else:
+        raise Http404("Post does not exist")
+
+
+
+# People available to show
+# file
+
+# Very slow loading picture content
+# pressing change button must make changes
+# change new_post_helper to post_editor_helper?

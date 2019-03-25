@@ -60,7 +60,27 @@ class NewPostHandler(APIView):
                 }
             return Response(responsBody, status=status.HTTP_200_OK)
         else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, format=None):
+        current_user_uuid = Helpers.get_current_user_uuid(request)
+        author = Helpers.get_author_or_not_exits(current_user_uuid)
+        origin = Helpers.get_host_from_request(request)
+        data = request.data
+        if (data["contentType"] == "text/markdown"):
+            data["content"] = markdown.markdown(data["content"])
+        post = Post.objects.get(pk=data['id'])
+        serializer = PostSerializer(post, data=data, context={'author': author, 'origin': origin})
+        if serializer.is_valid():
+            serializer.save()
+            responsBody = {
+                "query": "addPost",
+                "success": True,
+                "message": "Post Added"
+            }
+            return Response(responsBody, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
  
 
 # https://www.django-rest-framework.org/tutorial/2-requests-and-responses/

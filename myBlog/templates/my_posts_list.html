@@ -44,7 +44,16 @@ function display_my_posts(data) {
           trashLogo.style.margin = "25px";
           trashLogo.onclick=function(){deletePost(post_id)} ;
           post.appendChild(trashLogo);
+
+          var editLogo = document.createElement("a");
+          editLogo.classList.add("fa", "fa-pencil", "w3-right", "w3-margin-right", "w3-button");
+          editLogo.style.width = "25px";
+          editLogo.style.margin = "25px";
+          editLogo.setAttribute('href','/myBlog/editpost/'+post_id+'/');
+          post.appendChild(editLogo);
         }
+
+
         var author = document.createElement("a");
         var friend_id = data.posts[i]['author']['id'];
         author.setAttribute('href','/service/authordetails/'+friend_id+'/');
