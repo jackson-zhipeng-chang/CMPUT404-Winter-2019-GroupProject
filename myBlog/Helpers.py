@@ -247,8 +247,9 @@ def get_or_create_author_if_not_exist(author_json):
             userObj = User.objects.get(username=author_json["displayName"])
         else:
             userObj = User.objects.create_user(username=author_json["displayName"],password="password", is_active=False)
-            #userObj = User.objects.get(username=author_json["displayName"])
-        author = Author.objects.create(id=author_json['id'], displayName=author_json["displayName"],user=userObj, host=author_json["host"])
+        host = author_json["host"]
+        host = host.replace("localhost", "127.0.0.1")
+        author = Author.objects.create(id=author_json['id'], displayName=author_json["displayName"],user=userObj, host=host)
         author.save()
         AuthorObj = author
 
