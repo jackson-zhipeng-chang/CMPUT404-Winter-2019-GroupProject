@@ -53,8 +53,6 @@ class Migration(migrations.Migration):
                 ('host', models.CharField(max_length=400)),
                 ('shareImages', models.BooleanField(default=True)),
                 ('sharePost', models.BooleanField(default=True)),
-                ('remoteUsername', models.CharField(blank=True, max_length=400, null=True)),
-                ('remotePassword', models.CharField(blank=True, max_length=400, null=True)),
                 ('nodeUser', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
         ),
@@ -74,6 +72,15 @@ class Migration(migrations.Migration):
                 ('unlisted', models.BooleanField(default=False)),
                 ('published', models.DateTimeField(auto_now_add=True)),
                 ('author', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='post_author', to='myBlog.Author')),
+            ],
+        ),
+        migrations.CreateModel(
+            name='RemoteUser',
+            fields=[
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('remoteUsername', models.CharField(blank=True, max_length=400, null=True)),
+                ('remotePassword', models.CharField(blank=True, max_length=400, null=True)),
+                ('node', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='related_node', to='myBlog.Node')),
             ],
         ),
         migrations.AlterUniqueTogether(

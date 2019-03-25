@@ -2,7 +2,7 @@ import markdown
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404, render,get_list_or_404
-from .models import Post, Author, Comment, Friend, Node
+from .models import Post, Author, Comment, Friend, Node, RemoteUser
 from .serializers import PostSerializer, CommentSerializer, AuthorSerializer, CustomPagination, FriendSerializer
 from rest_framework import status
 from django.contrib.auth.models import User, AnonymousUser
@@ -354,7 +354,8 @@ def pull_remote_nodes(current_user_uuid):
         try:
             nodeURL = node.host+"service/author/posts/?author_uuid="+str(current_user_uuid)
             # http://docs.python-requests.org/en/master/user/authentication/ ©MMXVIII. A Kenneth Reitz Project.
-            response = requests.get(nodeURL, auth=HTTPBasicAuth(node.remoteUsername, node.remotePassword))
+            remote_to_node = RemoteUser.objects.get(node=node)
+            response = requests.get(nodeURL, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
             postJson = json.loads(response.content.decode('utf8').replace("'", '"'))
             if int(postJson["count"]) != 0: 
                 for i in range (0,len(postJson["posts"])):
