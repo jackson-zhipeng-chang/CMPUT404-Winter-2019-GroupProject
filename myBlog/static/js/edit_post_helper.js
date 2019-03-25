@@ -59,7 +59,7 @@ function put(id){
         }
     }
     let body = JSON.stringify(form);
-    let url =  get_host()+"myBlog/posts/";
+    let url =  get_host()+"service/posts/";
     return fetch(url, {
         method: "PUT",
         mode: "cors",
@@ -77,7 +77,7 @@ function put(id){
 
         if (response.status === 200)
         {
-            window.location.replace(get_host()+"myBlog/all/");
+            window.location.replace(get_host()+"service/all/");
         }
         else
         {

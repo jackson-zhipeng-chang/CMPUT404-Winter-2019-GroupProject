@@ -107,7 +107,7 @@ function set_friends_list (selectedFriendsIDs=""){
 }
 
 function get_friends_list(){
-    let url = "/myBlog/myfriends/";
+    let url = "/service/myfriends/";
     return fetch(url, {
         method: "GET",
         mode: "cors",
