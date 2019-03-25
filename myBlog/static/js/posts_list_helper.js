@@ -50,7 +50,7 @@ function commentPost(id, post_host,user_id,displayName,user_github)
     let commentForm =
     {
         "query": "addComment",
-        "post":post_host+id,
+        "post":post_host+"posts/"+id,
         "comment":
         {
             "author":{
@@ -86,7 +86,7 @@ function commentPost(id, post_host,user_id,displayName,user_github)
     .then(response => {
         if (response.status === 200) 
         {
-            //document.location.reload(true);
+            document.location.reload(true);
         } 
         else 
         {
