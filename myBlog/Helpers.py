@@ -200,7 +200,10 @@ def home(request):
         else:
             github_url = "null"
         posts_url = "/service/author/posts/?size=10"
-        return render(request, 'homepage.html', {"posts_url":posts_url, "github_url":github_url, "trashable":"false"})
+        displayName = user_author.displayName
+        user_github = user_author.github
+        return render(request, 'homepage.html', {"posts_url":posts_url, "github_url":github_url, "trashable":"false",
+                                                 'displayName':displayName,'user_id':current_user_uuid,'user_github':user_github})
     else:
         return render(request, 'homepage.html')
 
@@ -254,7 +257,12 @@ def new_post(request):
 
 def my_posts(request):
     posts_url = "/service/posts/mine/?size=10"
-    return render(request, 'my_posts_list.html', {"posts_url":posts_url, "trashable":"true"})
+    current_user_id = get_current_user_uuid(request)
+    current_user = Author.objects.get(pk=current_user_id)
+    current_user_name = current_user.displayName
+    current_user_github = current_user.github
+    return render(request, 'my_posts_list.html', {"posts_url":posts_url, "trashable":"true","user_id":current_user_id,
+                "displayName":current_user_name,"user_github":current_user_github})
 
 def friend_request(request):
     return render(request,'friendrequest.html')
@@ -270,6 +278,7 @@ def author_details(request,author_id):
     current_user_id = get_current_user_uuid(request)
     if type(current_user_id) is UUID:
         current_user_name = Author.objects.get(pk=current_user_id).displayName
+        current_user_github = Author.objects.get(pk=current_user_id).github
         is_friend = is_my_friend(current_user_id,author_id)
         follow_status = get_follow_status(current_user_id,author_id)
         friend = Author.objects.get(pk=author_id)
@@ -281,7 +290,7 @@ def author_details(request,author_id):
                                                     'is_friend':is_friend,'followStatus':follow_status,
                                                     'current_user_name':current_user_name,'friend_host':host,
                                                     'friend_url':url,'friend_name':friend_name,
-                                                    'friend_github':friend_github})
+                                                    'friend_github':friend_github,'current_user_github':current_user_github})
     else:
         return render(request, 'homepage.html')
 
@@ -289,6 +298,8 @@ def author_details(request,author_id):
 def post_details(request, post_id):
     comments = Comment.objects.filter(postid=post_id)
     post = Post.objects.get(pk=post_id)
+    arr = post.origin.split("/")
+    post_host = arr[0]+"//"+arr[2]+'/'
     accessible = verify_current_user_to_post(post, request)
     if accessible:
         if post.contentType == "image/png;base64" or post.contentType == "image/jpeg;base64":
@@ -299,6 +310,7 @@ def post_details(request, post_id):
         current_author_id = get_current_user_uuid(request)
         if type(current_author_id) is UUID:
             current_display_name = Author.objects.get(pk=current_author_id).displayName
+            current_user_github = Author.objects.get(pk=current_author_id).github
             if (post.author.displayName == current_display_name):
                 current_author_is_owner = True
             else:
@@ -318,7 +330,9 @@ def post_details(request, post_id):
                                                         'published': post.published, 'comments': comments,
                                                         "contentIsPicture": content_is_picture, 'postID': post.postid,
                                                         "currentAuthorIsOwner": current_author_is_owner,
-                                                        "textAreaID": text_area_id})
+                                                        "textAreaID": text_area_id,"current_user_id":current_author_id,
+                                                        "current_user_name":current_display_name,"current_user_github":current_user_github,
+                                                        "post_host":post_host})
         else:
             return render(request, 'homepage.html')
     else:

@@ -70,7 +70,7 @@ function content_page(data){
             var friend_info = document.createElement('a');//create a link to the friend's info
             var friend_id = data[i]['author']['id'];
             //click to see friend's info details
-            friend_info.setAttribute('href','/service/author/'+ friend_id);
+            friend_info.setAttribute('href','/service/authordetails/'+ friend_id);
             friend_info.innerHTML = friend_name;// set the href text
 
             title.innerHTML = "Friend Request from ";

@@ -2,9 +2,8 @@ var is_friend_bool;
 var author_id;
 var current_user_id;
 var follow_status;
-var aPosts;
 var cuurent_user_name;
-
+var current_user_github;
 var authorName;
 var authorUrl;
 var authorHost;
@@ -20,12 +19,13 @@ function get_host(){
 }
 
 // get author details which are the author's info & his posts
-function getAuthorDetails(authorid,currentUserID,isFriend,currentUserName,followStatus,friend_host,friend_url,friend_name,friend_github){
+function getAuthorDetails(authorid,currentUserID,isFriend,followStatus,currentUserName,friend_host,friend_url,friend_name,friend_github,user_github){
     author_id = authorid;
     current_user_id = currentUserID;
     is_friend_bool = isFriend;
     follow_status = followStatus;
     cuurent_user_name = currentUserName;
+    current_user_github=user_github;
     authorName = friend_name;
     authorUrl = friend_url;
     authorHost = friend_host;
@@ -335,8 +335,9 @@ function renderpage(data){
             commentButton.classList.add('w3-buuton', "w3-theme-d1", "w3-margin-bottom", "w3-right");
             commentButton.insertAdjacentHTML("beforeend", "<i class='fa fa-comment'></i>  Comment");
             let post_id = posts.postid;
+            let post_host = posts.author.host;
             commentButton.onclick = function () {
-                commentPost(post_id)
+                commentPost(post_id,post_host,current_user_id,cuurent_user_name,current_user_github);
             };
             divDescription.appendChild(commentButton);
 
