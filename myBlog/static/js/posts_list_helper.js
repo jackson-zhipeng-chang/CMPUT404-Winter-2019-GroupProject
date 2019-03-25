@@ -86,7 +86,7 @@ function commentPost(id, post_host,user_id,displayName,user_github)
     .then(response => {
         if (response.status === 200) 
         {
-            document.location.reload(true);
+            //document.location.reload(true);
         } 
         else 
         {

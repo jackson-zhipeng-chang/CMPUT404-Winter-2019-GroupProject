@@ -298,6 +298,8 @@ def author_details(request,author_id):
 def post_details(request, post_id):
     comments = Comment.objects.filter(postid=post_id)
     post = Post.objects.get(pk=post_id)
+    arr = post.origin.split("/")
+    post_host = arr[0]+"//"+arr[2]+'/'
     accessible = verify_current_user_to_post(post, request)
     if accessible:
         if post.contentType == "image/png;base64" or post.contentType == "image/jpeg;base64":
@@ -330,7 +332,7 @@ def post_details(request, post_id):
                                                         "currentAuthorIsOwner": current_author_is_owner,
                                                         "textAreaID": text_area_id,"current_user_id":current_author_id,
                                                         "current_user_name":current_display_name,"current_user_github":current_user_github,
-                                                        "post_host":post.origin})
+                                                        "post_host":post_host})
         else:
             return render(request, 'homepage.html')
     else:
