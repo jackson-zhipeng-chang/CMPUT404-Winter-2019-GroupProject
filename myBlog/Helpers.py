@@ -4,7 +4,7 @@ from .models import Post, Author, Comment, Friend, Node, RemoteUser
 from rest_framework import status
 from django.contrib.auth import login, authenticate, logout
 from django.shortcuts import redirect
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AnonymousUser
 from django.views import generic
 from django.db.models import Q
 from django.shortcuts import render
@@ -229,8 +229,11 @@ def get_follow_status(current_user_id, author_id):
         raise Response("User coudn't find", status=404)
 
 def check_remote_request(request):
-    if (Node.objects.filter(nodeUser=request.user).exists()):
-        return True
+    if type(request.user) is not AnonymousUser:
+        if (Node.objects.filter(nodeUser=request.user).exists()):
+            return True
+        else:
+            return False
     else:
         return False
 

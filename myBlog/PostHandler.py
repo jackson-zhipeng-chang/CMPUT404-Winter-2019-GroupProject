@@ -255,7 +255,7 @@ class PostToUserHandlerView(APIView):
                 my_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=current_user_uuid))
 
             if (Post.objects.filter(Q(unlisted=False), ~Q(author_id=current_user_uuid), Q(visibility='PUBLIC')).exists()):
-                    public_posts_list = get_list_or_404(Post.objects.order_by('-published'), ~Q(author_id=current_user_uuid), Q(unlisted=False), Q(visibility='PUBLIC'))
+                public_posts_list = get_list_or_404(Post.objects.order_by('-published'), ~Q(author_id=current_user_uuid), Q(unlisted=False), Q(visibility='PUBLIC'))
 
             friends_list = Helpers.get_friends(current_user_uuid)
             for friend in friends_list:
@@ -307,7 +307,11 @@ class PostToUserHandlerView(APIView):
             return paginator.get_paginated_response(serializer.data) 
 
         else:
-            return Response("User UUID not found", status=404)
+            public_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(visibility='PUBLIC'))
+            paginator = CustomPagination()
+            results = paginator.paginate_queryset(public_posts_list, request)
+            serializer=PostSerializer(results, many=True)
+            return paginator.get_paginated_response(serializer.data) 
 
 
 # https://stackoverflow.com/questions/19360874/pass-url-argument-to-listview-queryset answered Oct 14 '13 at 13:11 Aamir Adnan
