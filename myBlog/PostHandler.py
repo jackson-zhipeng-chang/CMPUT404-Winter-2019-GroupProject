@@ -212,8 +212,9 @@ class PostToUserHandlerView(APIView):
             sharePosts = remoteNode.sharePost
             delete_remote_nodes_post()
             if not (Author.objects.filter(id = current_user_uuid).exists()):
+                remote_to_node = RemoteUser.objects.get(node=remoteNode)
                 authorProfileURL = remoteNode.host + "service/author/" +str(current_user_uuid)
-                response = requests.get(authorProfileURL, auth=HTTPBasicAuth(remoteNode.remoteUsername, remoteNode.remotePassword))
+                response = requests.get(authorProfileURL, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
                 remoteAuthorJson = json.loads(response.content.decode('utf8').replace("'", '"'))
                 remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
         else:

@@ -243,8 +243,11 @@ def check_remote_request(request):
 def get_or_create_author_if_not_exist(author_json):
     AuthorObj = get_author_or_not_exits(author_json['id'])
     if AuthorObj is False:
-        user = User.objects.create_user(username=author_json["displayName"],password="password", is_active=False)
-        userObj = get_object_or_404(User, username=author_json["displayName"])
+        if User.objects.filter(username=author_json["displayName"]).exists():
+            userObj = User.objects.get(username=author_json["displayName"])
+        else:
+            userObj = User.objects.create_user(username=author_json["displayName"],password="password", is_active=False)
+            #userObj = User.objects.get(username=author_json["displayName"])
         author = Author.objects.create(id=author_json['id'], displayName=author_json["displayName"],user=userObj, host=author_json["host"])
         author.save()
         AuthorObj = author
