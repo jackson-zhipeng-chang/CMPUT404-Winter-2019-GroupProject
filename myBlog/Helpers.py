@@ -377,7 +377,7 @@ def post_details(request, post_id):
                     for partially_split_category in partially_split_categories:
                         categories += partially_split_category.split(",")
 
-                    text_area_id = "commentInput"+post_id
+                    text_area_id = "commentInput"+str(post_id)
 
                     return render(request, 'postdetails.html', {'author': post.author, 'title': post.title,
                                                                 'description': post.description, 'categories': categories,
