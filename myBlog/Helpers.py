@@ -128,20 +128,18 @@ def update_remote_friendship(current_user_uuid):
             remote_to_node = RemoteUser.objects.get(node=node)
             response = requests.get(friendshipURL, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
             data = json.loads(response.content.decode('utf8').replace("'", '"'))
-            remoteFriendsURL = convert_loclhost_to_127(data["authors"])
+            remoteFriendsURL = data["authors"]
+            remote_friends_uuid_list = convert_url_list_to_uuid(remoteFriendsURL)
 
             if len(remoteFriendsURL) != 0:
-                for remoteFriendURL in remoteFriendsURL:
-                    remoteFriend_uuid = get_uuid_from_url(remoteFriendURL)
+                for remoteFriend_uuid in remote_friends_uuid_list:
                     isFollowing = check_author1_follow_author2(current_user_uuid,remoteFriend_uuid)
                     if isFollowing:
                         update_friendship_obj(current_user_uuid, remoteFriend_uuid, 'Accept')
 
             if len(local_friends_list) != 0:
                 for localFriend in local_friends_list:
-                    localFriend.host = localFriend.host.replace("localhost","127.0.0.1")
-                    localFriendURL = localFriend.host+"service/author/"+str(localFriend.id)
-                    if ((localFriend.host in node.host) or (localFriend.host == node.host)) and (str(localFriendURL) not in remoteFriendsURL):
+                    if (localFriend.id not in remote_friends_uuid_list):
                         if (Friend.objects.filter(Q(author=localFriend.id), Q(status='Accept')).exists()):
                             friendship = Friend.objects.get(Q(author=localFriend.id), Q(status='Accept'))
                             last_modified_time = friendship.last_modified_time.replace(tzinfo=None)
@@ -156,14 +154,12 @@ def update_remote_friendship(current_user_uuid):
         except:
             pass
 
-def convert_loclhost_to_127(friends_list):
-    new_friends_list = []
-    for friend_url in friends_list:
-        if "localhost" in friend_url:
-            new_friends_list.append(friend_url.replace("localhost", "127.0.0.1"))
-        else:
-            new_friends_list.append(friend_url)
-    return new_friends_list
+def convert_url_list_to_uuid(friends_list):
+    new_list = []
+    for author_url in friends_list:
+        uuid = get_uuid_from_url(author_url)
+        new_list.append(uuid)
+    return new_list
 
 
 def update_friendship_obj(author, friend, newstatus):
