@@ -221,11 +221,11 @@ class PostToUserHandlerView(APIView):
     
     
     def get(self, request, format=None):
-        isRemote = Helpers.check_remote_request(request)
-        current_user_uuid = 0
-        shareImages = True
-        sharePosts = True
         if request.user.is_authenticated:
+            isRemote = Helpers.check_remote_request(request)
+            current_user_uuid = 0
+            shareImages = True
+            sharePosts = True
             if isRemote:
                 current_user_uuid = UUID(request.query_params['author_uuid'])
                 remoteNode = Node.objects.get(nodeUser=request.user)
@@ -234,14 +234,15 @@ class PostToUserHandlerView(APIView):
                 delete_remote_nodes_post()
                 if not (Author.objects.filter(id = current_user_uuid).exists()):
                     remote_to_node = RemoteUser.objects.get(node=remoteNode)
-                    authorProfileURL = remoteNode.host + "service/author/" +str(current_user_uuid)
+                    authorProfileURL = remoteNode.host + "service/author/%s"%str(current_user_uuid)
                     response = requests.get(authorProfileURL, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
                     remoteAuthorJson = json.loads(response.content.decode('utf8').replace("'", '"'))
                     remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
             else:
                 current_user_uuid = Helpers.get_current_user_uuid(request)
                 delete_remote_nodes_post()
-                pull_remote_nodes(current_user_uuid)
+                pullingURL = "service/author/posts/?author_uuid=%s"%str(current_user_uuid)
+                pull_remote_nodes(pullingURL)
 
             if type(current_user_uuid) is UUID:
                 Helpers.update_remote_friendship(current_user_uuid)
@@ -334,14 +335,15 @@ class PostToUserIDHandler(APIView):
                 delete_remote_nodes_post()
                 if not (Author.objects.filter(id = current_user_uuid).exists()):
                     remote_to_node = RemoteUser.objects.get(node=remoteNode)
-                    authorProfileURL = remoteNode.host + "service/author/" +str(current_user_uuid)
+                    authorProfileURL = remoteNode.host + "service/author/%s"%str(current_user_uuid)
                     response = requests.get(authorProfileURL, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
                     remoteAuthorJson = json.loads(response.content.decode('utf8').replace("'", '"'))
                     remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
             else:
                 current_user_uuid = Helpers.get_current_user_uuid(request)
                 delete_remote_nodes_post()
-                pull_remote_nodes(current_user_uuid)
+                pullingURL = "service/author/%s/posts/?author_uuid=%s"%(str(user_id), str(current_user_uuid))
+                pull_remote_nodes(pullingURL)
 
             if type(current_user_uuid) is UUID:
                 public_posts_list=[]
@@ -403,10 +405,10 @@ class MyPostHandler(APIView):
             return Response("Unauthorized", status=401)
           
 
-def pull_remote_nodes(current_user_uuid):
+def pull_remote_nodes(remote_endpoint):
     for node in Node.objects.all():
         try:
-            nodeURL = node.host+"service/author/posts/?author_uuid="+str(current_user_uuid)
+            nodeURL = node.host+remote_endpoint
             # http://docs.python-requests.org/en/master/user/authentication/ ©MMXVIII. A Kenneth Reitz Project.
             remote_to_node = RemoteUser.objects.get(node=node)
             # https://stackoverflow.com/questions/12737740/python-requests-and-persistent-sessions answered Oct 5 '12 at 0:24
