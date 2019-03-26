@@ -171,8 +171,6 @@ def update_friendship_obj(author, friend, newstatus):
         pass
 
 def check_two_users_friends(author1_id,author2_id):
-    print(author1_id)
-    print(author2_id)
     author1_object = Author.objects.get(id=author1_id)
     author2_object = Author.objects.get(id=author2_id)
     friend1To2 = Friend.objects.filter(author=author1_object, friend=author2_object, status="Accept").exists()
