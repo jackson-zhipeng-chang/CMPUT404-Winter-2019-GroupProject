@@ -13,7 +13,6 @@ from . import Helpers
 from uuid import UUID
 import datetime
 
-
 class FriendRequestHandler(APIView):
     def get(self, request, format=None):
         current_user_uuid = Helpers.get_current_user_uuid(request)
@@ -86,6 +85,7 @@ class FriendRequestHandler(APIView):
                 newStatus = data['status']
                 if newStatus in ['Accept', 'Decline']:
                     friendrequests.status=newStatus
+                    friendrequests.last_modified_time = datetime.datetime.now()
                     friendrequests.save()
                     return Response("Success responded", status=status.HTTP_200_OK)
                 else:
