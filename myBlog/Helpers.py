@@ -89,6 +89,7 @@ def verify_current_user_to_post(post, request):
         return False
         
 def get_friends(current_user_uuid):
+    print("getting friends %s"%current_user_uuid)
     update_remote_friendship(current_user_uuid)
     author_object = Author.objects.get(id=current_user_uuid)
     friendsDirect = Friend.objects.filter(Q(author=author_object), Q(status='Accept'))
@@ -100,7 +101,7 @@ def get_friends(current_user_uuid):
     for friend in friendsIndirect:
         if friend not in friends_list:
             friends_list.append(friend.author)
-
+    print("friends_list %s"%str(friends_list))
     return friends_list
 
 def get_uuid_from_url(url):
@@ -109,20 +110,33 @@ def get_uuid_from_url(url):
 
 def get_local_friends(current_user_uuid):
     author_object = Author.objects.get(id=current_user_uuid)
+    print(author_object)
     friendsDirect = Friend.objects.filter(Q(author=author_object), Q(status='Accept'))
     friendsIndirect = Friend.objects.filter(Q(friend=author_object), Q(status='Accept'))
     friends_list = []
+    try:
+        print(Friend.objects.get(Q(author=author_object)).status)
+        print("1")
+    except:
+        pass
+    try:
+        print(Friend.objects.get(Q(friend=author_object)).status)
+        print("2")
+    except:
+        pass
+    print(friendsDirect)
+    print(friendsIndirect)
     for friend in friendsDirect:
         if friend not in friends_list:
             friends_list.append(friend.friend)
     for friend in friendsIndirect:
         if friend not in friends_list:
             friends_list.append(friend.author)
-
+    print(friends_list)
     return friends_list
 
 def update_remote_friendship(current_user_uuid):
-    friends_list = get_local_friends(current_user_uuid)
+    local_friends_list = get_local_friends(current_user_uuid)
     for node in Node.objects.all():
         friendshipURL = node.host+"service/author/"+str(current_user_uuid)+"/friends/"
         try:
@@ -137,10 +151,17 @@ def update_remote_friendship(current_user_uuid):
                     if isFollowing:
                         update_friendship_obj(current_user_uuid, remoteFriend_uuid, 'Accept')
 
-            if len(friends_list) != 0:
-                for localFriend in friends_list:
+            if len(local_friends_list) != 0:
+                for localFriend in local_friends_list:
+                    localFriend.host.replace("localhost","127.0.0.1")
                     localFriendURL = localFriend.host+"service/author/"+str(localFriend.id)
-                    if ((localFriend.host in node.host) or (localFriend.host == node.host)) and (localFriendURL not in remoteFriendsURL):
+                    print(localFriend.host)
+                    print(node.host)
+                    print(localFriendURL)
+                    print(remoteFriendsURL)
+                    if str(localFriendURL) not in remoteFriendsURL:
+                        print("not in ")
+                    if ((localFriend.host in node.host) or (localFriend.host == node.host)) and (str(localFriendURL) not in remoteFriendsURL):
                         if (Friend.objects.filter(Q(author=localFriend.id), Q(status='Accept')).exists()):
                             friendship = Friend.objects.get(Q(author=localFriend.id), Q(status='Accept'))
                             last_modified_time = friendship.last_modified_time.replace(tzinfo=None)
@@ -164,6 +185,8 @@ def update_friendship_obj(author, friend, newstatus):
         pass
 
 def check_two_users_friends(author1_id,author2_id):
+    print(author1_id)
+    print(author2_id)
     author1_object = Author.objects.get(id=author1_id)
     author2_object = Author.objects.get(id=author2_id)
     friend1To2 = Friend.objects.filter(author=author1_object, friend=author2_object, status="Accept").exists()

@@ -226,7 +226,6 @@ class PostToUserHandlerView(APIView):
         shareImages = True
         sharePosts = True
         if request.user.is_authenticated:
-            print(request.META)
             if isRemote:
                 current_user_uuid = UUID(request.query_params['author_uuid'])
                 remoteNode = Node.objects.get(nodeUser=request.user)
