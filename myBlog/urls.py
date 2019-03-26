@@ -44,7 +44,7 @@ urlpatterns = [
     path('signup/', Accounts.signup, name='signup'),
     path('all/', Helpers.home, name='postslist'),
     path('newpost/', Helpers.new_post, name='newpost'),
-    path('editpost/<post_id>/', Helpers.edit_post, name='editpost'),
+    path('editpost/<uuid:post_id>/', Helpers.edit_post, name='editpost'),
     path('myprofile/', AuthorProfileHandler.MyProfileHandler.as_view(), name='myprofile'),
     path('myprofilepage/', Helpers.my_profile, name='myprofliepage'),
     path('posts/mine/',  PostHandler.MyPostHandler.as_view(), name='myposts_view'),
@@ -52,8 +52,8 @@ urlpatterns = [
     path('myfriends/', FriendRequestHandler.MyFriends.as_view(), name='myfriends'),
     path('myfriendslist/', Helpers.my_friends, name='myfriendslist'),
     path('frlist/',Helpers.friend_request,name='requestlist'),
-    path('authordetails/<author_id>/',Helpers.author_details,name='authordetails'),
-    path('postdetails/<post_id>/', Helpers.post_details, name='postdetails'),
-    path('unfriend/<friendid>/',FriendRequestHandler.UnFriend.as_view(),name='unfriend'),
+    path('authordetails/<uuid:author_id>/',Helpers.author_details,name='authordetails'),
+    path('postdetails/<uuid:post_id>/', Helpers.post_details, name='postdetails'),
+    path('unfriend/<uuid:friendid>/',FriendRequestHandler.UnFriend.as_view(),name='unfriend'),
 
 ]
