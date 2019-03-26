@@ -382,12 +382,11 @@ def pull_remote_nodes(current_user_uuid):
     for node in Node.objects.all():
         try:
             nodeURL = node.host+"service/author/posts/?author_uuid="+str(current_user_uuid)
+            print(nodeURL)
             # http://docs.python-requests.org/en/master/user/authentication/ ©MMXVIII. A Kenneth Reitz Project.
             remote_to_node = RemoteUser.objects.get(node=node)
             # https://stackoverflow.com/questions/12737740/python-requests-and-persistent-sessions answered Oct 5 '12 at 0:24
-            session = requests.session()
-            session.user.id = current_user_uuid
-            response = session.get(nodeURL, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
+            response = requests.get(nodeURL, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
             postJson = json.loads(response.content.decode('utf8').replace("'", '"'))
             if int(postJson["count"]) != 0: 
                 for i in range (0,len(postJson["posts"])):
