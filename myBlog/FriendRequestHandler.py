@@ -15,14 +15,15 @@ import datetime
 
 class FriendRequestHandler(APIView):
     def get(self, request, format=None):
-        current_user_uuid = Helpers.get_current_user_uuid(request)
-        if type(current_user_uuid) == UUID:
-            author_object = Author.objects.get(id=current_user_uuid)
-            friendrequests = Friend.objects.filter(friend=author_object, status='Pending')
-            serializer = FriendSerializer(friendrequests, many=True)
-            return JsonResponse(serializer.data, safe=False)
+        if request.user.is_authenticated:
+            current_user_uuid = Helpers.get_current_user_uuid(request)
+            if type(current_user_uuid) == UUID:
+                author_object = Author.objects.get(id=current_user_uuid)
+                friendrequests = Friend.objects.filter(friend=author_object, status='Pending')
+                serializer = FriendSerializer(friendrequests, many=True)
+                return JsonResponse(serializer.data, safe=False)
         else:
-            return current_user_uuid
+            return Response("Unauthorized", status=401)
 
     def post(self, request, format=None):
         data = request.data
