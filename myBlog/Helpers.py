@@ -300,7 +300,7 @@ def author_details(request,author_id):
         follow_status = get_follow_status(current_user_id,author_id)
         friend = Author.objects.get(pk=author_id)
         host = friend.host
-        url = friend.host + 'service/author/' + author_id
+        url = friend.host + 'service/author/' + str(author_id)
         friend_name = friend.displayName
         friend_github = friend.github
         return render(request,'authordetails.html',{'authorid':author_id,'current_user_id':current_user_id,
