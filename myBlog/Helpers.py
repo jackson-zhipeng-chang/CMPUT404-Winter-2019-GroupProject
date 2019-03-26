@@ -32,15 +32,22 @@ def get_host_from_request(request):
     return host
 
 def get_current_user_uuid(request):
-    if (not User.objects.filter(pk=request.user.id).exists()):
-        return Response("User coudn't find", status=404)
+    isRemote = check_remote_request(request)
+    if isRemote:
+        try:
+            return UUID(request.META["X-UUID"])
+        except:
+            return  Response("Author UUID couldn't find", status=404)
     else:
-        current_user = User.objects.get(pk=request.user.id)
-        if (not Author.objects.filter(user=current_user).exists()):
-            return Response("Author coudn't find", status=404)
+        if (not User.objects.filter(pk=request.user.id).exists()):
+            return Response("User coudn't find", status=404)
         else:
-            author = get_object_or_404(Author, user=current_user)
-            return author.id
+            current_user = User.objects.get(pk=request.user.id)
+            if (not Author.objects.filter(user=current_user).exists()):
+                return Response("Author couldn't find", status=404)
+            else:
+                author = get_object_or_404(Author, user=current_user)
+                return author.id
 
 def get_current_user_host(current_user_uuid):
     if (not Author.objects.filter(id=current_user_uuid).exists()):
@@ -50,7 +57,8 @@ def verify_current_user_to_post(post, request):
     post_visibility = post.visibility
     post_author = post.author_id
     unlisted_post = post.unlisted
-    if User.objects.filter(pk=request.user.id).exists():
+    if request.user.is_authenticated:
+    #if User.objects.filter(pk=request.user.id).exists():
         current_user_uuid = get_current_user_uuid(request)
         isFriend = check_two_users_friends(post_author,current_user_uuid)
         if current_user_uuid == post_author:
