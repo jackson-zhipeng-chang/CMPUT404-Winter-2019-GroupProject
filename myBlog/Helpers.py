@@ -17,6 +17,18 @@ import re
 import datetime
 
 
+import pytz
+import time
+from django.conf import settings
+
+
+def ctodatetime(ctimeinput):
+    etime = time.ctime(int(ctimeinput))
+    btime = datetime.datetime.strptime(etime, "%a %b %d %H:%M:%S %Y")
+    tz_aware_datetetime = btime.replace(tzinfo=pytz.timezone(settings.TIME_ZONE))
+    print(tz_aware_datetetime)
+    return tz_aware_datetetime
+
 def get_author_or_not_exits(current_user_uuid):
     if type(current_user_uuid) != UUID:
         current_user_uuid = UUID(current_user_uuid)
@@ -130,6 +142,7 @@ def update_remote_friendship(current_user_uuid):
             response = requests.get(friendshipURL, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
             data = json.loads(response.content.decode('utf8').replace("'", '"'))
             remoteFriendsURL = data["authors"]
+            print("1%s"%str(remoteFriendsURL))
             if len(remoteFriendsURL) != 0:
                 for remoteFriendURL in remoteFriendsURL:
                     remoteFriend_uuid = get_uuid_from_url(remoteFriendURL)
@@ -140,16 +153,23 @@ def update_remote_friendship(current_user_uuid):
             if len(friends_list) != 0:
                 for localFriend in friends_list:
                     localFriendURL = localFriend.host+"service/author/"+str(localFriend.id)
+                    print(friends_list)
+                    print(localFriend)
+                    print(node)
+                    print(remoteFriendsURL)
+
                     if ((localFriend.host in node.host) or (localFriend.host == node.host)) and (localFriendURL not in remoteFriendsURL):
                         if (Friend.objects.filter(Q(author=localFriend.id), Q(status='Accept')).exists()):
                             friendship = Friend.objects.get(Q(author=localFriend.id), Q(status='Accept'))
                             last_modified_time = friendship.last_modified_time.replace(tzinfo=None)
+                            print(friendship.last_modified_time)
                             if ((datetime.datetime.utcnow() - last_modified_time).total_seconds () > 30):
                                 friendship.delete()
 
                         if (Friend.objects.filter(Q(friend=localFriend.id), Q(status='Accept')).exists()):
                             friendship = Friend.objects.get(Q(friend=localFriend.id), Q(status='Accept'))
                             last_modified_time = friendship.last_modified_time.replace(tzinfo=None)
+                            print(friendship.last_modified_time)
                             if ((datetime.datetime.utcnow() - last_modified_time).total_seconds () > 30):
                                 friendship.delete()
         except:
@@ -159,6 +179,7 @@ def update_friendship_obj(author, friend, newstatus):
     try:
         friendrequests = Friend.objects.get(author=author, friend=friend)
         friendrequests.status=newstatus
+        friendrequests.last_modified_time=ctodatetime(datetime.datetime.now())
         friendrequests.save()
     except:
         pass

@@ -86,7 +86,7 @@ class FriendRequestHandler(APIView):
                 newStatus = data['status']
                 if newStatus in ['Accept', 'Decline']:
                     friendrequests.status=newStatus
-                    friendrequests.last_modified_time = datetime.datetime.now()
+                    friendrequests.last_modified_time = Helpers.ctodatetime(datetime.datetime.now())
                     friendrequests.save()
                     return Response("Success responded", status=status.HTTP_200_OK)
                 else:
