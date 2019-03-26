@@ -15,6 +15,7 @@ from requests.auth import HTTPBasicAuth
 import json
 import re
 import datetime
+import dateutil.parser
 
 def get_author_or_not_exits(current_user_uuid):
     if type(current_user_uuid) != UUID:
@@ -313,77 +314,85 @@ def author_details(request,author_id):
 
 def post_details(request, post_id):
     current_user_uuid = get_current_user_uuid(request)
-    if Post.objects.filter(pk=post_id).exists():
-        post = Post.objects.get(pk=post_id)
-    else:
-        for node in Node.objects.all():
-            nodeURL = node.host+"service/posts/%s"%post_id
-            headers = {"X-UUID": str(current_user_uuid)}
-            # http://docs.python-requests.org/en/master/user/authentication/ ©MMXVIII. A Kenneth Reitz Project.
-            remote_to_node = RemoteUser.objects.get(node=node)
-            # https://stackoverflow.com/questions/12737740/python-requests-and-persistent-sessions answered Oct 5 '12 at 0:24
-            response = requests.get(nodeURL,headers=headers, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
-            postJson = json.loads(response.content.decode('utf8').replace("'", '"'))
-            remoteAuthorJson = postJson["author"]
-            remoteAuthorObj = get_or_create_author_if_not_exist(remoteAuthorJson)
-            # Create the post object for final list
-            if not Post.objects.filter(postid=postJson["postid"]).exists():
-                post = Post.objects.create(postid=postJson["postid"], title=postJson["title"],source=node.host+"service/posts/"+postJson["postid"], 
-                    origin=postJson["origin"], content=postJson["content"],categories=postJson["categories"], 
-                    contentType=postJson["contentType"], author=remoteAuthorObj,visibility=postJson["visibility"], 
-                    visibleTo=postJson["visibleTo"], description=postJson["description"],
-                    unlisted=postJson["unlisted"])
-                    #https://stackoverflow.com/questions/969285/how-do-i-translate-an-iso-8601-datetime-string-into-a-python-datetime-object community wiki 5 revs, 4 users 81% Wes Winham
-                publishedObj = dateutil.parser.parse(postJson["published"])
-                post.published = publishedObj
-                post.save()
-                if len(postJson["comments"]) != 0:
-                    for j in range (0, len(postJson["comments"])):
-                        remotePostCommentAuthorJson = postJson["comments"][j]["author"]
-                        remotePostCommentAuthorObj = Helpers.get_or_create_author_if_not_exist(remotePostCommentAuthorJson)
-                        remotePostCommentObj = Comment.objects.create(id=postJson["comments"][j]["id"], postid=postJson["comments"][j]["postid"],
-                        author = remotePostCommentAuthorObj, comment=postJson["comments"][j]["comment"],contentType=postJson["comments"][j]["contentType"])
-                        commentPublishedObj = dateutil.parser.parse(postJson["comments"][j]["published"])
-                        remotePostCommentObj.published = commentPublishedObj
-                        remotePostCommentObj.save()
-    comments = Comment.objects.filter(postid=post_id)
-    arr = post.origin.split("/")
-    post_host = arr[0]+"//"+arr[2]+'/'
-    accessible = verify_current_user_to_post(post, request)
-    if accessible:
-        if post.contentType == "image/png;base64" or post.contentType == "image/jpeg;base64":
-            content_is_picture = True
+    if type(post_id) is UUID:   
+        if Post.objects.filter(pk=post_id).exists():
+            post = Post.objects.get(pk=post_id)
         else:
-            content_is_picture = False
+            for node in Node.objects.all():
+                nodeURL = node.host+"service/posts/%s"%post_id
+                headers = {"X-UUID": str(current_user_uuid)}
+                # http://docs.python-requests.org/en/master/user/authentication/ ©MMXVIII. A Kenneth Reitz Project.
+                remote_to_node = RemoteUser.objects.get(node=node)
+                # https://stackoverflow.com/questions/12737740/python-requests-and-persistent-sessions answered Oct 5 '12 at 0:24
+                response = requests.get(nodeURL,headers=headers, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
+                postJson = json.loads(response.content.decode('utf8').replace("'", '"'))
+                remoteAuthorJson = postJson["author"]
+                remoteAuthorObj = get_or_create_author_if_not_exist(remoteAuthorJson)
+                # Create the post object for final list
+                if not Post.objects.filter(postid=postJson["postid"]).exists():
+                    post = Post.objects.create(postid=postJson["postid"], title=postJson["title"],source=node.host+"service/posts/"+postJson["postid"], 
+                        origin=postJson["origin"], content=postJson["content"],categories=postJson["categories"], 
+                        contentType=postJson["contentType"], author=remoteAuthorObj,visibility=postJson["visibility"], 
+                        visibleTo=postJson["visibleTo"], description=postJson["description"],
+                        unlisted=postJson["unlisted"])
+                        #https://stackoverflow.com/questions/969285/how-do-i-translate-an-iso-8601-datetime-string-into-a-python-datetime-object community wiki 5 revs, 4 users 81% Wes Winham
+                    publishedObj = dateutil.parser.parse(postJson["published"])
+                    post.published = publishedObj
+                    post.save()
+                    if len(postJson["comments"]) != 0:
+                        for j in range (0, len(postJson["comments"])):
+                            remotePostCommentAuthorJson = postJson["comments"][j]["author"]
+                            remotePostCommentAuthorObj = get_or_create_author_if_not_exist(remotePostCommentAuthorJson)
+                            remotePostCommentObj = Comment.objects.create(id=postJson["comments"][j]["id"], postid=postJson["comments"][j]["postid"],
+                            author = remotePostCommentAuthorObj, comment=postJson["comments"][j]["comment"],contentType=postJson["comments"][j]["contentType"])
+                            commentPublishedObj = dateutil.parser.parse(postJson["comments"][j]["published"])
+                            remotePostCommentObj.published = commentPublishedObj
+                            remotePostCommentObj.save()
 
-        current_author_id = get_current_user_uuid(request)
-        if type(current_author_id) is UUID:
-            current_display_name = Author.objects.get(pk=current_author_id).displayName
-            current_user_github = Author.objects.get(pk=current_author_id).github
-            if (post.author.displayName == current_display_name):
-                current_author_is_owner = True
+        if not Post.objects.filter(pk=post_id).exists():
+            raise Http404("Post does not exist")
+
+        else:
+            comments = Comment.objects.filter(postid=post_id)
+            arr = post.origin.split("/")
+            post_host = arr[0]+"//"+arr[2]+'/'
+            accessible = verify_current_user_to_post(post, request)
+            if accessible:
+                if post.contentType == "image/png;base64" or post.contentType == "image/jpeg;base64":
+                    content_is_picture = True
+                else:
+                    content_is_picture = False
+
+                current_author_id = get_current_user_uuid(request)
+                if type(current_author_id) is UUID:
+                    current_display_name = Author.objects.get(pk=current_author_id).displayName
+                    current_user_github = Author.objects.get(pk=current_author_id).github
+                    if (post.author.displayName == current_display_name):
+                        current_author_is_owner = True
+                    else:
+                        current_author_is_owner = False
+
+                    categories = []
+                    partially_split_categories = post.categories.split(" ")
+                    for partially_split_category in partially_split_categories:
+                        categories += partially_split_category.split(",")
+
+                    text_area_id = "commentInput"+post_id
+
+                    return render(request, 'postdetails.html', {'author': post.author, 'title': post.title,
+                                                                'description': post.description, 'categories': categories,
+                                                                'unlisted': post.unlisted,
+                                                                'content': post.content, 'visibility': post.visibility,
+                                                                'published': post.published, 'comments': comments,
+                                                                "contentIsPicture": content_is_picture, 'postID': post.postid,
+                                                                "currentAuthorIsOwner": current_author_is_owner,
+                                                                "textAreaID": text_area_id,"current_user_id":current_author_id,
+                                                                "current_user_name":current_display_name,"current_user_github":current_user_github,
+                                                                "post_host":post_host})
+                else:
+                    return render(request, 'homepage.html')
             else:
-                current_author_is_owner = False
-
-            categories = []
-            partially_split_categories = post.categories.split(" ")
-            for partially_split_category in partially_split_categories:
-                categories += partially_split_category.split(",")
-
-            text_area_id = "commentInput"+post_id
-
-            return render(request, 'postdetails.html', {'author': post.author, 'title': post.title,
-                                                        'description': post.description, 'categories': categories,
-                                                        'unlisted': post.unlisted,
-                                                        'content': post.content, 'visibility': post.visibility,
-                                                        'published': post.published, 'comments': comments,
-                                                        "contentIsPicture": content_is_picture, 'postID': post.postid,
-                                                        "currentAuthorIsOwner": current_author_is_owner,
-                                                        "textAreaID": text_area_id,"current_user_id":current_author_id,
-                                                        "current_user_name":current_display_name,"current_user_github":current_user_github,
-                                                        "post_host":post_host})
-        else:
-            return render(request, 'homepage.html')
+                raise Http404("Post does not exist")
     else:
         raise Http404("Post does not exist")
 
