@@ -223,22 +223,28 @@ class PostToUserHandlerView(APIView):
     def get(self, request, format=None):
         if request.user.is_authenticated:
             isRemote = Helpers.check_remote_request(request)
-            current_user_uuid = 0
+            current_user_uuid = Helpers.get_current_user_uuid(request)
             shareImages = True
             sharePosts = True
-            current_user_uuid = Helpers.get_current_user_uuid(request)
             
             if isRemote:
                 remoteNode = Node.objects.get(nodeUser=request.user)
                 shareImages = remoteNode.shareImages
                 sharePosts = remoteNode.sharePost
                 delete_remote_nodes_post()
-                if not (Author.objects.filter(id = current_user_uuid).exists()):
-                    remote_to_node = RemoteUser.objects.get(node=remoteNode)
-                    authorProfileURL = remoteNode.host + "service/author/%s"%str(current_user_uuid)
-                    response = requests.get(authorProfileURL, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
-                    remoteAuthorJson = json.loads(response.content.decode('utf8').replace("'", '"'))
-                    remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
+                if type(current_user_uuid) is UUID:
+                    if not (Author.objects.filter(id = current_user_uuid).exists()):
+                        remote_to_node = RemoteUser.objects.get(node=remoteNode)
+                        authorProfileURL = remoteNode.host + "service/author/%s"%str(current_user_uuid)
+                        response = requests.get(authorProfileURL, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
+                        remoteAuthorJson = json.loads(response.content.decode('utf8').replace("'", '"'))
+                        remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
+                else:
+                    public_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(visibility='PUBLIC'))
+                    paginator = CustomPagination()
+                    results = paginator.paginate_queryset(public_posts_list, request)
+                    serializer=PostSerializer(results, many=True)
+                    return paginator.get_paginated_response(serializer.data)    
             else:
                 delete_remote_nodes_post()
                 pull_remote_nodes(current_user_uuid)
@@ -322,22 +328,29 @@ class PostToUserIDHandler(APIView):
     def get(self, request, user_id, format=None):
         if request.user.is_authenticated:
             isRemote = Helpers.check_remote_request(request)
-            current_user_uuid = 0
+            current_user_uuid = Helpers.get_current_user_uuid(request)
             shareImages = True
             sharePosts = True
-            current_user_uuid = Helpers.get_current_user_uuid(request)
 
             if isRemote:
                 remoteNode = Node.objects.get(nodeUser=request.user)
                 shareImages = remoteNode.shareImages
                 sharePosts = remoteNode.sharePost
                 delete_remote_nodes_post()
-                if not (Author.objects.filter(id = current_user_uuid).exists()):
-                    remote_to_node = RemoteUser.objects.get(node=remoteNode)
-                    authorProfileURL = remoteNode.host + "service/author/%s"%str(current_user_uuid)
-                    response = requests.get(authorProfileURL, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
-                    remoteAuthorJson = json.loads(response.content.decode('utf8').replace("'", '"'))
-                    remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
+
+                if type(current_user_uuid) is UUID:
+                    if not (Author.objects.filter(id = current_user_uuid).exists()):
+                        remote_to_node = RemoteUser.objects.get(node=remoteNode)
+                        authorProfileURL = remoteNode.host + "service/author/%s"%str(current_user_uuid)
+                        response = requests.get(authorProfileURL, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
+                        remoteAuthorJson = json.loads(response.content.decode('utf8').replace("'", '"'))
+                        remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
+                else:
+                    public_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(visibility='PUBLIC'))
+                    paginator = CustomPagination()
+                    results = paginator.paginate_queryset(public_posts_list, request)
+                    serializer=PostSerializer(results, many=True)
+                    return paginator.get_paginated_response(serializer.data)    
             else:
                 delete_remote_nodes_post()
                 pull_remote_nodes(current_user_uuid)
