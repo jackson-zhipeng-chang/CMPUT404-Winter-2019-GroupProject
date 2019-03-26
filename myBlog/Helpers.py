@@ -32,22 +32,23 @@ def get_host_from_request(request):
     return host
 
 def get_current_user_uuid(request):
-    isRemote = check_remote_request(request)
-    if isRemote:
-        try:
-            return UUID(request.META["HTTP_X_UUID"])
-        except:
-            return  Response("Author UUID couldn't find", status=404)
-    else:
-        if (not User.objects.filter(pk=request.user.id).exists()):
-            return Response("User coudn't find", status=404)
+    if request.user.is_authenticated:
+        isRemote = check_remote_request(request)
+        if isRemote:
+            try:
+                return UUID(request.META["HTTP_X_UUID"])
+            except:
+                return  Response("Author UUID couldn't find", status=404)
         else:
-            current_user = User.objects.get(pk=request.user.id)
-            if (not Author.objects.filter(user=current_user).exists()):
-                return Response("Author couldn't find", status=404)
+            if (not User.objects.filter(pk=request.user.id).exists()):
+                return Response("User coudn't find", status=404)
             else:
-                author = get_object_or_404(Author, user=current_user)
-                return author.id
+                current_user = User.objects.get(pk=request.user.id)
+                if (not Author.objects.filter(user=current_user).exists()):
+                    return Response("Author couldn't find", status=404)
+                else:
+                    author = get_object_or_404(Author, user=current_user)
+                    return author.id
 
 def get_current_user_host(current_user_uuid):
     if (not Author.objects.filter(id=current_user_uuid).exists()):
@@ -311,8 +312,41 @@ def author_details(request,author_id):
 
 
 def post_details(request, post_id):
+    current_user_uuid = get_current_user_uuid(request)
+    if Post.objects.filter(pk=post_id).exists():
+        post = Post.objects.get(pk=post_id)
+    else:
+        for node in Node.objects.all():
+            nodeURL = node.host+"service/posts/%s"%post_id
+            headers = {"X-UUID": str(current_user_uuid)}
+            # http://docs.python-requests.org/en/master/user/authentication/ ©MMXVIII. A Kenneth Reitz Project.
+            remote_to_node = RemoteUser.objects.get(node=node)
+            # https://stackoverflow.com/questions/12737740/python-requests-and-persistent-sessions answered Oct 5 '12 at 0:24
+            response = requests.get(nodeURL,headers=headers, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
+            postJson = json.loads(response.content.decode('utf8').replace("'", '"'))
+            remoteAuthorJson = postJson["author"]
+            remoteAuthorObj = get_or_create_author_if_not_exist(remoteAuthorJson)
+            # Create the post object for final list
+            if not Post.objects.filter(postid=postJson["postid"]).exists():
+                post = Post.objects.create(postid=postJson["postid"], title=postJson["title"],source=node.host+"service/posts/"+postJson["postid"], 
+                    origin=postJson["origin"], content=postJson["content"],categories=postJson["categories"], 
+                    contentType=postJson["contentType"], author=remoteAuthorObj,visibility=postJson["visibility"], 
+                    visibleTo=postJson["visibleTo"], description=postJson["description"],
+                    unlisted=postJson["unlisted"])
+                    #https://stackoverflow.com/questions/969285/how-do-i-translate-an-iso-8601-datetime-string-into-a-python-datetime-object community wiki 5 revs, 4 users 81% Wes Winham
+                publishedObj = dateutil.parser.parse(postJson["published"])
+                post.published = publishedObj
+                post.save()
+                if len(postJson["comments"]) != 0:
+                    for j in range (0, len(postJson["comments"])):
+                        remotePostCommentAuthorJson = postJson["comments"][j]["author"]
+                        remotePostCommentAuthorObj = Helpers.get_or_create_author_if_not_exist(remotePostCommentAuthorJson)
+                        remotePostCommentObj = Comment.objects.create(id=postJson["comments"][j]["id"], postid=postJson["comments"][j]["postid"],
+                        author = remotePostCommentAuthorObj, comment=postJson["comments"][j]["comment"],contentType=postJson["comments"][j]["contentType"])
+                        commentPublishedObj = dateutil.parser.parse(postJson["comments"][j]["published"])
+                        remotePostCommentObj.published = commentPublishedObj
+                        remotePostCommentObj.save()
     comments = Comment.objects.filter(postid=post_id)
-    post = Post.objects.get(pk=post_id)
     arr = post.origin.split("/")
     post_host = arr[0]+"//"+arr[2]+'/'
     accessible = verify_current_user_to_post(post, request)
