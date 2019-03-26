@@ -15,7 +15,7 @@ from requests.auth import HTTPBasicAuth
 import json
 import re
 import datetime
-
+import dateutil.parser
 
 def get_author_or_not_exits(current_user_uuid):
     if type(current_user_uuid) != UUID:
@@ -33,15 +33,23 @@ def get_host_from_request(request):
     return host
 
 def get_current_user_uuid(request):
-    if (not User.objects.filter(pk=request.user.id).exists()):
-        return Response("User coudn't find", status=404)
-    else:
-        current_user = User.objects.get(pk=request.user.id)
-        if (not Author.objects.filter(user=current_user).exists()):
-            return Response("Author coudn't find", status=404)
+    if request.user.is_authenticated:
+        isRemote = check_remote_request(request)
+        if isRemote:
+            try:
+                return UUID(request.META["HTTP_X_UUID"])
+            except:
+                return  Response("Author UUID couldn't find", status=404)
         else:
-            author = get_object_or_404(Author, user=current_user)
-            return author.id
+            if (not User.objects.filter(pk=request.user.id).exists()):
+                return Response("User coudn't find", status=404)
+            else:
+                current_user = User.objects.get(pk=request.user.id)
+                if (not Author.objects.filter(user=current_user).exists()):
+                    return Response("Author couldn't find", status=404)
+                else:
+                    author = get_object_or_404(Author, user=current_user)
+                    return author.id
 
 def get_current_user_host(current_user_uuid):
     if (not Author.objects.filter(id=current_user_uuid).exists()):
@@ -51,7 +59,8 @@ def verify_current_user_to_post(post, request):
     post_visibility = post.visibility
     post_author = post.author_id
     unlisted_post = post.unlisted
-    if User.objects.filter(pk=request.user.id).exists():
+    if request.user.is_authenticated:
+    #if User.objects.filter(pk=request.user.id).exists():
         current_user_uuid = get_current_user_uuid(request)
         isFriend = check_two_users_friends(post_author,current_user_uuid)
         if current_user_uuid == post_author:
@@ -100,7 +109,6 @@ def get_friends(current_user_uuid):
     for friend in friendsIndirect:
         if friend not in friends_list:
             friends_list.append(friend.author)
-
     return friends_list
 
 def get_uuid_from_url(url):
@@ -112,17 +120,17 @@ def get_local_friends(current_user_uuid):
     friendsDirect = Friend.objects.filter(Q(author=author_object), Q(status='Accept'))
     friendsIndirect = Friend.objects.filter(Q(friend=author_object), Q(status='Accept'))
     friends_list = []
+
     for friend in friendsDirect:
         if friend not in friends_list:
             friends_list.append(friend.friend)
     for friend in friendsIndirect:
         if friend not in friends_list:
             friends_list.append(friend.author)
-
     return friends_list
 
 def update_remote_friendship(current_user_uuid):
-    friends_list = get_local_friends(current_user_uuid)
+    local_friends_list = get_local_friends(current_user_uuid)
     for node in Node.objects.all():
         friendshipURL = node.host+"service/author/"+str(current_user_uuid)+"/friends/"
         try:
@@ -130,17 +138,17 @@ def update_remote_friendship(current_user_uuid):
             response = requests.get(friendshipURL, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
             data = json.loads(response.content.decode('utf8').replace("'", '"'))
             remoteFriendsURL = data["authors"]
+            remote_friends_uuid_list = convert_url_list_to_uuid(remoteFriendsURL)
+
             if len(remoteFriendsURL) != 0:
-                for remoteFriendURL in remoteFriendsURL:
-                    remoteFriend_uuid = get_uuid_from_url(remoteFriendURL)
+                for remoteFriend_uuid in remote_friends_uuid_list:
                     isFollowing = check_author1_follow_author2(current_user_uuid,remoteFriend_uuid)
                     if isFollowing:
                         update_friendship_obj(current_user_uuid, remoteFriend_uuid, 'Accept')
 
-            if len(friends_list) != 0:
-                for localFriend in friends_list:
-                    localFriendURL = localFriend.host+"service/author/"+str(localFriend.id)
-                    if ((localFriend.host in node.host) or (localFriend.host == node.host)) and (localFriendURL not in remoteFriendsURL):
+            if len(local_friends_list) != 0:
+                for localFriend in local_friends_list:
+                    if (localFriend.id not in remote_friends_uuid_list):
                         if (Friend.objects.filter(Q(author=localFriend.id), Q(status='Accept')).exists()):
                             friendship = Friend.objects.get(Q(author=localFriend.id), Q(status='Accept'))
                             last_modified_time = friendship.last_modified_time.replace(tzinfo=None)
@@ -154,6 +162,14 @@ def update_remote_friendship(current_user_uuid):
                                 friendship.delete()
         except:
             pass
+
+def convert_url_list_to_uuid(friends_list):
+    new_list = []
+    for author_url in friends_list:
+        uuid = get_uuid_from_url(author_url)
+        new_list.append(uuid)
+    return new_list
+
 
 def update_friendship_obj(author, friend, newstatus):
     try:
@@ -284,7 +300,7 @@ def author_details(request,author_id):
         follow_status = get_follow_status(current_user_id,author_id)
         friend = Author.objects.get(pk=author_id)
         host = friend.host
-        url = friend.host + '/' + author_id
+        url = friend.host + 'service/author/' + str(author_id)
         friend_name = friend.displayName
         friend_github = friend.github
         return render(request,'authordetails.html',{'authorid':author_id,'current_user_id':current_user_id,
@@ -297,45 +313,86 @@ def author_details(request,author_id):
 
 
 def post_details(request, post_id):
-    comments = Comment.objects.filter(postid=post_id)
-    post = Post.objects.get(pk=post_id)
-    arr = post.origin.split("/")
-    post_host = arr[0]+"//"+arr[2]+'/'
-    accessible = verify_current_user_to_post(post, request)
-    if accessible:
-        if post.contentType == "image/png;base64" or post.contentType == "image/jpeg;base64":
-            content_is_picture = True
+    current_user_uuid = get_current_user_uuid(request)
+    if type(post_id) is UUID:   
+        if Post.objects.filter(pk=post_id).exists():
+            post = Post.objects.get(pk=post_id)
         else:
-            content_is_picture = False
+            for node in Node.objects.all():
+                nodeURL = node.host+"service/posts/%s"%post_id
+                headers = {"X-UUID": str(current_user_uuid)}
+                # http://docs.python-requests.org/en/master/user/authentication/ ©MMXVIII. A Kenneth Reitz Project.
+                remote_to_node = RemoteUser.objects.get(node=node)
+                # https://stackoverflow.com/questions/12737740/python-requests-and-persistent-sessions answered Oct 5 '12 at 0:24
+                response = requests.get(nodeURL,headers=headers, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
+                postJson = json.loads(response.content.decode('utf8').replace("'", '"'))
+                remoteAuthorJson = postJson["author"]
+                remoteAuthorObj = get_or_create_author_if_not_exist(remoteAuthorJson)
+                # Create the post object for final list
+                if not Post.objects.filter(postid=postJson["postid"]).exists():
+                    post = Post.objects.create(postid=postJson["postid"], title=postJson["title"],source=node.host+"service/posts/"+postJson["postid"], 
+                        origin=postJson["origin"], content=postJson["content"],categories=postJson["categories"], 
+                        contentType=postJson["contentType"], author=remoteAuthorObj,visibility=postJson["visibility"], 
+                        visibleTo=postJson["visibleTo"], description=postJson["description"],
+                        unlisted=postJson["unlisted"])
+                        #https://stackoverflow.com/questions/969285/how-do-i-translate-an-iso-8601-datetime-string-into-a-python-datetime-object community wiki 5 revs, 4 users 81% Wes Winham
+                    publishedObj = dateutil.parser.parse(postJson["published"])
+                    post.published = publishedObj
+                    post.save()
+                    if len(postJson["comments"]) != 0:
+                        for j in range (0, len(postJson["comments"])):
+                            remotePostCommentAuthorJson = postJson["comments"][j]["author"]
+                            remotePostCommentAuthorObj = get_or_create_author_if_not_exist(remotePostCommentAuthorJson)
+                            remotePostCommentObj = Comment.objects.create(id=postJson["comments"][j]["id"], postid=postJson["comments"][j]["postid"],
+                            author = remotePostCommentAuthorObj, comment=postJson["comments"][j]["comment"],contentType=postJson["comments"][j]["contentType"])
+                            commentPublishedObj = dateutil.parser.parse(postJson["comments"][j]["published"])
+                            remotePostCommentObj.published = commentPublishedObj
+                            remotePostCommentObj.save()
 
-        current_author_id = get_current_user_uuid(request)
-        if type(current_author_id) is UUID:
-            current_display_name = Author.objects.get(pk=current_author_id).displayName
-            current_user_github = Author.objects.get(pk=current_author_id).github
-            if (post.author.displayName == current_display_name):
-                current_author_is_owner = True
+        if not Post.objects.filter(pk=post_id).exists():
+            raise Http404("Post does not exist")
+
+        else:
+            comments = Comment.objects.filter(postid=post_id)
+            arr = post.origin.split("/")
+            post_host = arr[0]+"//"+arr[2]+'/'
+            accessible = verify_current_user_to_post(post, request)
+            if accessible:
+                if post.contentType == "image/png;base64" or post.contentType == "image/jpeg;base64":
+                    content_is_picture = True
+                else:
+                    content_is_picture = False
+
+                current_author_id = get_current_user_uuid(request)
+                if type(current_author_id) is UUID:
+                    current_display_name = Author.objects.get(pk=current_author_id).displayName
+                    current_user_github = Author.objects.get(pk=current_author_id).github
+                    if (post.author.displayName == current_display_name):
+                        current_author_is_owner = True
+                    else:
+                        current_author_is_owner = False
+
+                    categories = []
+                    partially_split_categories = post.categories.split(" ")
+                    for partially_split_category in partially_split_categories:
+                        categories += partially_split_category.split(",")
+
+                    text_area_id = "commentInput"+str(post_id)
+
+                    return render(request, 'postdetails.html', {'author': post.author, 'title': post.title,
+                                                                'description': post.description, 'categories': categories,
+                                                                'unlisted': post.unlisted,
+                                                                'content': post.content, 'visibility': post.visibility,
+                                                                'published': post.published, 'comments': comments,
+                                                                "contentIsPicture": content_is_picture, 'postID': post.postid,
+                                                                "currentAuthorIsOwner": current_author_is_owner,
+                                                                "textAreaID": text_area_id,"current_user_id":current_author_id,
+                                                                "current_user_name":current_display_name,"current_user_github":current_user_github,
+                                                                "post_host":post_host})
+                else:
+                    return render(request, 'homepage.html')
             else:
-                current_author_is_owner = False
-
-            categories = []
-            partially_split_categories = post.categories.split(" ")
-            for partially_split_category in partially_split_categories:
-                categories += partially_split_category.split(",")
-
-            text_area_id = "commentInput"+post_id
-
-            return render(request, 'postdetails.html', {'author': post.author, 'title': post.title,
-                                                        'description': post.description, 'categories': categories,
-                                                        'unlisted': post.unlisted,
-                                                        'content': post.content, 'visibility': post.visibility,
-                                                        'published': post.published, 'comments': comments,
-                                                        "contentIsPicture": content_is_picture, 'postID': post.postid,
-                                                        "currentAuthorIsOwner": current_author_is_owner,
-                                                        "textAreaID": text_area_id,"current_user_id":current_author_id,
-                                                        "current_user_name":current_display_name,"current_user_github":current_user_github,
-                                                        "post_host":post_host})
-        else:
-            return render(request, 'homepage.html')
+                raise Http404("Post does not exist")
     else:
         raise Http404("Post does not exist")
 
