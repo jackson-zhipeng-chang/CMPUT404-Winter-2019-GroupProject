@@ -16,7 +16,6 @@ import json
 import re
 import datetime
 
-
 def get_author_or_not_exits(current_user_uuid):
     if type(current_user_uuid) != UUID:
         current_user_uuid = UUID(current_user_uuid)

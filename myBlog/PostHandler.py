@@ -221,11 +221,11 @@ class PostToUserHandlerView(APIView):
     
     
     def get(self, request, format=None):
-        isRemote = Helpers.check_remote_request(request)
-        current_user_uuid = 0
-        shareImages = True
-        sharePosts = True
         if request.user.is_authenticated:
+            isRemote = Helpers.check_remote_request(request)
+            current_user_uuid = 0
+            shareImages = True
+            sharePosts = True
             if isRemote:
                 current_user_uuid = UUID(request.query_params['author_uuid'])
                 remoteNode = Node.objects.get(nodeUser=request.user)
@@ -234,14 +234,15 @@ class PostToUserHandlerView(APIView):
                 delete_remote_nodes_post()
                 if not (Author.objects.filter(id = current_user_uuid).exists()):
                     remote_to_node = RemoteUser.objects.get(node=remoteNode)
-                    authorProfileURL = remoteNode.host + "service/author/" +str(current_user_uuid)
+                    authorProfileURL = remoteNode.host + "service/author/%s"%str(current_user_uuid)
                     response = requests.get(authorProfileURL, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
                     remoteAuthorJson = json.loads(response.content.decode('utf8').replace("'", '"'))
                     remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
             else:
                 current_user_uuid = Helpers.get_current_user_uuid(request)
                 delete_remote_nodes_post()
-                pull_remote_nodes(current_user_uuid)
+                pullingURL = "service/author/posts/?author_uuid=%s"%str(current_user_uuid)
+                pull_remote_nodes(pullingURL)
 
             if type(current_user_uuid) is UUID:
                 Helpers.update_remote_friendship(current_user_uuid)
@@ -320,65 +321,91 @@ class PostToUserHandlerView(APIView):
 # https://stackoverflow.com/questions/19360874/pass-url-argument-to-listview-queryset answered Oct 14 '13 at 13:11 Aamir Adnan
 class PostToUserIDHandler(APIView):
     def get(self, request, user_id, format=None):
-        current_user_uuid = Helpers.get_current_user_uuid(request)
-        if type(current_user_uuid) == UUID:
-            public_posts_list=[]
-            friend_posts_list=[]
-            private_posts_list=[]
-            serveronly_posts_list=[]
-            foaf_posts_list=[]
-            if (Post.objects.filter(Q(unlisted=False), Q(author_id=user_id),Q(visibility='PUBLIC')).exists()):
-                public_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=user_id),Q(visibility='PUBLIC'))
+        if request.user.is_authenticated:
+            isRemote = Helpers.check_remote_request(request)
+            current_user_uuid = 0
+            shareImages = True
+            sharePosts = True
 
-            isFriend = Helpers.check_two_users_friends(current_user_uuid, user_id)
-            if isFriend:
-                if (Post.objects.filter(Q(unlisted=False),Q(author_id=user_id),Q(visibility='FRIENDS')).exists()):
-                    friend_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False),Q(author_id=user_id),Q(visibility='FRIENDS'))
+            if isRemote:
+                current_user_uuid = UUID(request.query_params['author_uuid'])
+                remoteNode = Node.objects.get(nodeUser=request.user)
+                shareImages = remoteNode.shareImages
+                sharePosts = remoteNode.sharePost
+                delete_remote_nodes_post()
+                if not (Author.objects.filter(id = current_user_uuid).exists()):
+                    remote_to_node = RemoteUser.objects.get(node=remoteNode)
+                    authorProfileURL = remoteNode.host + "service/author/%s"%str(current_user_uuid)
+                    response = requests.get(authorProfileURL, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
+                    remoteAuthorJson = json.loads(response.content.decode('utf8').replace("'", '"'))
+                    remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
+            else:
+                current_user_uuid = Helpers.get_current_user_uuid(request)
+                delete_remote_nodes_post()
+                pullingURL = "service/author/%s/posts/?author_uuid=%s"%(str(user_id), str(current_user_uuid))
+                pull_remote_nodes(pullingURL)
 
-                if (Post.objects.filter(Q(unlisted=False), Q(author_id=user_id), Q(visibility='FOAF')).exists()):
-                    foaf_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=user_id),Q(visibility='FOAF'))
+            if type(current_user_uuid) is UUID:
+                public_posts_list=[]
+                friend_posts_list=[]
+                private_posts_list=[]
+                serveronly_posts_list=[]
+                foaf_posts_list=[]
+                if (Post.objects.filter(Q(unlisted=False), Q(author_id=user_id),Q(visibility='PUBLIC')).exists()):
+                    public_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=user_id),Q(visibility='PUBLIC'))
 
-                if (Post.objects.filter(Q(unlisted=False),Q(author_id=user_id), Q(visibility='PRIVATE')).exists()):
-                    private_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False),Q(author_id=user_id),Q(visibility='PRIVATE'))
-                    for post in private_list:
-                        if str(current_user_uuid) in post.visibleTo:
-                            private_posts_list.append(post)
+                isFriend = Helpers.check_two_users_friends(current_user_uuid, user_id)
+                if isFriend:
+                    if (Post.objects.filter(Q(unlisted=False),Q(author_id=user_id),Q(visibility='FRIENDS')).exists()):
+                        friend_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False),Q(author_id=user_id),Q(visibility='FRIENDS'))
 
-                if (Post.objects.filter(Q(unlisted=False),Q(author_id=user_id), Q(visibility='SERVERONLY')).exists()):
-                    user_host = Author.objects.get(id=user_id)
-                    if (Helpers.get_current_user_host(current_user_uuid)==user_host):
-                        serveronly_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False),Q(author_id=user_id),Q(visibility='SERVERONLY'))
-                
-                friends_of_this_friend =  Helpers.get_friends(user_id)
-                for friend_of_this_friend in friends_of_this_friend:
-                    if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend_of_this_friend.id), Q(visibility='FOAF')).exists()):
-                        foaf_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend_of_this_friend.id),Q(visibility='FOAF'))
+                    if (Post.objects.filter(Q(unlisted=False), Q(author_id=user_id), Q(visibility='FOAF')).exists()):
+                        foaf_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=user_id),Q(visibility='FOAF'))
 
-            posts_list = public_posts_list+friend_posts_list+private_posts_list+serveronly_posts_list+foaf_posts_list
-            posts_list.sort(key=lambda x: x.published, reverse=True)
-            paginator = CustomPagination()
-            results = paginator.paginate_queryset(posts_list, request)
-            serializer=PostSerializer(results, many=True)
-            return paginator.get_paginated_response(serializer.data)  
+                    if (Post.objects.filter(Q(unlisted=False),Q(author_id=user_id), Q(visibility='PRIVATE')).exists()):
+                        private_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False),Q(author_id=user_id),Q(visibility='PRIVATE'))
+                        for post in private_list:
+                            if str(current_user_uuid) in post.visibleTo:
+                                private_posts_list.append(post)
+
+                    if (Post.objects.filter(Q(unlisted=False),Q(author_id=user_id), Q(visibility='SERVERONLY')).exists()):
+                        user_host = Author.objects.get(id=user_id).host
+                        if (Helpers.get_current_user_host(current_user_uuid)==user_host):
+                            serveronly_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False),Q(author_id=user_id),Q(visibility='SERVERONLY'))
+                    
+                    friends_of_this_friend =  Helpers.get_friends(user_id)
+                    for friend_of_this_friend in friends_of_this_friend:
+                        if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend_of_this_friend.id), Q(visibility='FOAF')).exists()):
+                            foaf_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend_of_this_friend.id),Q(visibility='FOAF'))
+
+                posts_list = public_posts_list+friend_posts_list+private_posts_list+serveronly_posts_list+foaf_posts_list
+                posts_list.sort(key=lambda x: x.published, reverse=True)
+                paginator = CustomPagination()
+                results = paginator.paginate_queryset(posts_list, request)
+                serializer=PostSerializer(results, many=True)
+                return paginator.get_paginated_response(serializer.data)  
         else:
-            return current_user_uuid
+            return Response("Unauthorized", status=401)
 
 
 # For local using only
 class MyPostHandler(APIView):
     def get(self, request, format=None):
-        current_user_uuid = Helpers.get_current_user_uuid(request)
-        if type(current_user_uuid) == UUID:
-            posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(author_id=current_user_uuid))
-            paginator = CustomPagination()
-            results = paginator.paginate_queryset(posts_list, request)
-            serializer=PostSerializer(results, many=True)
-            return paginator.get_paginated_response(serializer.data)  
+        if request.user.is_authenticated:
+            current_user_uuid = Helpers.get_current_user_uuid(request)
+            if type(current_user_uuid) == UUID:
+                posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(author_id=current_user_uuid))
+                paginator = CustomPagination()
+                results = paginator.paginate_queryset(posts_list, request)
+                serializer=PostSerializer(results, many=True)
+                return paginator.get_paginated_response(serializer.data)  
+            else:
+                return Response("Unauthorized", status=401)
         else:
-            return current_user_uuid
+            return Response("Unauthorized", status=401)
           
 
-def pull_remote_nodes(current_user_uuid):
+def pull_remote_nodes(remote_endpoint):
     for node in Node.objects.all():
         try:
             if node.host in "https://cmput404-wave.herokuapp.com/":
@@ -387,6 +414,7 @@ def pull_remote_nodes(current_user_uuid):
                 nodeURL = node.host+"service/author/posts/?author_uuid="+str(current_user_uuid)
             # http://docs.python-requests.org/en/master/user/authentication/ ©MMXVIII. A Kenneth Reitz Project.
             remote_to_node = RemoteUser.objects.get(node=node)
+            # https://stackoverflow.com/questions/12737740/python-requests-and-persistent-sessions answered Oct 5 '12 at 0:24
             response = requests.get(nodeURL, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
             postJson = json.loads(response.content.decode('utf8').replace("'", '"'))
             if int(postJson["count"]) != 0: 
