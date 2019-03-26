@@ -35,7 +35,7 @@ def get_current_user_uuid(request):
     isRemote = check_remote_request(request)
     if isRemote:
         try:
-            return UUID(request.META["X-UUID"])
+            return UUID(request.META["HTTP_X_UUID"])
         except:
             return  Response("Author UUID couldn't find", status=404)
     else:
