@@ -11,6 +11,8 @@ from django.db.models import Q
 from urllib.parse import urlparse
 from . import Helpers
 from uuid import UUID
+import datetime
+
 
 class FriendRequestHandler(APIView):
     def get(self, request, format=None):
