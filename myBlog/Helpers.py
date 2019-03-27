@@ -112,7 +112,7 @@ def get_friends(current_user_uuid):
     return friends_list
 
 def get_uuid_from_url(url):
-    uuid = url.split("/service/author/")
+    uuid = url.split("/author/")
     return UUID(uuid[1])
 
 def get_local_friends(current_user_uuid):
