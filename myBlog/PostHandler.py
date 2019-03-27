@@ -186,7 +186,6 @@ class PostToUserHandlerView(APIView):
         if request.user.is_authenticated:
             current_user_uuid = Helpers.get_current_user_uuid(request)
             if type(current_user_uuid) is UUID:
-                print(current_user_uuid)
                 isRemote = Helpers.check_remote_request(request)
                 shareImages = True
                 sharePosts = True
