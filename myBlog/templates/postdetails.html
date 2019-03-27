@@ -42,7 +42,7 @@
         <div class="w3-row-padding" style="margin: 0px 20px;"> 
             <h4>Comments</h4>
             {% for comment in comments %}
-                <p>{{author}} commented: {{ comment.comment }}</p>
+                <p>{{comment.author}} commented: {{ comment.comment }}</p>
             {% endfor %}
             <textarea id="{{ textAreaID }}" class="w3-border w3-padding" style="width: 100%;"></textarea>
             <button class="w3-button w3-theme-d1 w3-margin-bottom w3-right" onclick="commentPost('{{ postID }}','{{ post_host }}','{{ current_user_id }}','{{ current_user_name }}','{{ current_user_github }}')"><i class="fa fa-comment"></i> Comment</button>
