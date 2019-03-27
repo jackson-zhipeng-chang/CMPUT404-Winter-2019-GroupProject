@@ -202,9 +202,12 @@ class PostToUserHandlerView(APIView):
                         print(authorProfileURL)
                         response = requests.get(authorProfileURL, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
                         print(response)
+                        if response.status_code != 200:
+                            return Response("Unable to find the author, %s is not responding"%authorProfileURL, status=404)
                         remoteAuthorJson = response.json()
                         print(remoteAuthorJson)
                         remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
+                    
  
                 else:
                     delete_remote_nodes_post()
