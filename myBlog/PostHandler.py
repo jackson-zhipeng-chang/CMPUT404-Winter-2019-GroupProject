@@ -391,7 +391,7 @@ def pull_remote_nodes(current_user_uuid):
                     remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
                     # Create the post object for final list
                     if not Post.objects.filter(postid=postJson["posts"][i]["postid"]).exists():
-                        remotePostObj = Post.objects.create(postid=postJson["posts"][i]["postid"], title=postJson["posts"][i]["title"],source=node.host+"service/posts/"+postJson["posts"][i]["postid"], 
+                        remotePostObj = Post.objects.create(postid=postJson["posts"][i]["id"], title=postJson["posts"][i]["title"],source=node.host+"service/posts/"+postJson["posts"][i]["postid"], 
                             origin=postJson["posts"][i]["origin"], content=postJson["posts"][i]["content"],categories=postJson["posts"][i]["categories"], 
                             contentType=postJson["posts"][i]["contentType"], author=remoteAuthorObj,visibility=postJson["posts"][i]["visibility"], 
                             visibleTo=postJson["posts"][i]["visibleTo"], description=postJson["posts"][i]["description"],

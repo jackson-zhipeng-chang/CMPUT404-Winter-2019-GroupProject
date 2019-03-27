@@ -180,12 +180,15 @@ def update_friendship_obj(author, friend, newstatus):
         pass
 
 def check_two_users_friends(author1_id,author2_id):
-    author1_object = Author.objects.get(id=author1_id)
-    author2_object = Author.objects.get(id=author2_id)
-    friend1To2 = Friend.objects.filter(author=author1_object, friend=author2_object, status="Accept").exists()
-    friend2To1 = Friend.objects.filter(author=author2_object, friend=author1_object, status="Accept").exists()
-    if friend1To2 or friend2To1:
-        return True
+    if (Author.objects.filter(id=author1_id).exists()) and (Author.objects.filter(id=author2_id).exists()):
+        author1_object = Author.objects.get(id=author1_id)
+        author2_object = Author.objects.get(id=author2_id)
+        friend1To2 = Friend.objects.filter(author=author1_object, friend=author2_object, status="Accept").exists()
+        friend2To1 = Friend.objects.filter(author=author2_object, friend=author1_object, status="Accept").exists()
+        if friend1To2 or friend2To1:
+            return True
+        else:
+            return False
     else:
         return False
 
@@ -331,7 +334,7 @@ def post_details(request, post_id):
                     remoteAuthorObj = get_or_create_author_if_not_exist(remoteAuthorJson)
                     # Create the post object for final list
                     if not Post.objects.filter(postid=postJson["postid"]).exists():
-                        post = Post.objects.create(postid=postJson["postid"], title=postJson["title"],source=node.host+"service/posts/"+postJson["postid"], 
+                        post = Post.objects.create(postid=postJson["id"], title=postJson["title"],source=node.host+"service/posts/"+postJson["postid"], 
                             origin=postJson["origin"], content=postJson["content"],categories=postJson["categories"], 
                             contentType=postJson["contentType"], author=remoteAuthorObj,visibility=postJson["visibility"], 
                             visibleTo=postJson["visibleTo"], description=postJson["description"],

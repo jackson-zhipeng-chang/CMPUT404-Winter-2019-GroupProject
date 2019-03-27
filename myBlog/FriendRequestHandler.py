@@ -22,6 +22,9 @@ class FriendRequestHandler(APIView):
                 friendrequests = Friend.objects.filter(friend=author_object, status='Pending')
                 serializer = FriendSerializer(friendrequests, many=True)
                 return JsonResponse(serializer.data, safe=False)
+
+            else:
+                return Response("No friend request found", status=404)
         else:
             return Response("Unauthorized", status=401)
 
