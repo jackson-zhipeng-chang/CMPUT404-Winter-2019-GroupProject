@@ -106,6 +106,8 @@ function sendFollowRequest(author_id,author_host,author_name,author_url,currentU
     let body = JSON.stringify(request_form);
     let url = author_host+"service/friendrequest/";
     let url_local = host+"service/friendrequest/";
+    console.log("Sending to author server:");
+    console.log(url);
     return fetch(url,{
         method:"POST",
         mode:"cors",
