@@ -191,6 +191,7 @@ class PostToUserHandlerView(APIView):
                 sharePosts = True
 
                 if isRemote:
+                    print(request.user)
                     remoteNode = Node.objects.get(nodeUser=request.user)
                     shareImages = remoteNode.shareImages
                     sharePosts = remoteNode.sharePost
@@ -198,7 +199,9 @@ class PostToUserHandlerView(APIView):
                     if not (Author.objects.filter(id = current_user_uuid).exists()):
                         remote_to_node = RemoteUser.objects.get(node=remoteNode)
                         authorProfileURL = remoteNode.host + "service/author/%s"%str(current_user_uuid)
+                        print(authorProfileURL)
                         response = requests.get(authorProfileURL, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
+                        print(response)
                         remoteAuthorJson = response.json()
                         print(remoteAuthorJson)
                         remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
