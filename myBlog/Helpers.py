@@ -136,7 +136,10 @@ def update_remote_friendship(current_user_uuid):
         try:
             remote_to_node = RemoteUser.objects.get(node=node)
             response = requests.get(friendshipURL, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
-            data = json.loads(response.content.decode('utf8').replace("'", '"'))
+            if response.status_code != 200:
+                return Response("%s is not responding"%friendshipURL, status=404)
+                
+            data = response.json()
             remoteFriendsURL = data["authors"]
             remote_friends_uuid_list = convert_url_list_to_uuid(remoteFriendsURL)
 
