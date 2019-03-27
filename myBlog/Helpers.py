@@ -325,7 +325,7 @@ def post_details(request, post_id):
                 remote_to_node = RemoteUser.objects.get(node=node)
                 # https://stackoverflow.com/questions/12737740/python-requests-and-persistent-sessions answered Oct 5 '12 at 0:24
                 response = requests.get(nodeURL,headers=headers, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
-                if response.status_code != 200:
+                if response.status_code == 200:
                     postJson = response.json()
                     remoteAuthorJson = postJson["author"]
                     remoteAuthorObj = get_or_create_author_if_not_exist(remoteAuthorJson)
