@@ -31,8 +31,10 @@ class FriendRequestHandler(APIView):
             current_user_uuid = Helpers.get_current_user_uuid(request)
             author_id = data['author']['id'].replace(data['author']['host']+'author/', "")
             friend_id = data['friend']['id'].replace(data['friend']['host']+'author/', "")
-            sender_object = Author.objects.get(id=author_id)
-            reciver_object = Author.objects.get(id=friend_id)
+            data['author']['id'] = author_id
+            data['friend']['id'] = friend_id
+            sender_object = Helpers.get_or_create_author_if_not_exist(data['author'])
+            reciver_object = Helpers.get_or_create_author_if_not_exist(data['friend'])
             friend_already = Helpers.check_two_users_friends(author_id,friend_id)
             if (not friend_already):
                 if (Friend.objects.filter(author=sender_object, friend=reciver_object, status="Decline").exists()):
@@ -40,6 +42,7 @@ class FriendRequestHandler(APIView):
                     friendrequest.status="Pending"
                     friendrequest.save()
                     return Response("Friend request sent", status=status.HTTP_200_OK) 
+
                 elif (Friend.objects.filter(author=reciver_object, friend=sender_object, status="Decline").exists()):
                     friendrequest = Friend.objects.get(author=reciver_object, friend=sender_object)
                     friendrequest.status="Accept"

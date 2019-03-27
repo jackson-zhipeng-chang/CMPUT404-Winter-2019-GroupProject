@@ -199,7 +199,7 @@ class PostToUserHandlerView(APIView):
                         remote_to_node = RemoteUser.objects.get(node=remoteNode)
                         authorProfileURL = remoteNode.host + "service/author/%s"%str(current_user_uuid)
                         response = requests.get(authorProfileURL, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
-                        remoteAuthorJson = json.loads(response.content.decode('utf8').replace("'", '"'))
+                        remoteAuthorJson = response.json()
                         remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
  
                 else:
@@ -301,7 +301,7 @@ class PostToUserIDHandler(APIView):
                         remote_to_node = RemoteUser.objects.get(node=remoteNode)
                         authorProfileURL = remoteNode.host + "service/author/%s"%str(current_user_uuid)
                         response = requests.get(authorProfileURL, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
-                        remoteAuthorJson = json.loads(response.content.decode('utf8').replace("'", '"'))
+                        remoteAuthorJson = response.json()
                         remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
    
                 else:

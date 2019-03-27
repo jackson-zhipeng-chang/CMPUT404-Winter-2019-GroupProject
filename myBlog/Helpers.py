@@ -412,7 +412,7 @@ def edit_post(request, post_id):
             else:
                 current_author_is_owner = False
 
-            text_area_id = "commentInput" + post_id
+            text_area_id = "commentInput" + str(post_id)
 
             visible_to_names = []
             visible_to_ids = []
