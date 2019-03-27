@@ -386,6 +386,7 @@ def pull_remote_nodes(current_user_uuid):
             response = requests.get(nodeURL,headers=headers, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
             print(response)
             postJson = response.json()
+            print(postJson)
             if int(postJson["count"]) != 0: 
                 for i in range (0,len(postJson["posts"])):
                     remoteAuthorJson = postJson["posts"][i]["author"]
