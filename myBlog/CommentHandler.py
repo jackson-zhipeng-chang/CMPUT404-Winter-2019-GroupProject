@@ -39,7 +39,10 @@ class CommentHandler(APIView):
             try:
                 data['query'] == 'addComment'
                 post = Post.objects.get(pk=postid)
-                author = Helpers.get_or_create_author_if_not_exist(data['comment']['author'])
+                try:
+                    author = Helpers.get_or_create_author_if_not_exist(data['comment']['author'])
+                except:
+                    return Response("Author not found", status=404)
                 serializer = CommentSerializer(data=data['comment'], context={'author': author, 'postid':postid})
                 if serializer.is_valid():
                     serializer.save()

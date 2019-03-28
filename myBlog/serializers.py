@@ -93,11 +93,12 @@ class PostSerializer(serializers.ModelSerializer):
     count = serializers.SerializerMethodField()
     size = serializers.SerializerMethodField()
     next = serializers.SerializerMethodField()
+    id = serializers.SerializerMethodField()
     pagination_class = CustomPagination
 
     class Meta:
     	model = Post
-    	fields = ('title','source','origin','description','contentType','content','author','categories','count','size','next','comments','published','postid','visibility','visibleTo','unlisted')
+    	fields = ('title','source','origin','description','contentType','content','author','categories','count','size','next','comments','published','id','visibility','visibleTo','unlisted')
 
     def get_comments(self, obj):
         comments = Comment.objects.filter(postid=obj.postid).order_by('published')
@@ -110,6 +111,9 @@ class PostSerializer(serializers.ModelSerializer):
 
     def get_size(self, obj):
         return 50
+
+    def get_id(self, obj):
+        return obj.postid
 
     def get_next(self, obj):
         try:

@@ -112,7 +112,7 @@ def get_friends(current_user_uuid):
     return friends_list
 
 def get_uuid_from_url(url):
-    uuid = url.split("/service/author/")
+    uuid = url.split("/author/")
     return UUID(uuid[1])
 
 def get_local_friends(current_user_uuid):
@@ -136,7 +136,10 @@ def update_remote_friendship(current_user_uuid):
         try:
             remote_to_node = RemoteUser.objects.get(node=node)
             response = requests.get(friendshipURL, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
-            data = json.loads(response.content.decode('utf8').replace("'", '"'))
+            if response.status_code != 200:
+                return Response("%s is not responding"%friendshipURL, status=404)
+                
+            data = response.json()
             remoteFriendsURL = data["authors"]
             remote_friends_uuid_list = convert_url_list_to_uuid(remoteFriendsURL)
 
@@ -148,7 +151,7 @@ def update_remote_friendship(current_user_uuid):
 
             if len(local_friends_list) != 0:
                 for localFriend in local_friends_list:
-                    if (localFriend.id not in remote_friends_uuid_list):
+                    if (localFriend.id not in remote_friends_uuid_list) and (node.host == localFriend.host):
                         if (Friend.objects.filter(Q(author=localFriend.id), Q(status='Accept')).exists()):
                             friendship = Friend.objects.get(Q(author=localFriend.id), Q(status='Accept'))
                             last_modified_time = friendship.last_modified_time.replace(tzinfo=None)
@@ -180,12 +183,15 @@ def update_friendship_obj(author, friend, newstatus):
         pass
 
 def check_two_users_friends(author1_id,author2_id):
-    author1_object = Author.objects.get(id=author1_id)
-    author2_object = Author.objects.get(id=author2_id)
-    friend1To2 = Friend.objects.filter(author=author1_object, friend=author2_object, status="Accept").exists()
-    friend2To1 = Friend.objects.filter(author=author2_object, friend=author1_object, status="Accept").exists()
-    if friend1To2 or friend2To1:
-        return True
+    if (Author.objects.filter(id=author1_id).exists()) and (Author.objects.filter(id=author2_id).exists()):
+        author1_object = Author.objects.get(id=author1_id)
+        author2_object = Author.objects.get(id=author2_id)
+        friend1To2 = Friend.objects.filter(author=author1_object, friend=author2_object, status="Accept").exists()
+        friend2To1 = Friend.objects.filter(author=author2_object, friend=author1_object, status="Accept").exists()
+        if friend1To2 or friend2To1:
+            return True
+        else:
+            return False
     else:
         return False
 
@@ -268,6 +274,19 @@ def get_or_create_author_if_not_exist(author_json):
 
     return AuthorObj
 
+def verify_remote_author(author_json):
+    author_hot = author_json["host"]
+    profile_url = author_hot+"service/author/"+str(author_json["id"])
+    try:
+        respons = requests.get(profile_url)
+        print(respons.json())
+        if respons.status_code == 200:
+            return True
+        else:
+            return False
+    except:
+        return False
+
 #-----------------------------------------Local endpoints-----------------------------------------#
 def new_post(request):
     return render(request, 'newpost.html')
@@ -327,27 +346,31 @@ def post_details(request, post_id):
                 remote_to_node = RemoteUser.objects.get(node=node)
                 # https://stackoverflow.com/questions/12737740/python-requests-and-persistent-sessions answered Oct 5 '12 at 0:24
                 response = requests.get(nodeURL,headers=headers, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
-                postJson = json.loads(response.content.decode('utf8').replace("'", '"'))
-                remoteAuthorJson = postJson["author"]
-                remoteAuthorObj = get_or_create_author_if_not_exist(remoteAuthorJson)
-                # Create the post object for final list
-                if not Post.objects.filter(postid=postJson["postid"]).exists():
-                    post = Post.objects.create(postid=postJson["postid"], title=postJson["title"],source=node.host+"service/posts/"+postJson["postid"], 
-                        origin=postJson["origin"], content=postJson["content"],categories=postJson["categories"], 
-                        contentType=postJson["contentType"], author=remoteAuthorObj,visibility=postJson["visibility"], 
-                        visibleTo=postJson["visibleTo"], description=postJson["description"],
-                        unlisted=postJson["unlisted"])
-                        #https://stackoverflow.com/questions/969285/how-do-i-translate-an-iso-8601-datetime-string-into-a-python-datetime-object community wiki 5 revs, 4 users 81% Wes Winham
-                    publishedObj = dateutil.parser.parse(postJson["published"])
-                    post.published = publishedObj
-                    post.save()
-                    if len(postJson["comments"]) != 0:
-                        for j in range (0, len(postJson["comments"])):
-                            remotePostCommentAuthorJson = postJson["comments"][j]["author"]
-                            remotePostCommentAuthorObj = get_or_create_author_if_not_exist(remotePostCommentAuthorJson)
-                            remotePostCommentObj = Comment.objects.create(id=postJson["comments"][j]["id"], postid=postJson["comments"][j]["postid"],
-                            author = remotePostCommentAuthorObj, comment=postJson["comments"][j]["comment"],contentType=postJson["comments"][j]["contentType"])
-                            commentPublishedObj = dateutil.parser.parse(postJson["comments"][j]["published"])
+                if response.status_code == 200:
+                    postJson = response.json()
+                    remoteAuthorJson = postJson["author"]
+                    try:
+                        remoteAuthorObj = get_or_create_author_if_not_exist(remoteAuthorJson)
+                    except:
+                        raise Http404("Author does not exist")
+                    # Create the post object for final list
+                    if not Post.objects.filter(postid=postJson["postid"]).exists():
+                        post = Post.objects.create(postid=postJson["id"], title=postJson["title"],source=node.host+"service/posts/"+postJson["postid"], 
+                            origin=postJson["origin"], content=postJson["content"],categories=postJson["categories"], 
+                            contentType=postJson["contentType"], author=remoteAuthorObj,visibility=postJson["visibility"], 
+                            visibleTo=postJson["visibleTo"], description=postJson["description"],
+                            unlisted=postJson["unlisted"])
+                            #https://stackoverflow.com/questions/969285/how-do-i-translate-an-iso-8601-datetime-string-into-a-python-datetime-object community wiki 5 revs, 4 users 81% Wes Winham
+                        publishedObj = dateutil.parser.parse(postJson["published"])
+                        post.published = publishedObj
+                        post.save()
+                        if len(postJson["comments"]) != 0:
+                            for j in range (0, len(postJson["comments"])):
+                                remotePostCommentAuthorJson = postJson["comments"][j]["author"]
+                                remotePostCommentAuthorObj = get_or_create_author_if_not_exist(remotePostCommentAuthorJson)
+                                remotePostCommentObj = Comment.objects.create(id=postJson["comments"][j]["id"], postid=postJson["comments"][j]["postid"],
+                                author = remotePostCommentAuthorObj, comment=postJson["comments"][j]["comment"],contentType=postJson["comments"][j]["contentType"])
+                                commentPublishedObj = dateutil.parser.parse(postJson["comments"][j]["published"])
                             remotePostCommentObj.published = commentPublishedObj
                             remotePostCommentObj.save()
 
@@ -413,7 +436,7 @@ def edit_post(request, post_id):
             else:
                 current_author_is_owner = False
 
-            text_area_id = "commentInput" + post_id
+            text_area_id = "commentInput" + str(post_id)
 
             visible_to_names = []
             visible_to_ids = []
@@ -438,11 +461,3 @@ def edit_post(request, post_id):
     else:
         raise Http404("Post does not exist")
 
-
-
-# People available to show
-# file
-
-# Very slow loading picture content
-# pressing change button must make changes
-# change new_post_helper to post_editor_helper?

@@ -44,7 +44,7 @@ function deletePost(id)
     });
 }
 
-function commentPost(id, post_host,user_id,displayName,user_github)
+function commentPost(id, post_host, user_id,displayName,user_github)
 {
     var host = get_host();
     let commentForm =
@@ -67,8 +67,8 @@ function commentPost(id, post_host,user_id,displayName,user_github)
     };
     commentForm.comment.comment= document.getElementById("commentInput"+id).value;
     let body = JSON.stringify(commentForm);
-    let url = post_host+"service/posts/"+id+"/comments/";
-    return fetch(url, {
+    let commenturl = post_host+"service/posts/"+id+"/comments/";
+    return fetch(commenturl, {
         method: "POST", 
         mode: "cors", 
         cache: "no-cache", 
