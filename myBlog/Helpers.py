@@ -296,6 +296,7 @@ def author_details(request,author_id):
     if type(current_user_id) is UUID:
         current_user_name = Author.objects.get(pk=current_user_id).displayName
         current_user_github = Author.objects.get(pk=current_user_id).github
+        update_remote_friendship(current_user_id)
         is_friend = is_my_friend(current_user_id,author_id)
         follow_status = get_follow_status(current_user_id,author_id)
         friend = Author.objects.get(pk=author_id)
@@ -303,6 +304,7 @@ def author_details(request,author_id):
         url = friend.host + 'service/author/' + str(author_id)
         friend_name = friend.displayName
         friend_github = friend.github
+        print(is_friend)
         return render(request,'authordetails.html',{'authorid':author_id,'current_user_id':current_user_id,
                                                     'is_friend':is_friend,'followStatus':follow_status,
                                                     'current_user_name':current_user_name,'friend_host':host,

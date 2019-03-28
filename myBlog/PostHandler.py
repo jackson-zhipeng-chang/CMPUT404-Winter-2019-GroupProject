@@ -121,8 +121,98 @@ class PostHandler(APIView):
         }
         # then this returns with the generic GET http://service/posts/{POST_ID}
         '''
-        
-        return JsonResponse(status=200)
+        # this api is only for remote user.
+        if request.user.is_authenticated:
+            isRemote = Helpers.check_remote_request(request)
+            remote_user_uuid = Helpers.get_current_user_uuid(request)
+            data = request.data
+            if data["query"] == "getPost":
+                sender_friend_list = data["friends"]
+                post_id = data["postid"]
+                if isRemote:
+                    remoteNode = Node.objects.get(nodeUser=request.user)
+                    remote_to_node = RemoteUser.objects.get(node=remoteNode)
+                    if type(remote_user_uuid) is UUID:
+                        sender_url = remoteNode.host + "service/author/"+str(remote_user_uuid)
+                        if not(Author.objects.filter(id=remote_user_uuid).exists()):
+                            # create a local copy for the sender
+                            response = requests.get(sender_url,auth=HTTPBasicAuth(remote_to_node.remoteUsername,remote_to_node.remotePassword))
+                            remoteAuthorJson = json.loads(response.content.decode('utf8').replace("'",'"'))
+                            remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
+                        # Ask sender's server if the authors in friendlist are friend with the sender
+                        request_body = {
+                            "query":"friends",
+                            "author":sender_url,
+                            "authors":sender_friend_list 
+                        }
+                        request_url = sender_url+'/friends/'
+                        response = requests.post(request_url,data = request_body,auth=HTTPBasicAuth(remote_to_node.remoteUsername,remote_to_node.remotePassword))
+                        remoteFriendListJson = json.loads(response.content.decode('utf8').replace("'",'"'))
+                        if remoteFriendListJson["query"]=="friends":
+                            remoteFriendList = remoteFriendListJson["authors"]
+                            if remoteFriendList:
+                                # check which friends in friendlist are my friend
+                                postObj = Post.objects.get(pk=post_id)
+                                current_author_id = postObj.author.id
+
+                                my_friend_list = []
+                                for friend in remoteFriendList:
+                                    try:
+                                        friend_id = friend.split('/')[-1]
+                                    except:
+                                        return Response('Wrong author id type, add host in the beginning.',status=status.HTTP_403_FORBIDDEN)
+                                    if Helpers.check_two_users_friends(current_author_id,friend_id):
+                                        my_friend_list.append(friend)
+
+                                if my_friend_list:
+                                    # Then it will go to at least 1 of these friend's servers and verify that they are friends of sender
+                                    my_friend = my_friend_list[0]
+                                    my_friend_host_name = my_friend.split('/')[2]
+                                    friend2friend_url = my_friend+'/friends/'+sender_url.split('/')[2]+'/author/'+remote_user_uuid
+                                    print(friend2friend_url)
+                                    # check my_friend is from my server of remote
+                                    # Todo: need to change the host name
+                                    if my_friend_host_name =='localhost:8000' or my_friend_host_name=='127.0.0.1:8000':
+                                        # the friend is from my server, then current author must be his friend
+                                        # response FOAF post to sender
+                                        if not Post.objects.filter(Q(pk=postid),Q(visibility='FOAF')).exists():
+                                            return Response("Post couldn't find",status=status.HTTP_404_NOT_FOUND)
+                                        else:
+                                            post = Post.objects.get(pk=postid)
+                                            serializer = PostSerializer(post)
+                                            return JsonResponse(serializer.data,status=status.HTTP_200_OK)
+                                    else:
+                                        # the friend is not in my server, go to the friend's server and query
+                                        my_friend_node = Node.objects.get(host="http://"+my_friend_host_name)
+                                        my_friend_remote_user = RemoteUser.objects.get(node=my_friend_node)
+                                        response = requests.get(friend2friend_url,auth=HTTPBasicAuth(my_friend_remote_user.remoteUsername,my_friend_remote_user.remotePassword))
+                                        responseJSON = json.loads(response.content.decode('utf8').replace("'", '"'))
+                                        if responseJSON["friends"]=="true":
+                                            if not Post.objects.filter(Q(pk=postid), Q(visibility='FOAF')).exists():
+                                                return Response("Post couldn't find", status=status.HTTP_404_NOT_FOUND)
+                                            else:
+                                                post = Post.objects.get(pk=postid)
+                                                serializer = PostSerializer(post)
+                                                return JsonResponse(serializer.data, status=status.HTTP_200_OK)
+                                        else:
+                                            return Response('No mutal friend',status=status.HTTP_403_FORBIDDEN)
+
+                                else:
+                                    return Response('No mutual friend.',status=status.HTTP_403_FORBIDDEN)
+
+
+                            else:
+                                return Response('Wrong Friend List Infomation.',status=status.HTTP_403_FORBIDDEN)
+
+                        else:
+                            return Response("Responding query string is wrong.'query':'friends'.",status=status.HTTP_400_BAD_REQUEST) 
+
+
+            else:
+                return Response("You are not sending the request with correct format. Missing 'query':'getPost'",status=status.HTTP_400_BAD_REQUEST)
+
+        else:
+            return Response("Unauthenticated",status=status.HTTP_401_UNAUTHORIZED)
 
     def get(self, request, postid, format=None):
         if (not Post.objects.filter(pk=postid).exists()):
@@ -224,6 +314,7 @@ class PostToUserHandlerView(APIView):
         if request.user.is_authenticated:
             isRemote = Helpers.check_remote_request(request)
             current_user_uuid = Helpers.get_current_user_uuid(request)
+            print(current_user_uuid)
             shareImages = True
             sharePosts = True
             
