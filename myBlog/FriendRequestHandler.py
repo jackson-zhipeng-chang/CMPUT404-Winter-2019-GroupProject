@@ -36,8 +36,14 @@ class FriendRequestHandler(APIView):
             friend_id = data['friend']['id'].replace(data['friend']['host']+'author/', "")
             data['author']['id'] = author_id
             data['friend']['id'] = friend_id
-            sender_object = Helpers.get_or_create_author_if_not_exist(data['author'])
-            reciver_object = Helpers.get_or_create_author_if_not_exist(data['friend'])
+            sender_verified = Helpers.verify_remote_author(data['author'])
+            reciver_verified = Helpers.verify_remote_author(data['friend'])
+            if sender_verified and reciver_verified:
+                sender_object = Helpers.get_or_create_author_if_not_exist(data['author'])
+                reciver_object = Helpers.get_or_create_author_if_not_exist(data['friend'])
+            else:
+                return Response("Author not found", status=404) 
+
             friend_already = Helpers.check_two_users_friends(author_id,friend_id)
             if (not friend_already):
                 if (Friend.objects.filter(author=sender_object, friend=reciver_object, status="Decline").exists()):

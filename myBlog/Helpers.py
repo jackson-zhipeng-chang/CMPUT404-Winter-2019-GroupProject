@@ -151,7 +151,7 @@ def update_remote_friendship(current_user_uuid):
 
             if len(local_friends_list) != 0:
                 for localFriend in local_friends_list:
-                    if (localFriend.id not in remote_friends_uuid_list):
+                    if (localFriend.id not in remote_friends_uuid_list) and (node.host == localFriend.host):
                         if (Friend.objects.filter(Q(author=localFriend.id), Q(status='Accept')).exists()):
                             friendship = Friend.objects.get(Q(author=localFriend.id), Q(status='Accept'))
                             last_modified_time = friendship.last_modified_time.replace(tzinfo=None)
@@ -273,6 +273,19 @@ def get_or_create_author_if_not_exist(author_json):
         AuthorObj = author
 
     return AuthorObj
+
+def verify_remote_author(author_json):
+    author_hot = author_json["host"]
+    profile_url = author_hot+"service/author/"+str(author_json["id"])
+    try:
+        respons = requests.get(profile_url)
+        print(respons.json())
+        if respons.status_code == 200:
+            return True
+        else:
+            return False
+    except:
+        return False
 
 #-----------------------------------------Local endpoints-----------------------------------------#
 def new_post(request):
