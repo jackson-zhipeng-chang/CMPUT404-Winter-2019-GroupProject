@@ -388,7 +388,7 @@ class MyPostHandler(APIView):
 def pull_remote_nodes(current_user_uuid):
     for node in Node.objects.all():
         try:
-            nodeURL = node.host+"service/author/posts/"
+            nodeURL = node.host+"service/author/posts/?size=200"
             headers = {"X-UUID": str(current_user_uuid)}
             # http://docs.python-requests.org/en/master/user/authentication/ ©MMXVIII. A Kenneth Reitz Project.
             remote_to_node = RemoteUser.objects.get(node=node)
