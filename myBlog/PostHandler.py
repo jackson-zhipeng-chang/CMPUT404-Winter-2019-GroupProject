@@ -191,7 +191,6 @@ class PostToUserHandlerView(APIView):
                 sharePosts = True
 
                 if isRemote:
-                    print(request.user)
                     remoteNode = Node.objects.get(nodeUser=request.user)
                     shareImages = remoteNode.shareImages
                     sharePosts = remoteNode.sharePost
@@ -199,16 +198,14 @@ class PostToUserHandlerView(APIView):
                     if not (Author.objects.filter(id = current_user_uuid).exists()):
                         remote_to_node = RemoteUser.objects.get(node=remoteNode)
                         authorProfileURL = remoteNode.host + "service/author/%s"%str(current_user_uuid)
-                        print(authorProfileURL)
                         response = requests.get(authorProfileURL, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
-                        print(response)
                         if response.status_code != 200:
                             return Response("%s is not responding"%authorProfileURL, status=404)
                         remoteAuthorJson = response.json()
-                        print(remoteAuthorJson)
-                        remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
-                    
- 
+                        try:
+                            remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
+                        except:
+                            return Response("Author not found", status=404)
                 else:
                     delete_remote_nodes_post()
                     pull_remote_nodes(current_user_uuid)
@@ -312,7 +309,10 @@ class PostToUserIDHandler(APIView):
                             return Response("%s is not responding"%authorProfileURL, status=404)
 
                         remoteAuthorJson = response.json()
-                        remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
+                        try:
+                            remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
+                        except:
+                            return Response("Author not found", status=404)
    
                 else:
                     delete_remote_nodes_post()
@@ -403,7 +403,10 @@ def pull_remote_nodes(current_user_uuid):
             if int(postJson["count"]) != 0: 
                 for i in range (0,len(postJson["posts"])):
                     remoteAuthorJson = postJson["posts"][i]["author"]
-                    remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
+                    try:
+                        remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
+                    except:
+                        return Response("Author not found", status=404)
                     # Create the post object for final list
                     if not Post.objects.filter(postid=postJson["posts"][i]["id"]).exists():
                         remotePostObj = Post.objects.create(postid=postJson["posts"][i]["id"], title=postJson["posts"][i]["title"],source=node.host+"service/posts/"+postJson["posts"][i]["id"], 
@@ -418,7 +421,10 @@ def pull_remote_nodes(current_user_uuid):
                     if len(postJson["posts"][i]["comments"]) != 0:
                         for j in range (0, len(postJson["posts"][i]["comments"])):
                             remotePostCommentAuthorJson = postJson["posts"][i]["comments"][j]["author"]
-                            remotePostCommentAuthorObj = Helpers.get_or_create_author_if_not_exist(remotePostCommentAuthorJson)
+                            try:
+                                remotePostCommentAuthorObj = Helpers.get_or_create_author_if_not_exist(remotePostCommentAuthorJson)
+                            except:
+                                return Response("Author not found", status=404)
                             remotePostCommentObj = Comment.objects.create(id=postJson["posts"][i]["comments"][j]["id"], postid=postJson["posts"][i]["comments"][j]["id"],
                             author = remotePostCommentAuthorObj, comment=postJson["posts"][i]["comments"][j]["comment"],contentType=postJson["posts"][i]["comments"][j]["contentType"])
                             commentPublishedObj = dateutil.parser.parse(postJson["posts"][i]["comments"][j]["published"])

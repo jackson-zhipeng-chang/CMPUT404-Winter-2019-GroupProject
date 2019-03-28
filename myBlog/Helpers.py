@@ -334,7 +334,10 @@ def post_details(request, post_id):
                 if response.status_code == 200:
                     postJson = response.json()
                     remoteAuthorJson = postJson["author"]
-                    remoteAuthorObj = get_or_create_author_if_not_exist(remoteAuthorJson)
+                    try:
+                        remoteAuthorObj = get_or_create_author_if_not_exist(remoteAuthorJson)
+                    except:
+                        raise Http404("Author does not exist")
                     # Create the post object for final list
                     if not Post.objects.filter(postid=postJson["postid"]).exists():
                         post = Post.objects.create(postid=postJson["id"], title=postJson["title"],source=node.host+"service/posts/"+postJson["postid"], 
