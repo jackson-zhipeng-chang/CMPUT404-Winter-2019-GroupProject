@@ -83,9 +83,9 @@ class TestFriendQueryHandler(TestCase):
         friendlist_length = len(json.loads(response.content)['authors'])
         self.assertEquals(friendlist_length,2)
 
-    def test_post_friend_query(self):
-        # check which authors in the list are friend of the author.
-        url = reverse('friendrequest')
-        self.client1.post(url,{
-            
-        })
+    # def test_post_friend_query(self):
+    #     # check which authors in the list are friend of the author.
+    #     url = reverse('friendrequest')
+    #     self.client1.post(url,{
+    #
+    #     })
