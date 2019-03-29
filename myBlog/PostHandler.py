@@ -481,8 +481,8 @@ def pull_remote_nodes(current_user_uuid):
 
                     if len(postJson["posts"][i]["comments"]) != 0:
                         for j in range (0, len(postJson["posts"][i]["comments"])):
-                            try:
-                                remotePostCommentAuthorJson = postJson["posts"][i]["comments"][j]["author"]
+                            remotePostCommentAuthorJson = postJson["posts"][i]["comments"][j]["author"]
+                            if type(remotePostCommentAuthorJson['id']) is UUID:
                                 remotePostCommentAuthorObj = Helpers.get_or_create_author_if_not_exist(remotePostCommentAuthorJson)
                                 if not Comment.objects.filter(id=postJson["posts"][i]["comments"][j]["id"]).exists():
                                     remotePostCommentObj = Comment.objects.create(id=postJson["posts"][i]["comments"][j]["id"], postid=postJson["posts"][i]["id"],
@@ -490,11 +490,8 @@ def pull_remote_nodes(current_user_uuid):
                                     commentPublishedObj = dateutil.parser.parse(postJson["posts"][i]["comments"][j]["published"])
                                     remotePostCommentObj.published = commentPublishedObj
                                     remotePostCommentObj.save()
-                            except:
-                                pass
 
-        else:
-            pass
+
 
 def delete_remote_nodes_post():
     # https://stackoverflow.com/questions/8949145/filter-django-database-for-field-containing-any-value-in-an-array answered Jan 20 '12 at 23:36 Ismail Badawi
