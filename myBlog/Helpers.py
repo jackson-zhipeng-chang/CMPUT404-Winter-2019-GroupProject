@@ -298,7 +298,7 @@ def send_FR_to_remote(nodeObj,data):
 
         return Response("friend request sent", status=status.HTTP_200_OK)
     else:
-        return Response(response.json(), status=response.status_code)
+        return Response("Something went wrong", status=response.status_code)
 
 def from_my_server(host):
     for node in Node.objects.all():
