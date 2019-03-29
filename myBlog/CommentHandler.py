@@ -9,6 +9,8 @@ from django.contrib.auth.models import User
 from django.http import HttpResponse, JsonResponse
 from django.db.models import Q
 from . import Helpers
+import requests
+from requests.auth import HTTPBasicAuth
 
 class CommentHandler(APIView):
     def get(self, request, postid, format=None):
@@ -39,10 +41,28 @@ class CommentHandler(APIView):
             try:
                 data['query'] == 'addComment'
                 post = Post.objects.get(pk=postid)
-                try:
-                    author = Helpers.get_or_create_author_if_not_exist(data['comment']['author'])
-                except:
-                    return Response("Author not found", status=404)
+                postOrigin = post.origin
+                author = Helpers.get_or_create_author_if_not_exist(data['comment']['author'])
+
+                for node in Node.objects.all():
+                    if str(node.host) in str(postOrigin):
+                        nodeURL = node.host+"service/posts/"+str(post.postid)+"/comments/";
+                        print(nodeURL)
+                        print(data)
+                        headers = {"X-UUID": str(author.id)}
+                        # http://docs.python-requests.org/en/master/user/authentication/ ©MMXVIII. A Kenneth Reitz Project.
+                        remote_to_node = RemoteUser.objects.get(node=node)
+                        # https://stackoverflow.com/questions/12737740/python-requests-and-persistent-sessions answered Oct 5 '12 at 0:24
+                        response = requests.post(nodeURL,headers=headers,data = data,auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
+                        print(response.json())
+                        if response.status_code == 200:
+                            responsBody={
+                            "query": "addComment",
+                            "success":True,
+                            "message":"Comment Added"
+                            }
+                            return Response(responsBody, status=status.HTTP_200_OK)
+
                 serializer = CommentSerializer(data=data['comment'], context={'author': author, 'postid':postid})
                 if serializer.is_valid():
                     serializer.save()
@@ -53,7 +73,9 @@ class CommentHandler(APIView):
                     }
                     return Response(responsBody, status=status.HTTP_200_OK)
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
             except Exception as e:
+                print(e)
                 responsBody={
                 "query": "addCoemment",
                 "success":False,

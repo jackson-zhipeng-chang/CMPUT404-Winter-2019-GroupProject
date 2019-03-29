@@ -399,7 +399,6 @@ def pull_remote_nodes(current_user_uuid):
                 return Response("%s is not responding"%nodeURL, status=404)
                 
             postJson = response.json()
-            print(postJson)
             if int(postJson["count"]) != 0: 
                 for i in range (0,len(postJson["posts"])):
                     remoteAuthorJson = postJson["posts"][i]["author"]
@@ -425,11 +424,12 @@ def pull_remote_nodes(current_user_uuid):
                                 remotePostCommentAuthorObj = Helpers.get_or_create_author_if_not_exist(remotePostCommentAuthorJson)
                             except:
                                 return Response("Author not found", status=404)
-                            remotePostCommentObj = Comment.objects.create(id=postJson["posts"][i]["comments"][j]["id"], postid=postJson["posts"][i]["comments"][j]["id"],
-                            author = remotePostCommentAuthorObj, comment=postJson["posts"][i]["comments"][j]["comment"],contentType=postJson["posts"][i]["comments"][j]["contentType"])
-                            commentPublishedObj = dateutil.parser.parse(postJson["posts"][i]["comments"][j]["published"])
-                            remotePostCommentObj.published = commentPublishedObj
-                            remotePostCommentObj.save()
+                            if not Comment.objects.filter(id=postJson["posts"][i]["comments"][j]["id"]).exists():
+                                remotePostCommentObj = Comment.objects.create(id=postJson["posts"][i]["comments"][j]["id"], postid=postJson["posts"][i]["comments"][j]["id"],
+                                author = remotePostCommentAuthorObj, comment=postJson["posts"][i]["comments"][j]["comment"],contentType=postJson["posts"][i]["comments"][j]["contentType"])
+                                commentPublishedObj = dateutil.parser.parse(postJson["posts"][i]["comments"][j]["published"])
+                                remotePostCommentObj.published = commentPublishedObj
+                                remotePostCommentObj.save()
         except Exception as e:
             print("an error occured when pulling remote posts: %s"%e)
             continue

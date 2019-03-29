@@ -67,7 +67,7 @@ function commentPost(id, post_host, user_id,displayName,user_github)
     };
     commentForm.comment.comment= document.getElementById("commentInput"+id).value;
     let body = JSON.stringify(commentForm);
-    let commenturl = post_host+"service/posts/"+id+"/comments/";
+    let commenturl =  "/service/posts/"+id+"/comments/";
     return fetch(commenturl, {
         method: "POST", 
         mode: "cors", 
