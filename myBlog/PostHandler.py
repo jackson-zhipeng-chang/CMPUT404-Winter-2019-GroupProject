@@ -351,7 +351,7 @@ class PostToUserIDHandler(APIView):
                     remoteNode = Node.objects.get(nodeUser=request.user)
                     shareImages = remoteNode.shareImages
                     sharePosts = remoteNode.sharePost
-                    delete_remote_nodes_post()
+                    #delete_remote_nodes_post()
 
                     if not (Author.objects.filter(id = current_user_uuid).exists()):
                         remote_to_node = RemoteUser.objects.get(node=remoteNode)
@@ -482,7 +482,7 @@ def pull_remote_nodes(current_user_uuid):
                     if len(postJson["posts"][i]["comments"]) != 0:
                         for j in range (0, len(postJson["posts"][i]["comments"])):
                             remotePostCommentAuthorJson = postJson["posts"][i]["comments"][j]["author"]
-                            if type(remotePostCommentAuthorJson['id']) is UUID:
+                            if len(remotePostCommentAuthorJson) != 0:
                                 remotePostCommentAuthorObj = Helpers.get_or_create_author_if_not_exist(remotePostCommentAuthorJson)
                                 if not Comment.objects.filter(id=postJson["posts"][i]["comments"][j]["id"]).exists():
                                     remotePostCommentObj = Comment.objects.create(id=postJson["posts"][i]["comments"][j]["id"], postid=postJson["posts"][i]["id"],
