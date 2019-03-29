@@ -300,6 +300,11 @@ def send_FR_to_remote(nodeObj,data):
     else:
         return Response(response.json(), status=response.status_code)
 
+def from_my_server(host):
+    for node in Node.objects.all():
+        if str(node.host) in str(host):
+            return False
+    return True
 #-----------------------------------------Local endpoints-----------------------------------------#
 def new_post(request):
     return render(request, 'newpost.html')

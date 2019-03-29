@@ -134,12 +134,11 @@ class PostHandler(APIView):
                                 if my_friend_list:
                                     # Then it will go to at least 1 of these friend's servers and verify that they are friends of sender
                                     my_friend = my_friend_list[0]
-                                    my_friend_host_name = my_friend.split('/')[2]
-                                    friend2friend_url = my_friend+'/friends/'+sender_url.split('/')[2]+'/author/'+remote_user_uuid
-                                    print(friend2friend_url)
-                                    # check my_friend is from my server of remote
-                                    # Todo: need to change the host name
-                                    if my_friend_host_name =='localhost:8000' or my_friend_host_name=='127.0.0.1:8000':
+                                    my_friend_host = my_friend.split('author')[0]
+                                    friend2friend_url = my_friend+'/friends/'+sender_url.split('/')[2]+'/author/'+str(remote_user_uuid)
+                                    # check my_friend is from my server or remote
+                                    is_local = Helpers.from_my_server(my_friend_host)
+                                    if is_local:
                                         # the friend is from my server, then current author must be his friend
                                         # response FOAF post to sender
                                         if not Post.objects.filter(Q(pk=postid),Q(visibility='FOAF')).exists():
@@ -150,11 +149,11 @@ class PostHandler(APIView):
                                             return JsonResponse(serializer.data,status=status.HTTP_200_OK)
                                     else:
                                         # the friend is not in my server, go to the friend's server and query
-                                        my_friend_node = Node.objects.get(host="http://"+my_friend_host_name)
+                                        my_friend_node = Node.objects.get(host=my_friend_host)
                                         my_friend_remote_user = RemoteUser.objects.get(node=my_friend_node)
                                         response = requests.get(friend2friend_url,auth=HTTPBasicAuth(my_friend_remote_user.remoteUsername,my_friend_remote_user.remotePassword))
                                         responseJSON = json.loads(response.content.decode('utf8').replace("'", '"'))
-                                        if responseJSON["friends"]=="true":
+                                        if responseJSON["friends"]:
                                             if not Post.objects.filter(Q(pk=postid), Q(visibility='FOAF')).exists():
                                                 return Response("Post couldn't find", status=status.HTTP_404_NOT_FOUND)
                                             else:
