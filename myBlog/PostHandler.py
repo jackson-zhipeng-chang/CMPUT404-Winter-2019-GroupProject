@@ -368,7 +368,7 @@ class PostToUserIDHandler(APIView):
 
                 else:
                     delete_remote_nodes_post()
-                    pull_remote_nodes(current_user_uuid)
+                    pull_remote_nodes(current_user_uuid, remoteNode)
 
                 public_posts_list=[]
                 friend_posts_list=[]
@@ -437,8 +437,9 @@ class MyPostHandler(APIView):
             return Response("Unauthorized", status=401)
 
 
-def pull_remote_nodes(current_user_uuid):
+def pull_remote_nodes(current_user_uuid, remoteNode):
     all_nodes = Node.objects.all()
+    all_nodes.remove(remoteNode)
     for node in all_nodes:
         nodeURL = node.host+"service/author/posts/"
         print(nodeURL)
