@@ -459,7 +459,8 @@ def pull_remote_nodes(current_user_uuid):
             print("testing")
 
             if int(postJson["count"]) != 0: 
-                for i in range (0,len(postJson["posts"])):
+                print(int(postJson["count"]))
+                for i in range (0,int(postJson["count"])):
                     print(postJson["posts"][i])
                     remoteAuthorJson = postJson["posts"][i]["author"]
                     print(remoteAuthorJson['id'])
