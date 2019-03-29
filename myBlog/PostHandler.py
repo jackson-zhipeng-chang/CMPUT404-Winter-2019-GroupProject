@@ -492,11 +492,11 @@ def delete_remote_nodes_post():
     for node in Node.objects.all():
         orginRelatedPosts = Post.objects.filter(origin__contains=node.host)
         sourceRelatedPosts = Post.objects.filter(source__contains=node.host)
-        for post in orginRelatedPosts:
-            Comment.objects.filter(postid=post.postid).delete()
+        #for post in orginRelatedPosts:
+        #    Comment.objects.filter(postid=post.postid).delete()
 
-        for post in sourceRelatedPosts:
-            Comment.objects.filter(postid=post.postid).delete()
+        #for post in sourceRelatedPosts:
+        #    Comment.objects.filter(postid=post.postid).delete()
 
         orginRelatedPosts.delete()
         sourceRelatedPosts.delete()
