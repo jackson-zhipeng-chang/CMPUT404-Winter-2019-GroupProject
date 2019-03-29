@@ -43,7 +43,10 @@ class FriendQueryHandler(APIView):
             data = request.data
             if data['query'] == 'friends':
                 friends_list = Helpers.get_friends(user_id)
-                query_list = data['authors']
+                # TODO: I changed here
+                query_list = []
+                query_list.append(data['authors'])
+                
                 respons_list = []
                 for author_url in query_list:
                     for friend_obj in friends_list:

@@ -12,6 +12,9 @@ from urllib.parse import urlparse
 from . import Helpers
 from uuid import UUID
 import datetime
+import json
+import requests
+from requests.auth import HTTPBasicAuth
 
 class FriendRequestHandler(APIView):
     def get(self, request, format=None):
@@ -29,9 +32,21 @@ class FriendRequestHandler(APIView):
             return Response("Unauthorized", status=401)
 
     def post(self, request, format=None):
+        is_to_remote = False
+        self.node = None
+        self.data = None
         data = request.data
         if data['query'] == 'friendrequest':
+            request_url = data['friend']['host']
+            for node in Node.objects.all():
+                if str(node.host) in str(request_url):
+                    is_to_remote = True
+                    self.node = node
+                    self.data = data
+
             current_user_uuid = Helpers.get_current_user_uuid(request)
+            # author_id = data['author']['id'].split('author/')[1]
+            # friend_id = data['friend']['id'].split('author/')[1]
             author_id = data['author']['id'].replace(data['author']['host']+'author/', "")
             friend_id = data['friend']['id'].replace(data['friend']['host']+'author/', "")
             data['author']['id'] = author_id
@@ -50,12 +65,17 @@ class FriendRequestHandler(APIView):
                     friendrequest = Friend.objects.get(author=sender_object, friend=reciver_object)
                     friendrequest.status="Pending"
                     friendrequest.save()
+                    if is_to_remote:
+                        Helpers.send_FR_to_remote(self.node,self.data)
+
                     return Response("Friend request sent", status=status.HTTP_200_OK) 
 
                 elif (Friend.objects.filter(author=reciver_object, friend=sender_object, status="Decline").exists()):
                     friendrequest = Friend.objects.get(author=reciver_object, friend=sender_object)
                     friendrequest.status="Accept"
                     friendrequest.save()
+                    if is_to_remote:
+                        Helpers.send_FR_to_remote(self.node,self.data)
                     return Response("You are now friend with %s"%author_id, status=status.HTTP_200_OK)
 
                 elif Friend.objects.filter(author=reciver_object, friend=sender_object, status="Pending").exists():
@@ -63,6 +83,8 @@ class FriendRequestHandler(APIView):
                     friendrequest = Friend.objects.get(author=reciver_object, friend=sender_object)
                     friendrequest.status = 'Accept'
                     friendrequest.save()
+                    if is_to_remote:
+                        Helpers.send_FR_to_remote(self.node,self.data)
                     return Response("You are new friend with{}".format(reciver_object.displayName, status=status.HTTP_200_OK))
 
                 elif (Friend.objects.filter(author=sender_object, friend=reciver_object, status="Pending").exists()): 
@@ -70,9 +92,13 @@ class FriendRequestHandler(APIView):
                 else:
                     friendrequest = Friend.objects.create(author=sender_object, friend=reciver_object)
                     friendrequest.save()
+                    if is_to_remote:
+                        Helpers.send_FR_to_remote(self.node,self.data)
                     return Response("Friend request sent", status=status.HTTP_200_OK)  
             else:
                 return Response("You are already friends", status=status.HTTP_400_BAD_REQUEST)
+
+
         else:
             return Response("You are not sending the friendrequest with the correct format. Missing 'query': 'friendrequest'",status=status.HTTP_400_BAD_REQUEST)  
 
