@@ -194,7 +194,7 @@ class PostToUserHandlerView(APIView):
                     remoteNode = Node.objects.get(nodeUser=request.user)
                     shareImages = remoteNode.shareImages
                     sharePosts = remoteNode.sharePost
-                    delete_remote_nodes_post()
+                    #delete_remote_nodes_post()
                     if not (Author.objects.filter(id = current_user_uuid).exists()):
                         remote_to_node = RemoteUser.objects.get(node=remoteNode)
                         authorProfileURL = remoteNode.host + "service/author/%s"%str(current_user_uuid)
@@ -207,7 +207,7 @@ class PostToUserHandlerView(APIView):
                         except:
                             return Response("Author not found", status=404)
                 else:
-                    delete_remote_nodes_post()
+                    #delete_remote_nodes_post()
                     pull_remote_nodes(current_user_uuid)
 
                 Helpers.update_remote_friendship(current_user_uuid)
