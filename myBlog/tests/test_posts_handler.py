@@ -5,10 +5,11 @@ import json
 from myBlog.models import Author,Post,Comment,Friend
 from django.contrib.auth.models import User
 import datetime
+from django.test import LiveServerTestCase
 
 
 
-class TestPostsHandler(TestCase):
+class TestPostsHandler(LiveServerTestCase):
     def setUp(self):
         # https://stackoverflow.com/questions/2619102/djangos-self-client-login-does-not-work-in-unit-tests
         # create first user author client
@@ -18,6 +19,7 @@ class TestPostsHandler(TestCase):
         self.client = Client()
         self.client.login(username='testuser1', password='test')
         self.author = Author.objects.create(user=self.user, displayName='author1',
+                                            host = self.live_server_url +'/',
                                             github='https://github.com/terrence85561')
 
         # create another user author client
@@ -27,6 +29,7 @@ class TestPostsHandler(TestCase):
         self.other_client = Client()
         self.other_client.login(username='testuser2',password='test')
         self.other_author = Author.objects.create(user=self.other_user,displayName='author2',
+                                                    host = self.live_server_url +'/',
                                                   github='https://github.com/terrence85561')
 
         self.new_post_url = reverse('new_post')
@@ -292,9 +295,9 @@ class TestPostsHandler(TestCase):
             'comment': {
                 'author': {
                     'id': self.author.id,
-                    'host': 'xxx',
+                    'host': self.author.host,
                     'displayName': self.author.displayName,
-                    'url': 'xxx',
+                    'url': self.author.host+'author/'+str(self.author.id),
                     'github': self.author.github
                 },
                 'comment': 'this is my first comment',
@@ -324,6 +327,7 @@ class TestPostsHandler(TestCase):
         post1_id = post1.postid
 
         comment_url_private = reverse('comment',args=[post1_id])
+
         # response1=self.client.post(comment_url_private,{
         #     'query': 'addComment',
         #     'post': 'testserver',
@@ -342,15 +346,16 @@ class TestPostsHandler(TestCase):
         # },'application/json')
         # self.assertEquals(response1.status_code,403)
 
+
         response2 = self.other_client.post(comment_url_private, {
             'query': 'addComment',
             'post': 'testserver',
             'comment': {
                 'author': {
                     'id': self.other_author.id,
-                    'host': 'xxx',
+                    'host': self.other_author.host,
                     'displayName': self.other_author.displayName,
-                    'url': 'xxx',
+                    'url': self.other_author.host+'author/'+str(self.other_author.id),
                     'github': self.other_author.github
                 },
                 'comment': 'this is comment from author2',
@@ -392,9 +397,9 @@ class TestPostsHandler(TestCase):
             'comment': {
                 'author': {
                     'id': self.other_author.id,
-                    'host': 'xxx',
+                    'host': self.other_author.host,
                     'displayName': self.other_author.displayName,
-                    'url': 'xxx',
+                    'url': self.other_author.host+'author/'+str(self.other_author.id),
                     'github': self.other_author.github
                 },
                 'comment': 'this is comment from author2',
@@ -443,9 +448,9 @@ class TestPostsHandler(TestCase):
                     'comment': {
                         'author': {
                             'id': self.author.id,
-                            'host': 'xxx',
+                            'host': self.author.host,
                             'displayName': self.author.displayName,
-                            'url': 'xxx',
+                            'url': self.author.host+'author/'+str(self.author.id),
                             'github': self.author.github
                         },
                         'comment': 'comment on post'+str(i),
@@ -466,7 +471,7 @@ class TestPostsHandler(TestCase):
         response1 = self.other_client.get(post_to_userid_url)
         content = json.loads(response1.content)
         self.assertEquals(response1.status_code,200)
-
+   
     def test_get_my_post(self):
         total_post = 5
         for i in range(total_post):
@@ -493,7 +498,7 @@ class TestPostsHandler(TestCase):
                 "id":self.author.id,
                 "host":self.author.host,
                 "displayName":self.author.displayName,
-                "url":self.author.host+'/'+str(self.author.id)
+                "url":self.author.host+'author/'+str(self.author.id)
             },
             "friend":{
                 "id":self.other_author.id,
@@ -556,6 +561,9 @@ class TestPostsHandler(TestCase):
         response = self.other_client.get(posttouserid_url)
         self.assertEquals(response.status_code,200)
         self.assertEquals(json.loads(response.content)['posts'][0]['author']['id'],str(self.author.id))
+
+
+
 
 
 

@@ -3,8 +3,9 @@ from django.urls import reverse
 import json
 from myBlog.models import Author,Post,Comment,Friend
 from django.contrib.auth.models import User
+from django.test import LiveServerTestCase
 
-class TestFriendRequestHandler(TestCase):
+class TestFriendRequestHandler(LiveServerTestCase):
     def setUp(self):
         self.user1 = User.objects.create(username='testuser1')
         self.user1.set_password('test')
@@ -12,7 +13,7 @@ class TestFriendRequestHandler(TestCase):
         self.client1=Client()
         self.client1.login(username='testuser1',password='test')
         self.author1 = Author.objects.create(user=self.user1,displayName='author1',
-                                             host='http://127.0.0.1:8000',
+                                             host=self.live_server_url+'/',
                                              github='https://github.com/terrence85561')
         self.user2 = User.objects.create(username='testuser2')
         self.user2.set_password('test')
@@ -20,7 +21,7 @@ class TestFriendRequestHandler(TestCase):
         self.client2 = Client()
         self.client2.login(username='testuser2', password='test')
         self.author2 = Author.objects.create(user=self.user2, displayName='author2',
-                                            host='http://127.0.0.1:8000',
+                                            host=self.live_server_url+'/',
                                             github='https://github.com/terrence85561')
 
     def test_friend_request(self):
@@ -32,13 +33,13 @@ class TestFriendRequestHandler(TestCase):
                 "id":self.author1.id,
                 "host":self.author1.host,
                 "displayName":self.author1.displayName,
-                "url":self.author1.host+'/'+str(self.author1.id)
+                "url":self.author1.host+str(self.author1.id)
             },
             "friend":{
                 "id": self.author2.id,
                 "host": self.author2.host,
                 "displayName": self.author2.displayName,
-                "url": self.author2.host + '/' + str(self.author2.id)
+                "url": self.author2.host + str(self.author2.id)
             }
         },'application/json')
         author = Author.objects.get(pk=self.author1.id)

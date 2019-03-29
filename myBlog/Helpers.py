@@ -277,10 +277,8 @@ def get_or_create_author_if_not_exist(author_json):
 def verify_remote_author(author_json):
     author_hot = author_json["host"]
     profile_url = author_hot+"service/author/"+str(author_json["id"])
-    print(profile_url)
     try:
         respons = requests.get(profile_url)
-        print(respons.json())
         if respons.status_code == 200:
             return True
         else:
@@ -288,6 +286,25 @@ def verify_remote_author(author_json):
     except:
         return False
 
+def send_FR_to_remote(nodeObj,data):
+    URL = nodeObj.host + 'service/friendrequest/'
+    header = {"Content-Type": "application/json", 'Accept': 'application/json'}
+    remote_server = RemoteUser.objects.get(node=nodeObj)
+    data = json.dumps(data)
+    response = requests.post(URL, headers=header, data=data,
+                             auth=HTTPBasicAuth(remote_server.remoteUsername,
+                                                remote_server.remotePassword))
+    if response.status_code == 200:
+
+        return Response("friend request sent", status=status.HTTP_200_OK)
+    else:
+        return Response(response.json(), status=response.status_code)
+
+def from_my_server(host):
+    for node in Node.objects.all():
+        if str(node.host) in str(host):
+            return False
+    return True
 #-----------------------------------------Local endpoints-----------------------------------------#
 def new_post(request):
     return render(request, 'newpost.html')
@@ -316,6 +333,7 @@ def author_details(request,author_id):
     if type(current_user_id) is UUID:
         current_user_name = Author.objects.get(pk=current_user_id).displayName
         current_user_github = Author.objects.get(pk=current_user_id).github
+        update_remote_friendship(current_user_id)
         is_friend = is_my_friend(current_user_id,author_id)
         follow_status = get_follow_status(current_user_id,author_id)
         friend = Author.objects.get(pk=author_id)
