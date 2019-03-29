@@ -51,7 +51,6 @@ class CommentHandler(APIView):
                             remote_to_node = RemoteUser.objects.get(node=node)
                             data = json.dumps(data)
                             response = requests.post(nodeURL, headers=headers,data = data,auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
-                            print(response)
                             if response.status_code == 200:
                                 responsBody={
                                 "query": "addComment",
@@ -60,7 +59,6 @@ class CommentHandler(APIView):
                                 }
                                 return Response(responsBody, status=status.HTTP_200_OK)
                             else:
-                                print("2 is_valid")
                                 responsBody={
                                 "query": "addCoemment",
                                 "success":False,
@@ -72,7 +70,6 @@ class CommentHandler(APIView):
                     serializer = CommentSerializer(data=data['comment'], context={'author': author, 'postid':postid})
 
                     if serializer.is_valid():
-                        print("1 is_valid")
                         serializer.save()
                         responsBody={
                         "query": "addComment",
@@ -82,8 +79,7 @@ class CommentHandler(APIView):
                         return Response(responsBody, status=status.HTTP_200_OK)
                     
                     else:
-                        print(serializer.errors)
-                        print("no 1 is_valid")
+                        print("an error happend: %s"%str(serializer.errors))
                         responsBody={
                         "query": "addCoemment",
                         "success":False,
@@ -91,7 +87,6 @@ class CommentHandler(APIView):
                         }
                         return Response(responsBody, status=403)
                 else:
-                    print("no 2 is_valid")
                     responsBody={
                     "query": "addCoemment",
                     "success":False,
