@@ -460,8 +460,8 @@ def pull_remote_nodes(current_user_uuid):
 
             if int(postJson["count"]) != 0: 
                 for i in range (0,len(postJson["posts"])):
-                    print(remoteAuthorJson = postJson["posts"][i])
-                    remoteAuthorJson = postJson["posts"][i]["author"]
+                    print(postJson["posts"][i])
+                    remotAuthorJson = postJson["posts"][i]["author"]
                     remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
 
                     if not Post.objects.filter(postid=postJson["posts"][i]["id"]).exists():
