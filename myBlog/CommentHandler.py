@@ -40,53 +40,53 @@ class CommentHandler(APIView):
                 return Response("Post couldn't find", status=404)
             else:
                 data = request.data
-                print(data)
                 if data['query'] == 'addComment':
+                    isRemote = Helpers.check_remote_request(request)
                     post = Post.objects.get(pk=postid)
-                    postOrigin = post.origin
-                    author = Helpers.get_or_create_author_if_not_exist(data['comment']['author'])
+                    if not isRemote:
+                        postOrigin = post.origin
+                        for node in Node.objects.all():
+                            if str(node.host) in str(postOrigin):
+                                nodeURL = node.host+"service/posts/"+str(post.postid)+"/comments/";
+                                headers = {"Content-Type": 'application/json', "Accept": 'application/json'}
+                                remote_to_node = RemoteUser.objects.get(node=node)
+                                data = json.dumps(data)
+                                response = requests.post(nodeURL, headers=headers,data = data,auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
 
-                    for node in Node.objects.all():
-                        if str(node.host) in str(postOrigin):
-                            nodeURL = node.host+"service/posts/"+str(post.postid)+"/comments/";
-                            headers = {"Content-Type": 'application/json', "Accept": 'application/json'}
-                            remote_to_node = RemoteUser.objects.get(node=node)
-                            data = json.dumps(data)
-                            response = requests.post(nodeURL, headers=headers,data = data,auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
-
-                            if response.status_code == 200:
-                                responsBody={
-                                "query": "addComment",
-                                "success":True,
-                                "message":"Comment Added"
-                                }
-                                return Response(responsBody, status=status.HTTP_200_OK)
-                            else:
-                                responsBody={
-                                "query": "addCoemment",
-                                "success":False,
-                                "message":"Comment not allowed"
-                                }
-                                return Response(responsBody, status=403)
-
-                    serializer = CommentSerializer(data=data['comment'], context={'author': author, 'postid':postid})
-
-                    if serializer.is_valid():
-                        serializer.save()
-                        responsBody={
-                        "query": "addComment",
-                        "success":True,
-                        "message":"Comment Added"
-                        }
-                        return Response(responsBody, status=status.HTTP_200_OK)
-                    
+                                if response.status_code == 200:
+                                    responsBody={
+                                    "query": "addComment",
+                                    "success":True,
+                                    "message":"Comment Added"
+                                    }
+                                    return Response(responsBody, status=status.HTTP_200_OK)
+                                else:
+                                    responsBody={
+                                    "query": "addCoemment",
+                                    "success":False,
+                                    "message":"Comment not allowed"
+                                    }
+                                    return Response(responsBody, status=403)
                     else:
-                        responsBody={
-                        "query": "addCoemment",
-                        "success":False,
-                        "message":"Comment not allowed"
-                        }
-                        return Response(responsBody, status=403)
+                        author = Helpers.get_or_create_author_if_not_exist(data['comment']['author'])
+                        serializer = CommentSerializer(data=data['comment'], context={'author': author, 'postid':postid})
+
+                        if serializer.is_valid():
+                            serializer.save()
+                            responsBody={
+                            "query": "addComment",
+                            "success":True,
+                            "message":"Comment Added"
+                            }
+                            return Response(responsBody, status=status.HTTP_200_OK)
+                        
+                        else:
+                            responsBody={
+                            "query": "addCoemment",
+                            "success":False,
+                            "message":"Comment not allowed"
+                            }
+                            return Response(responsBody, status=403)
 
         else:
             return Response("Unauthorized", status=401)
