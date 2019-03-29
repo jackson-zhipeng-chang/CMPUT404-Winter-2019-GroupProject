@@ -40,6 +40,7 @@ class CommentHandler(APIView):
                 return Response("Post couldn't find", status=404)
             else:
                 data = request.data
+                print(data)
                 if data['query'] == 'addComment':
                     post = Post.objects.get(pk=postid)
                     postOrigin = post.origin
@@ -59,6 +60,7 @@ class CommentHandler(APIView):
                                 }
                                 return Response(responsBody, status=status.HTTP_200_OK)
                             else:
+                                print("2 is_valid")
                                 responsBody={
                                 "query": "addCoemment",
                                 "success":False,
@@ -70,6 +72,7 @@ class CommentHandler(APIView):
                     serializer = CommentSerializer(data=data['comment'], context={'author': author, 'postid':postid})
 
                     if serializer.is_valid():
+                        print("1 is_valid")
                         serializer.save()
                         responsBody={
                         "query": "addComment",
@@ -79,6 +82,8 @@ class CommentHandler(APIView):
                         return Response(responsBody, status=status.HTTP_200_OK)
                     
                     else:
+                        print(serializer.errors)
+                        print("no 1 is_valid")
                         responsBody={
                         "query": "addCoemment",
                         "success":False,
@@ -86,6 +91,7 @@ class CommentHandler(APIView):
                         }
                         return Response(responsBody, status=403)
                 else:
+                    print("no 2 is_valid")
                     responsBody={
                     "query": "addCoemment",
                     "success":False,
