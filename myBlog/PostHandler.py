@@ -15,6 +15,7 @@ import requests
 from requests.auth import HTTPBasicAuth
 import json
 import dateutil.parser
+import time
 
 
 class NewPostHandler(APIView):
@@ -438,6 +439,7 @@ class MyPostHandler(APIView):
 
 
 def pull_remote_nodes(current_user_uuid):
+    start_time = time.time()
     all_nodes = Node.objects.all()
     for node in all_nodes:
         nodeURL = node.host+"service/author/posts/"
@@ -485,7 +487,9 @@ def pull_remote_nodes(current_user_uuid):
                                     remotePostCommentObj.published = commentPublishedObj
                                     remotePostCommentObj.save()
 
-
+    end_time = time.time()
+    duration = end_time-start_time
+    print(duration)
 
 def delete_remote_nodes_post():
     # https://stackoverflow.com/questions/8949145/filter-django-database-for-field-containing-any-value-in-an-array answered Jan 20 '12 at 23:36 Ismail Badawi
