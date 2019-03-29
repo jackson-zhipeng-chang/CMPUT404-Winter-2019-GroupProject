@@ -475,7 +475,8 @@ def pull_remote_nodes(current_user_uuid):
                         publishedObj = dateutil.parser.parse(postJson["posts"][i]["published"])
                         remotePostObj.published = publishedObj
                         remotePostObj.save()
-                    except:
+                    except Exception as e:
+                        print(e)
                         pass
 
                     if len(postJson["posts"][i]["comments"]) != 0:
@@ -489,7 +490,8 @@ def pull_remote_nodes(current_user_uuid):
                                 commentPublishedObj = dateutil.parser.parse(postJson["posts"][i]["comments"][j]["published"])
                                 remotePostCommentObj.published = commentPublishedObj
                                 remotePostCommentObj.save()
-                            except:
+                            except Exception as e:
+                                print(e)
                                 pass
 
         else:
