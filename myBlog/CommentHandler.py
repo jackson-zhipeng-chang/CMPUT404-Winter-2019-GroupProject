@@ -40,6 +40,7 @@ class CommentHandler(APIView):
                 return Response("Post couldn't find", status=404)
             else:
                 data = request.data
+                print(data)
                 if data['query'] == 'addComment':
                     post = Post.objects.get(pk=postid)
                     postOrigin = post.origin
