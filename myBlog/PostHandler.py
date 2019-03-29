@@ -368,7 +368,7 @@ class PostToUserIDHandler(APIView):
 
                 else:
                     delete_remote_nodes_post()
-                    pull_remote_nodes(current_user_uuid, remoteNode)
+                    pull_remote_nodes(current_user_uuid)
 
                 public_posts_list=[]
                 friend_posts_list=[]

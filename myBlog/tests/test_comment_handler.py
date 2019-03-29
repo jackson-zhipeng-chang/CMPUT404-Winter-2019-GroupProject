@@ -63,6 +63,7 @@ class TestCommentHandler(TestCase):
         }
         self.assertEquals(json.loads(response.content),success_response)
         response = self.client2.post(comment_url, {
+            "query":"addCommentWrong",
             "post": post_origin,
             "comment": {
                 "author": {
