@@ -456,6 +456,7 @@ def pull_remote_nodes(current_user_uuid):
 
         if response.status_code == 200:
             postJson = response.json()
+            print("testing")
 
             if int(postJson["count"]) != 0: 
                 for i in range (0,len(postJson["posts"])):
