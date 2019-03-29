@@ -40,12 +40,9 @@ class CommentHandler(APIView):
                 return Response("Post couldn't find", status=404)
             else:
                 data = request.data
-                print(data)
                 if data['query'] == 'addComment':
                     post = Post.objects.get(pk=postid)
                     postOrigin = post.origin
-                    author = Helpers.get_or_create_author_if_not_exist(data['comment']['author'])
-
                     for node in Node.objects.all():
                         if str(node.host) in str(postOrigin):
                             nodeURL = node.host+"service/posts/"+str(post.postid)+"/comments/";
@@ -68,7 +65,8 @@ class CommentHandler(APIView):
                                 "message":"Comment not allowed"
                                 }
                                 return Response(responsBody, status=403)
-
+                                
+                    author = Helpers.get_or_create_author_if_not_exist(data['comment']['author'])
                     serializer = CommentSerializer(data=data['comment'], context={'author': author, 'postid':postid})
 
                     if serializer.is_valid():
@@ -87,6 +85,13 @@ class CommentHandler(APIView):
                         "message":"Comment not allowed"
                         }
                         return Response(responsBody, status=403)
+                else:
+                    responsBody={
+                    "query": "addCoemment",
+                    "success":False,
+                    "message":"Comment not allowed"
+                    }
+                    return Response(responsBody, status=403)
 
         else:
             return Response("Unauthorized", status=401)
