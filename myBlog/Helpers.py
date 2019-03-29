@@ -19,6 +19,7 @@ import dateutil.parser
 
 def get_author_or_not_exits(current_user_uuid):
     if type(current_user_uuid) != UUID:
+        print(current_user_uuid)
         current_user_uuid = UUID(current_user_uuid)
     try:
         Author.objects.filter(id=current_user_uuid)
