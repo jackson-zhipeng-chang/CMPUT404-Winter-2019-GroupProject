@@ -49,7 +49,6 @@ class TestFriendQueryHandler(LiveServerTestCase):
                 "url": self.author2.host + str(self.author2.id)
             }
         }, 'application/json')
-        print(response.content)
         friend_request_id1 = Friend.objects.filter(author=self.author1,friend=self.author2)[0].id
         self.client2.put(url, {
             "id": friend_request_id1,

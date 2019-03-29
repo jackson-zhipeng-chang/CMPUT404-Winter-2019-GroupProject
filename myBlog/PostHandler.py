@@ -456,14 +456,9 @@ def pull_remote_nodes(current_user_uuid):
 
         if response.status_code == 200:
             postJson = response.json()
-            print("testing")
-
             if int(postJson["count"]) != 0: 
-                print(int(postJson["count"]))
                 for i in range (0,int(postJson["count"])):
-                    print(postJson["posts"][i])
                     remoteAuthorJson = postJson["posts"][i]["author"]
-                    print(remoteAuthorJson['id'])
                     remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
 
                     if not Post.objects.filter(postid=postJson["posts"][i]["id"]).exists():
@@ -477,7 +472,6 @@ def pull_remote_nodes(current_user_uuid):
                         publishedObj = dateutil.parser.parse(postJson["posts"][i]["published"])
                         remotePostObj.published = publishedObj
                         remotePostObj.save()
-                        print(remotePostObj)
 
                     if len(postJson["posts"][i]["comments"]) != 0:
                         for j in range (0, len(postJson["posts"][i]["comments"])):
