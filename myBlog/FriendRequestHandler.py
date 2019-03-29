@@ -38,7 +38,6 @@ class FriendRequestHandler(APIView):
         data = request.data
         if data['query'] == 'friendrequest':
             request_url = data['friend']['host']
-            print(request_url)
             for node in Node.objects.all():
                 if str(node.host) in str(request_url):
                     is_to_remote = True
