@@ -461,7 +461,8 @@ def pull_remote_nodes(current_user_uuid):
             if int(postJson["count"]) != 0: 
                 for i in range (0,len(postJson["posts"])):
                     print(postJson["posts"][i])
-                    remotAuthorJson = postJson["posts"][i]["author"]
+                    remoteAuthorJson = postJson["posts"][i]["author"]
+                    print(remoteAuthorJson['id'])
                     remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
 
                     if not Post.objects.filter(postid=postJson["posts"][i]["id"]).exists():
@@ -477,14 +478,17 @@ def pull_remote_nodes(current_user_uuid):
 
                     if len(postJson["posts"][i]["comments"]) != 0:
                         for j in range (0, len(postJson["posts"][i]["comments"])):
-                            remotePostCommentAuthorJson = postJson["posts"][i]["comments"][j]["author"]
-                            remotePostCommentAuthorObj = Helpers.get_or_create_author_if_not_exist(remotePostCommentAuthorJson)
-                            if not Comment.objects.filter(id=postJson["posts"][i]["comments"][j]["id"]).exists():
-                                remotePostCommentObj = Comment.objects.create(id=postJson["posts"][i]["comments"][j]["id"], postid=postJson["posts"][i]["id"],
-                                author = remotePostCommentAuthorObj, comment=postJson["posts"][i]["comments"][j]["comment"],contentType='text/plain')
-                            commentPublishedObj = dateutil.parser.parse(postJson["posts"][i]["comments"][j]["published"])
-                            remotePostCommentObj.published = commentPublishedObj
-                            remotePostCommentObj.save()
+                            try:
+                                remotePostCommentAuthorJson = postJson["posts"][i]["comments"][j]["author"]
+                                remotePostCommentAuthorObj = Helpers.get_or_create_author_if_not_exist(remotePostCommentAuthorJson)
+                                if not Comment.objects.filter(id=postJson["posts"][i]["comments"][j]["id"]).exists():
+                                    remotePostCommentObj = Comment.objects.create(id=postJson["posts"][i]["comments"][j]["id"], postid=postJson["posts"][i]["id"],
+                                    author = remotePostCommentAuthorObj, comment=postJson["posts"][i]["comments"][j]["comment"],contentType='text/plain')
+                                commentPublishedObj = dateutil.parser.parse(postJson["posts"][i]["comments"][j]["published"])
+                                remotePostCommentObj.published = commentPublishedObj
+                                remotePostCommentObj.save()
+                            except:
+                                pass
 
         else:
             pass
