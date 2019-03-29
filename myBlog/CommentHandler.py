@@ -43,14 +43,17 @@ class CommentHandler(APIView):
                     post = Post.objects.get(pk=postid)
                     postOrigin = post.origin
                     print(data)
+                    print(type(data))
                     print(data['comment']['author']['id'])
                     author = Helpers.get_or_create_author_if_not_exist(data['comment']['author'])
 
                     for node in Node.objects.all():
                         if str(node.host) in str(postOrigin):
                             nodeURL = node.host+"service/posts/"+str(post.postid)+"/comments/";
+                            print(nodeURL)
+                            headers: {"Content-Type": 'application/json'}
                             remote_to_node = RemoteUser.objects.get(node=node)
-                            response = requests.post(nodeURL, data = data,auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
+                            response = requests.post(nodeURL, headers=headers,data = data,auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
                             if response.status_code == 200:
                                 responsBody={
                                 "query": "addComment",
