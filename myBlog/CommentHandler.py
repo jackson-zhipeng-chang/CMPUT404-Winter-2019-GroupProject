@@ -49,8 +49,6 @@ class CommentHandler(APIView):
                         nodeURL = node.host+"service/posts/"+str(post.postid)+"/comments/";
                         remote_to_node = RemoteUser.objects.get(node=node)
                         response = requests.post(nodeURL, data = data,auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
-                        print(data)
-                        print(response.json())
                         if response.status_code == 200:
                             responsBody={
                             "query": "addComment",
@@ -67,7 +65,7 @@ class CommentHandler(APIView):
                             return Response(responsBody, status=403)
 
                 serializer = CommentSerializer(data=data['comment'], context={'author': author, 'postid':postid})
-                
+
                 if serializer.is_valid():
                     serializer.save()
                     responsBody={
