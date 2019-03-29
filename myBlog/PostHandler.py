@@ -19,7 +19,6 @@ import dateutil.parser
 
 class NewPostHandler(APIView):
     def get(self, request, format=None):
-        print('remote requesting')
         isRemote = Helpers.check_remote_request(request)
         if isRemote:
             remoteNode = Node.objects.get(host=Helpers.get_host_from_request(request))
@@ -447,12 +446,10 @@ def pull_remote_nodes(current_user_uuid):
             remote_to_node = RemoteUser.objects.get(node=node)
             # https://stackoverflow.com/questions/12737740/python-requests-and-persistent-sessions answered Oct 5 '12 at 0:24
             response = requests.get(nodeURL,headers=headers, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
-            print(response)
             if response.status_code != 200:
                 return Response("%s is not responding"%nodeURL, status=404)
 
             postJson = response.json()
-            print(postJson)
             if int(postJson["count"]) != 0:
                 for i in range (0,len(postJson["posts"])):
                     remoteAuthorJson = postJson["posts"][i]["author"]

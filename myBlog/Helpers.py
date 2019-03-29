@@ -341,7 +341,6 @@ def author_details(request,author_id):
         url = friend.host + 'service/author/' + str(author_id)
         friend_name = friend.displayName
         friend_github = friend.github
-        print(is_friend)
         return render(request,'authordetails.html',{'authorid':author_id,'current_user_id':current_user_id,
                                                     'is_friend':is_friend,'followStatus':follow_status,
                                                     'current_user_name':current_user_name,'friend_host':host,
