@@ -425,8 +425,8 @@ def pull_remote_nodes(current_user_uuid):
                             except:
                                 return Response("Author not found", status=404)
                             if not Comment.objects.filter(id=postJson["posts"][i]["comments"][j]["id"]).exists():
-                                remotePostCommentObj = Comment.objects.create(id=postJson["posts"][i]["comments"][j]["id"], postid=postJson["posts"][i]["comments"][j]["id"],
-                                author = remotePostCommentAuthorObj, comment=postJson["posts"][i]["comments"][j]["comment"],contentType=postJson["posts"][i]["comments"][j]["contentType"])
+                                remotePostCommentObj = Comment.objects.create(id=postJson["posts"][i]["comments"][j]["id"], postid=postJson["posts"][i]["comments"][j]["postid"],
+                                    author = remotePostCommentAuthorObj, comment=postJson["posts"][i]["comments"][j]["comment"],contentType=postJson["posts"][i]["comments"][j]["contentType"])
                                 commentPublishedObj = dateutil.parser.parse(postJson["posts"][i]["comments"][j]["published"])
                                 remotePostCommentObj.published = commentPublishedObj
                                 remotePostCommentObj.save()
