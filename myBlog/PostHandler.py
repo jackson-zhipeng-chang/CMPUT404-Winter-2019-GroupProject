@@ -438,54 +438,61 @@ class MyPostHandler(APIView):
 
 
 def pull_remote_nodes(current_user_uuid):
-    for node in Node.objects.all():
-        try:
-            nodeURL = node.host+"service/author/posts/?size=200"
-            headers = {"X-UUID": str(current_user_uuid)}
-            # http://docs.python-requests.org/en/master/user/authentication/ ©MMXVIII. A Kenneth Reitz Project.
-            remote_to_node = RemoteUser.objects.get(node=node)
-            # https://stackoverflow.com/questions/12737740/python-requests-and-persistent-sessions answered Oct 5 '12 at 0:24
-            response = requests.get(nodeURL,headers=headers, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
-            if response.status_code != 200:
-                return Response("%s is not responding"%nodeURL, status=404)
+    all_nodes = Node.objects.all()
+    for node in all_nodes:
+        nodeURL = node.host+"service/author/posts/"
+        print(nodeURL)
+        headers = {"X-UUID": str(current_user_uuid)}
+        # http://docs.python-requests.org/en/master/user/authentication/ ©MMXVIII. A Kenneth Reitz Project.
+        remote_to_node = RemoteUser.objects.get(node=node)
 
+        try:
+        # https://stackoverflow.com/questions/12737740/python-requests-and-persistent-sessions answered Oct 5 '12 at 0:24
+            response = requests.get(nodeURL,headers=headers, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
+
+        except Exception as e:
+            print("an error occured when pulling remote posts: %s"%e)
+            pass
+
+        if response.status_code == 200:
             postJson = response.json()
 
             if int(postJson["count"]) != 0: 
                 for i in range (0,len(postJson["posts"])):
                     remoteAuthorJson = postJson["posts"][i]["author"]
+                    
                     try:
                         remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
-                    except:
-                        return Response("Author not found", status=404)
-                    # Create the post object for final list
-                    if not Post.objects.filter(postid=postJson["posts"][i]["id"]).exists():
-                        remotePostObj = Post.objects.create(postid=postJson["posts"][i]["id"], title=postJson["posts"][i]["title"],source=node.host+"service/posts/"+postJson["posts"][i]["id"],
-                            origin=postJson["posts"][i]["origin"], content=postJson["posts"][i]["content"],categories=postJson["posts"][i]["categories"],
-                            contentType=postJson["posts"][i]["contentType"], author=remoteAuthorObj,visibility=postJson["posts"][i]["visibility"],
+
+                        if not Post.objects.filter(postid=postJson["posts"][i]["id"]).exists():
+                            remotePostObj = Post.objects.create(postid=postJson["posts"][i]["id"], title=postJson["posts"][i]["title"],source=node.host+"service/posts/"+postJson["posts"][i]["id"], 
+                            origin=postJson["posts"][i]["origin"], content=postJson["posts"][i]["content"],categories=postJson["posts"][i]["categories"], 
+                            contentType=postJson["posts"][i]["contentType"], author=remoteAuthorObj,visibility=postJson["posts"][i]["visibility"], 
                             visibleTo=postJson["posts"][i]["visibleTo"], description=postJson["posts"][i]["description"],
                             unlisted=postJson["posts"][i]["unlisted"])
                             #https://stackoverflow.com/questions/969285/how-do-i-translate-an-iso-8601-datetime-string-into-a-python-datetime-object community wiki 5 revs, 4 users 81% Wes Winham
                         publishedObj = dateutil.parser.parse(postJson["posts"][i]["published"])
                         remotePostObj.published = publishedObj
                         remotePostObj.save()
+                    except:
+                        pass
+
                     if len(postJson["posts"][i]["comments"]) != 0:
                         for j in range (0, len(postJson["posts"][i]["comments"])):
                             remotePostCommentAuthorJson = postJson["posts"][i]["comments"][j]["author"]
                             try:
                                 remotePostCommentAuthorObj = Helpers.get_or_create_author_if_not_exist(remotePostCommentAuthorJson)
-                            except:
-                                return Response("Author not found", status=404)
-                            if not Comment.objects.filter(id=postJson["posts"][i]["comments"][j]["id"]).exists():
-                                remotePostCommentObj = Comment.objects.create(id=postJson["posts"][i]["comments"][j]["id"], postid=postJson["posts"][i]["id"],
-                                    author = remotePostCommentAuthorObj, comment=postJson["posts"][i]["comments"][j]["comment"],contentType=postJson["posts"][i]["comments"][j]["contentType"])
+                                if not Comment.objects.filter(id=postJson["posts"][i]["comments"][j]["id"]).exists():
+                                    remotePostCommentObj = Comment.objects.create(id=postJson["posts"][i]["comments"][j]["id"], postid=postJson["posts"][i]["id"],
+                                    author = remotePostCommentAuthorObj, comment=postJson["posts"][i]["comments"][j]["comment"],contentType='text/plain')
                                 commentPublishedObj = dateutil.parser.parse(postJson["posts"][i]["comments"][j]["published"])
                                 remotePostCommentObj.published = commentPublishedObj
                                 remotePostCommentObj.save()
-        except Exception as e:
-            print("an error occured when pulling remote posts: %s"%e)
-            continue
+                            except:
+                                pass
 
+        else:
+            pass
 
 def delete_remote_nodes_post():
     # https://stackoverflow.com/questions/8949145/filter-django-database-for-field-containing-any-value-in-an-array answered Jan 20 '12 at 23:36 Ismail Badawi
