@@ -449,10 +449,10 @@ def pull_remote_nodes(current_user_uuid):
         try:
         # https://stackoverflow.com/questions/12737740/python-requests-and-persistent-sessions answered Oct 5 '12 at 0:24
             response = requests.get(nodeURL,headers=headers, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
-
+            print(response)
         except Exception as e:
             print("an error occured when pulling remote posts: %s"%e)
-            pass
+            continue
 
         if response.status_code == 200:
             postJson = response.json()
