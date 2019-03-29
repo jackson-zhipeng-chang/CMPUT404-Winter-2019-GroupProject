@@ -259,7 +259,7 @@ class PostToUserHandlerView(APIView):
                         except:
                             return Response("Author not found", status=404)
                 else:
-                    #delete_remote_nodes_post()
+                    delete_remote_nodes_post()
                     pull_remote_nodes(current_user_uuid)
 
                 Helpers.update_remote_friendship(current_user_uuid)
@@ -367,7 +367,7 @@ class PostToUserIDHandler(APIView):
                             return Response("Author not found", status=404)
 
                 else:
-                    #delete_remote_nodes_post()
+                    delete_remote_nodes_post()
                     pull_remote_nodes(current_user_uuid, remoteNode)
 
                 public_posts_list=[]
