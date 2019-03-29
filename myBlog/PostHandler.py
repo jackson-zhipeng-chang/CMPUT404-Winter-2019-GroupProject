@@ -260,7 +260,7 @@ class PostToUserHandlerView(APIView):
                             return Response("Author not found", status=404)
                 else:
                     delete_remote_nodes_post()
-                    pull_remote_nodes(current_user_uuid, remoteNode)
+                    pull_remote_nodes(current_user_uuid)
 
                 Helpers.update_remote_friendship(current_user_uuid)
                 my_posts_list=[]
@@ -437,9 +437,8 @@ class MyPostHandler(APIView):
             return Response("Unauthorized", status=401)
 
 
-def pull_remote_nodes(current_user_uuid, remoteNode):
+def pull_remote_nodes(current_user_uuid):
     all_nodes = Node.objects.all()
-    all_nodes.remove(remoteNode)
     for node in all_nodes:
         nodeURL = node.host+"service/author/posts/"
         print(nodeURL)
