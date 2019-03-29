@@ -279,13 +279,26 @@ def verify_remote_author(author_json):
     profile_url = author_hot+"service/author/"+str(author_json["id"])
     try:
         respons = requests.get(profile_url)
-        print(respons.json())
         if respons.status_code == 200:
             return True
         else:
             return False
     except:
         return False
+
+def send_FR_to_remote(nodeObj,data):
+    URL = nodeObj.host + 'service/friendrequest/'
+    header = {"Content-Type": "application/json", 'Accept': 'application/json'}
+    remote_server = RemoteUser.objects.get(node=nodeObj)
+    data = json.dumps(data)
+    response = requests.post(URL, headers=header, data=data,
+                             auth=HTTPBasicAuth(remote_server.remoteUsername,
+                                                remote_server.remotePassword))
+    if response.status_code == 200:
+
+        return Response("friend request sent", status=status.HTTP_200_OK)
+    else:
+        return Response(response.json(), status=response.status_code)
 
 #-----------------------------------------Local endpoints-----------------------------------------#
 def new_post(request):

@@ -104,11 +104,12 @@ function sendFollowRequest(author_id,author_host,author_name,author_url,currentU
         }
     }
     let body = JSON.stringify(request_form);
-    let url = author_host+"service/friendrequest/";
+    console.log(body);
+    // let url = author_host+"service/friendrequest/";
     let url_local = host+"service/friendrequest/";
-    console.log("Sending to author server:");
-    console.log(url);
-    return fetch(url,{
+    // console.log("Sending to author server:");
+    // console.log(url);
+    return fetch(url_local,{
         method:"POST",
         mode:"cors",
         cache:"no-cache",
@@ -123,42 +124,13 @@ function sendFollowRequest(author_id,author_host,author_name,author_url,currentU
         referrer:"no-referrer",
     })
     .then(response => {
-        if (response.status === 200 && url_local!= url) 
-        {     
-            return fetch(url_local,{
-            method:"POST",
-            mode:"cors",
-            cache:"no-cache",
-            credentials:"same-origin",
-            body:body,
-            headers:{
-                "Content-Type":"application/json",
-                "Accept": "application/json",
-                "x-csrftoken":csrf_token,
-            },
-            redirect:"follow",
-            referrer:"no-referrer",
-        })
-        .then(response => {
-            if (response.status === 200) 
-            { 
-                document.location.reload(true); 
-            } 
-            else 
-            {
-                alert("Something went wrong: " +  response.status);
-            }
-        }); 
-        } 
-
-        else if (response.status === 200 && url_local == url){
-            document.location.reload(true); 
-        } 
-        else 
-        {
-            alert("Something went wrong: " +  response.status);
+        if (response.status === 200) {
+           document.location.reload(true);
+        }else{
+           alert("Something went wrong: " +  response.status);
         }
-    }); 
+    })
+
 }
 
 // got data, render the page
