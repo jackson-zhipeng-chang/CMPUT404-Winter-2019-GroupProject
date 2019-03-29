@@ -466,15 +466,16 @@ def pull_remote_nodes(current_user_uuid):
                     remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
 
                     if not Post.objects.filter(postid=postJson["posts"][i]["id"]).exists():
+                        print("Creating posts: %s"%postJson["posts"][i]["title"])
                         remotePostObj = Post.objects.create(postid=postJson["posts"][i]["id"], title=postJson["posts"][i]["title"],source=node.host+"service/posts/"+postJson["posts"][i]["id"], 
                         origin=postJson["posts"][i]["origin"], content=postJson["posts"][i]["content"],categories=postJson["posts"][i]["categories"], 
                         contentType=postJson["posts"][i]["contentType"], author=remoteAuthorObj,visibility=postJson["posts"][i]["visibility"], 
                         visibleTo=postJson["posts"][i]["visibleTo"], description=postJson["posts"][i]["description"],
                         unlisted=postJson["posts"][i]["unlisted"])
                         #https://stackoverflow.com/questions/969285/how-do-i-translate-an-iso-8601-datetime-string-into-a-python-datetime-object community wiki 5 revs, 4 users 81% Wes Winham
-                    publishedObj = dateutil.parser.parse(postJson["posts"][i]["published"])
-                    remotePostObj.published = publishedObj
-                    remotePostObj.save()
+                        publishedObj = dateutil.parser.parse(postJson["posts"][i]["published"])
+                        remotePostObj.published = publishedObj
+                        remotePostObj.save()
 
                     if len(postJson["posts"][i]["comments"]) != 0:
                         for j in range (0, len(postJson["posts"][i]["comments"])):
@@ -484,9 +485,9 @@ def pull_remote_nodes(current_user_uuid):
                                 if not Comment.objects.filter(id=postJson["posts"][i]["comments"][j]["id"]).exists():
                                     remotePostCommentObj = Comment.objects.create(id=postJson["posts"][i]["comments"][j]["id"], postid=postJson["posts"][i]["id"],
                                     author = remotePostCommentAuthorObj, comment=postJson["posts"][i]["comments"][j]["comment"],contentType='text/plain')
-                                commentPublishedObj = dateutil.parser.parse(postJson["posts"][i]["comments"][j]["published"])
-                                remotePostCommentObj.published = commentPublishedObj
-                                remotePostCommentObj.save()
+                                    commentPublishedObj = dateutil.parser.parse(postJson["posts"][i]["comments"][j]["published"])
+                                    remotePostCommentObj.published = commentPublishedObj
+                                    remotePostCommentObj.save()
                             except:
                                 pass
 
