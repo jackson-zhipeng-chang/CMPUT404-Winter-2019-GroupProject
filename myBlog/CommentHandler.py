@@ -82,7 +82,7 @@ class CommentHandler(APIView):
                         return Response(responsBody, status=status.HTTP_200_OK)
                     
                     else:
-                        print(serializer.error())
+                        print(serializer.errors)
                         print("no 1 is_valid")
                         responsBody={
                         "query": "addCoemment",
