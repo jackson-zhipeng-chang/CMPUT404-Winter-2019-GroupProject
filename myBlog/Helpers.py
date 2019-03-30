@@ -16,6 +16,7 @@ import json
 import re
 import datetime
 import dateutil.parser
+import time
 
 def get_author_or_not_exits(current_user_uuid):
     if type(current_user_uuid) != UUID:
@@ -305,6 +306,27 @@ def from_my_server(host):
         if str(node.host) in str(host):
             return False
     return True
+
+def pull_remote_posts(current_user_uuid):
+    remotePostList = []
+    all_nodes = Node.objects.all()
+    for node in all_nodes:
+        nodeURL = node.host+'service/author/posts'
+        headers = {"X-UUID":str(current_user_uuid)}
+        # http://docs.python-requests.org/en/master/user/authentication/ ©MMXVIII. A Kenneth Reitz Project.
+        remote_to_node = RemoteUser.objects.get(node=node)
+        try:
+            response = requests.get(nodeURL,headers=headers,auth=HTTPBasicAuth(RemoteUser.remoteUsername,RemoteUser.remotePassword))
+            print('type of response is {}'.format(type(response)))
+        except Exception as e:
+            print("an error occured when pulling remote posts: %s"%e)
+            continue
+        
+        if response.status_code == 200:
+            postJson = response.json()
+            remotePostList += postJson['posts']
+            print(remotePost)
+    return remotePostList
 #-----------------------------------------Local endpoints-----------------------------------------#
 def new_post(request):
     return render(request, 'newpost.html')

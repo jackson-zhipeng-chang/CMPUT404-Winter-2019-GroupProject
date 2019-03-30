@@ -260,10 +260,16 @@ class PostToUserHandlerView(APIView):
                         except:
                             return Response("Author not found", status=404)
                 else:
-                    delete_remote_nodes_post()
-                    pull_remote_nodes(current_user_uuid)
+                    # TODO: No need to store?
+                    # if is local user, request remote server to get the post I can see
+                    Helpers.update_remote_friendship(current_user_uuid)
+                    remote_post_json = Helpers.pull_remote_posts(current_user_uuid)
+                    #---------------------------------------
+                    # delete_remote_nodes_post()
+                    # pull_remote_nodes(current_user_uuid)
+                    #---------------------------------------
 
-                Helpers.update_remote_friendship(current_user_uuid)
+                # Helpers.update_remote_friendship(current_user_uuid)
                 my_posts_list=[]
                 public_posts_list = []
                 friend_posts_list=[]
@@ -439,7 +445,6 @@ class MyPostHandler(APIView):
 
 
 def pull_remote_nodes(current_user_uuid):
-    start_time = time.time()
     all_nodes = Node.objects.all()
     for node in all_nodes:
         nodeURL = node.host+"service/author/posts/"
@@ -487,9 +492,6 @@ def pull_remote_nodes(current_user_uuid):
                                     remotePostCommentObj.published = commentPublishedObj
                                     remotePostCommentObj.save()
 
-    end_time = time.time()
-    duration = end_time-start_time
-    print(duration)
 
 def delete_remote_nodes_post():
     # https://stackoverflow.com/questions/8949145/filter-django-database-for-field-containing-any-value-in-an-array answered Jan 20 '12 at 23:36 Ismail Badawi
