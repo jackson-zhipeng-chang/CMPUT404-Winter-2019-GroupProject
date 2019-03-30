@@ -1,6 +1,7 @@
 <div class="w3-container w3-card w3-white w3-round w3-margin">
     <h4>Posts streams</h4>
 </div>
+<!-- <div class="fa fa-spinner fa-spin" style="font-size:5em;margin-left:50%;"></i></div> -->
 <div id="posts_holder">
 
 </div>
@@ -8,6 +9,8 @@
 
     function display_posts(data) {
         let holder = document.getElementById("posts_holder");
+
+
         holder.innerHTML = "";
         if (data.posts.length == 0){
             let post = document.createElement("div");
@@ -21,6 +24,11 @@
         }
 
         else{
+            let loader = document.createElement("div");
+            loader.classList.add("fa", "fa-spinner", "fa-spin");
+            loader.style.fontSize = "5em";
+            loader.style.marginLeft = "50%";
+            holder.appendChild(loader);
             for (var i = 0; i < data.posts.length; i++) {
 
                 let post = document.createElement("div");
@@ -158,7 +166,8 @@
                 nextButton.onclick=function(){getAllPosts(data.previous).then(display_posts)} ;
                 holder.appendChild(nextButton);
             }
-        }
+        loader.style.display = "none";
+        } 
     }
     getAllPosts("{{posts_url}}").then(display_posts);
 
