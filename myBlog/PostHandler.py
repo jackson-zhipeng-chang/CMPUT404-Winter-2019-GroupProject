@@ -95,7 +95,7 @@ class PostHandler(APIView):
             data = request.data
             if data["query"] == "getPost":
                 sender_friend_list = data["friends"]
-                post_id = data["postid"]
+                post_id = data["id"]
                 if isRemote:
                     remoteNode = Node.objects.get(nodeUser=request.user)
                     remote_to_node = RemoteUser.objects.get(node=remoteNode)
@@ -306,12 +306,11 @@ class PostToUserHandlerView(APIView):
                                 private_posts_list.append(post)
 
                     if not isRemote:
-                        
                         # TODO: remote user cannot get server Only Posts?
                         if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend.id), Q(visibility='SERVERONLY')).exists()):
                             if (Helpers.get_current_user_host(current_user_uuid)==friend.host):
                                 serveronly_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend.id),Q(visibility='SERVERONLY'))
-                        
+                                                       
                         # TODO: we dont consider FOAF of REMOTE user here?
                         friends_of_this_friend =  Helpers.get_friends(friend.id)
                         for friend_of_this_friend in friends_of_this_friend:

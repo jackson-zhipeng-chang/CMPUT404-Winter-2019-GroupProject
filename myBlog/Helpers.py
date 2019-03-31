@@ -53,8 +53,12 @@ def get_current_user_uuid(request):
                     return author.id
 
 def get_current_user_host(current_user_uuid):
-    if (not Author.objects.filter(id=current_user_uuid).exists()):
+    # if (not Author.objects.filter(id=current_user_uuid).exists()):
+    #     return Author.objects.get(id=current_user_uuid).host
+    try:
         return Author.objects.get(id=current_user_uuid).host
+    except:
+        return None
 
 def verify_current_user_to_post(post, request):
     post_visibility = post.visibility
@@ -422,8 +426,8 @@ def post_details(request, post_id):
                     except:
                         raise Http404("Author does not exist")
                     # Create the post object for final list
-                    if not Post.objects.filter(postid=postJson["postid"]).exists():
-                        post = Post.objects.create(postid=postJson["id"], title=postJson["title"],source=node.host+"service/posts/"+postJson["postid"], 
+                    if not Post.objects.filter(postid=postJson["id"]).exists():
+                        post = Post.objects.create(postid=postJson["id"], title=postJson["title"],source=node.host+"service/posts/"+postJson["id"], 
                             origin=postJson["origin"], content=postJson["content"],categories=postJson["categories"], 
                             contentType=postJson["contentType"], author=remoteAuthorObj,visibility=postJson["visibility"], 
                             visibleTo=postJson["visibleTo"], description=postJson["description"],
@@ -436,7 +440,7 @@ def post_details(request, post_id):
                             for j in range (0, len(postJson["comments"])):
                                 remotePostCommentAuthorJson = postJson["comments"][j]["author"]
                                 remotePostCommentAuthorObj = get_or_create_author_if_not_exist(remotePostCommentAuthorJson)
-                                remotePostCommentObj = Comment.objects.create(id=postJson["comments"][j]["id"], postid=postJson["comments"][j]["postid"],
+                                remotePostCommentObj = Comment.objects.create(id=postJson["comments"][j]["id"], postid=postJson["comments"][j]["id"],
                                 author = remotePostCommentAuthorObj, comment=postJson["comments"][j]["comment"],contentType=postJson["comments"][j]["contentType"])
                                 commentPublishedObj = dateutil.parser.parse(postJson["comments"][j]["published"])
                             remotePostCommentObj.published = commentPublishedObj
