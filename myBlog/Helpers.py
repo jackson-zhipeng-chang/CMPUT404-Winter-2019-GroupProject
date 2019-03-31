@@ -327,14 +327,35 @@ def pull_remote_posts(current_user_uuid):
             remotePostList += postJson['posts']
     return remotePostList
 
-def update_this_friendship(remoteNode,current_user_uuid):
-    print('here')
-
+def update_this_friendship(remoteNode,remote_user_uuid,request):
+    remote_authorObj = Author.objects.get(pk=remote_user_uuid)
     remote_host = remoteNode.host
+    remote_to_node = RemoteUser.objects.get(node=remoteNode)
     #Get friend list of this author
-    request_url = remote_host + "service/author/"+str(current_user_uuid)+"/friends"
-    response = requests.get(request_url,auth=HTTPBasicAuth(remoteNode.remoteUsername,remoteNode.remotePassword))
-    print(response)
+    request_url = remote_host + "service/author/"+str(remote_user_uuid)+"/friends"
+    response = requests.get(request_url,auth=HTTPBasicAuth(remote_to_node.remoteUsername,remote_to_node.remotePassword))
+    if response.status_code == 200:
+        friendlist = response.json()["authors"]
+        my_host = request.get_host()
+        print('my host is {}'.formate(my_host))
+        for friend_url in friendlist:
+            url_array = friend_url.split('/')
+            if url_array[2] == my_host:
+                friend_id = url_array[-1]
+                print(friend_id)
+                # actually this friendObj is from my server
+                friendObj = Author.objects.get(pk=friend_id)
+                # update friendship database
+                if Friend.objects.filter(Q(author=remote_authorObj),Q(friend=friendObj),(Q(status="Decline")|Q(status="Pending"))).exists():
+                    relationship = Friend.objects.get(Q(author=remote_authorObj),Q(friend=friendObj))
+                    relationship.status = "Accept"
+                    relationship.save()
+                elif Friend.objects.filter(Q(author=friendObj),Q(friend=remote_authorObj),(Q(status="Decline")|Q(status="Pending"))).exists():
+                    relationship = Friend.objects.get(Q(author=friendObj),Q(friend=remote_authorObj))
+                    relationship.status = "Accept"
+                    relationship.save()
+    else:
+        print("Something wrong ",response.status_code)            
 #-----------------------------------------Local endpoints-----------------------------------------#
 def new_post(request):
     return render(request, 'newpost.html')

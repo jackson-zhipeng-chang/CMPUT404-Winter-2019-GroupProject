@@ -245,13 +245,10 @@ class PostToUserHandlerView(APIView):
                 shareImages = True
                 sharePosts = True
                 if isRemote:
-                    print('here')
                     remoteNode = Node.objects.get(nodeUser=request.user)
                     shareImages = remoteNode.shareImages
                     sharePosts = remoteNode.sharePost
                     #delete_remote_nodes_post()
-                    # TODO: only ask this node to update friendship?
-                    Helpers.update_this_friendship(remoteNode,current_user_uuid)
                     if not (Author.objects.filter(id = current_user_uuid).exists()):
                         remote_to_node = RemoteUser.objects.get(node=remoteNode)
                         authorProfileURL = remoteNode.host + "service/author/%s"%str(current_user_uuid)
@@ -263,14 +260,17 @@ class PostToUserHandlerView(APIView):
                             remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
                         except:
                             return Response("Author not found", status=404)
+                    # TODO: only ask this node to update friendship?
+                    Helpers.update_this_friendship(remoteNode,current_user_uuid,request)
                 else:
                     # TODO: No need to store?
                     # if is local user, request remote server to get the post I can see
-                    Helpers.update_remote_friendship(current_user_uuid)
+                    # Helpers.update_remote_friendship(current_user_uuid)
                     # remote_post_json = Helpers.pull_remote_posts(current_user_uuid)
                     #---------------------------------------
                     delete_remote_nodes_post()
                     pull_remote_nodes(current_user_uuid)
+                    Helpers.update_remote_friendship(current_user_uuid,request)
                     #---------------------------------------
 
                 # Helpers.update_remote_friendship(current_user_uuid)
@@ -287,7 +287,8 @@ class PostToUserHandlerView(APIView):
                 if (Post.objects.filter(Q(unlisted=False), ~Q(author_id=current_user_uuid), Q(visibility='PUBLIC')).exists()):
                     public_posts_list = get_list_or_404(Post.objects.order_by('-published'), ~Q(author_id=current_user_uuid), Q(unlisted=False), Q(visibility='PUBLIC'))
 
-                friends_list = Helpers.get_friends(current_user_uuid)
+                # TODO: only get local friend list, since we have already update friendship?
+                friends_list = Helpers.get_local_friends(current_user_uuid)
                 for friend in friends_list:
                     if (Post.objects.filter(Q(unlisted=False),Q(author_id=friend.id),Q(visibility='FRIENDS')).exists()):
                         friend_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend.id), Q(visibility='FRIENDS'))
@@ -301,16 +302,21 @@ class PostToUserHandlerView(APIView):
                             if str(current_user_uuid) in post.visibleTo:
                                 private_posts_list.append(post)
 
-                    if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend.id), Q(visibility='SERVERONLY')).exists()):
-                        if (Helpers.get_current_user_host(current_user_uuid)==friend.host):
-                            serveronly_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend.id),Q(visibility='SERVERONLY'))
+                    # TODO: remote user cannot get server Only Posts?
+                    if not isRemote:
+                        if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend.id), Q(visibility='SERVERONLY')).exists()):
+                            if (Helpers.get_current_user_host(current_user_uuid)==friend.host):
+                                serveronly_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend.id),Q(visibility='SERVERONLY'))
+                   
 
-                    friends_of_this_friend =  Helpers.get_friends(friend.id)
-                    for friend_of_this_friend in friends_of_this_friend:
-                        if friend_of_this_friend.id != current_user_uuid:
-                            if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend_of_this_friend.id), Q(visibility='FOAF')).exists()):
-                                foaf_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend_of_this_friend.id),Q(visibility='FOAF'))
-
+                    # TODO: we dont consider FOAF of REMOTE user here?
+                    if not isRemote:
+                        friends_of_this_friend =  Helpers.get_friends(friend.id)
+                        for friend_of_this_friend in friends_of_this_friend:
+                            if friend_of_this_friend.id != current_user_uuid:
+                                if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend_of_this_friend.id), Q(visibility='FOAF')).exists()):
+                                    foaf_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend_of_this_friend.id),Q(visibility='FOAF'))
+                 
                 posts_list = my_posts_list+public_posts_list+friend_posts_list+private_posts_list+serveronly_posts_list+foaf_posts_list
                 filtered_share_list = []
                 if (not shareImages) and sharePosts:
@@ -448,11 +454,11 @@ class MyPostHandler(APIView):
             return Response("Unauthorized", status=401)
 
 
-def pull_remote_nodes(current_user_uuid):
+def pull_remote_nodes(current_user_uuid,request=None):
+    remote_postid_list = []
     all_nodes = Node.objects.all()
     for node in all_nodes:
         nodeURL = node.host+"service/author/posts/"
-        print(nodeURL)
         headers = {"X-UUID": str(current_user_uuid)}
         # http://docs.python-requests.org/en/master/user/authentication/ ©MMXVIII. A Kenneth Reitz Project.
         remote_to_node = RemoteUser.objects.get(node=node)
@@ -460,7 +466,6 @@ def pull_remote_nodes(current_user_uuid):
         try:
         # https://stackoverflow.com/questions/12737740/python-requests-and-persistent-sessions answered Oct 5 '12 at 0:24
             response = requests.get(nodeURL,headers=headers, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
-            print(response)
         except Exception as e:
             print("an error occured when pulling remote posts: %s"%e)
             continue
@@ -468,34 +473,54 @@ def pull_remote_nodes(current_user_uuid):
         if response.status_code == 200:
             postJson = response.json()
             if int(postJson["count"]) != 0: 
+                
                 for i in range (0,int(postJson["count"])):
-                    remoteAuthorJson = postJson["posts"][i]["author"]
-                    remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
+                    # TODO: if the post is already in our db and published date did not change, do nothing
+                    # TODO: if the postid is not in our db, add
+                    # TODO: if the postid from our db does not exist in response, delete.
 
-                    if not Post.objects.filter(postid=postJson["posts"][i]["id"]).exists():
-                        print("Creating posts: %s"%postJson["posts"][i]["title"])
-                        remotePostObj = Post.objects.create(postid=postJson["posts"][i]["id"], title=postJson["posts"][i]["title"],source=node.host+"service/posts/"+postJson["posts"][i]["id"], 
-                            origin=postJson["posts"][i]["origin"], content=postJson["posts"][i]["content"],categories=postJson["posts"][i]["categories"], 
-                            contentType=postJson["posts"][i]["contentType"], author=remoteAuthorObj,visibility=postJson["posts"][i]["visibility"], 
-                            visibleTo=postJson["posts"][i]["visibleTo"], description=postJson["posts"][i]["description"],
-                            unlisted=postJson["posts"][i]["unlisted"])
-                        #https://stackoverflow.com/questions/969285/how-do-i-translate-an-iso-8601-datetime-string-into-a-python-datetime-object community wiki 5 revs, 4 users 81% Wes Winham
-                        publishedObj = dateutil.parser.parse(postJson["posts"][i]["published"])
-                        remotePostObj.published = publishedObj
-                        remotePostObj.save()
+                    remotePostID = postJson["posts"][i]['id']
+                    remote_postid_list.append(remotePostID)
+                    remotePostPublished = postJson["post"][i]["published"]
 
-                    if len(postJson["posts"][i]["comments"]) != 0:
-                        for j in range (0, len(postJson["posts"][i]["comments"])):
-                            remotePostCommentAuthorJson = postJson["posts"][i]["comments"][j]["author"]
-                            if len(remotePostCommentAuthorJson) != 0:
-                                remotePostCommentAuthorObj = Helpers.get_or_create_author_if_not_exist(remotePostCommentAuthorJson)
-                                if not Comment.objects.filter(id=postJson["posts"][i]["comments"][j]["id"]).exists():
-                                    remotePostCommentObj = Comment.objects.create(id=postJson["posts"][i]["comments"][j]["id"], postid=postJson["posts"][i]["id"],
-                                    author = remotePostCommentAuthorObj, comment=postJson["posts"][i]["comments"][j]["comment"],contentType='text/plain')
-                                    commentPublishedObj = dateutil.parser.parse(postJson["posts"][i]["comments"][j]["published"])
-                                    remotePostCommentObj.published = commentPublishedObj
-                                    remotePostCommentObj.save()
+                    if Post.objects.filter(Q(postid=remotePostID),Q(published=remotePostPublished)).exists():
+                        continue
 
+                    # if the post in our db has been changed, delete
+                    elif Post.objects.filter(Q(postid=remotePostID,~Q(published=remotePostPublished))).exist():
+                        Post.objects.filter(Q(postid=remotePostID,~Q(published=remotePostPublished))).delete()
+            
+                    else:
+                        remoteAuthorJson = postJson["posts"][i]["author"]
+                        remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
+
+                        if not Post.objects.filter(postid=postJson["posts"][i]["id"]).exists():
+                            print("Creating posts: %s"%postJson["posts"][i]["title"])
+                            remotePostObj = Post.objects.create(postid=postJson["posts"][i]["id"], title=postJson["posts"][i]["title"],source=node.host+"service/posts/"+postJson["posts"][i]["id"], 
+                                origin=postJson["posts"][i]["origin"], content=postJson["posts"][i]["content"],categories=postJson["posts"][i]["categories"], 
+                                contentType=postJson["posts"][i]["contentType"], author=remoteAuthorObj,visibility=postJson["posts"][i]["visibility"], 
+                                visibleTo=postJson["posts"][i]["visibleTo"], description=postJson["posts"][i]["description"],
+                                unlisted=postJson["posts"][i]["unlisted"])
+                            #https://stackoverflow.com/questions/969285/how-do-i-translate-an-iso-8601-datetime-string-into-a-python-datetime-object community wiki 5 revs, 4 users 81% Wes Winham
+                            publishedObj = dateutil.parser.parse(postJson["posts"][i]["published"])
+                            remotePostObj.published = publishedObj
+                            remotePostObj.save()
+
+                        if len(postJson["posts"][i]["comments"]) != 0:
+                            for j in range (0, len(postJson["posts"][i]["comments"])):
+                                remotePostCommentAuthorJson = postJson["posts"][i]["comments"][j]["author"]
+                                if len(remotePostCommentAuthorJson) != 0:
+                                    remotePostCommentAuthorObj = Helpers.get_or_create_author_if_not_exist(remotePostCommentAuthorJson)
+                                    if not Comment.objects.filter(id=postJson["posts"][i]["comments"][j]["id"]).exists():
+                                        remotePostCommentObj = Comment.objects.create(id=postJson["posts"][i]["comments"][j]["id"], postid=postJson["posts"][i]["id"],
+                                        author = remotePostCommentAuthorObj, comment=postJson["posts"][i]["comments"][j]["comment"],contentType='text/plain')
+                                        commentPublishedObj = dateutil.parser.parse(postJson["posts"][i]["comments"][j]["published"])
+                                        remotePostCommentObj.published = commentPublishedObj
+                                        remotePostCommentObj.save()
+
+            # TODO: this part is for filtering the post not in remote posts, which means the post has been deleted in remote server
+            all_remote_post_id = Post.objects.filter(~Q(source__contains=request.get_host()))
+            print(all_remote_post_id)
 
 def delete_remote_nodes_post():
     # https://stackoverflow.com/questions/8949145/filter-django-database-for-field-containing-any-value-in-an-array answered Jan 20 '12 at 23:36 Ismail Badawi
