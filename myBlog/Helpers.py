@@ -337,7 +337,7 @@ def update_this_friendship(remoteNode,remote_user_uuid,request):
     if response.status_code == 200:
         friendlist = response.json()["authors"]
         my_host = request.get_host()
-        print('my host is {}'.formate(my_host))
+        print('my host is {}'.format(my_host))
         for friend_url in friendlist:
             url_array = friend_url.split('/')
             if url_array[2] == my_host:

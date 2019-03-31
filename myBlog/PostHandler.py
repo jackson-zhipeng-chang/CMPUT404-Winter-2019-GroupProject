@@ -268,9 +268,9 @@ class PostToUserHandlerView(APIView):
                     # Helpers.update_remote_friendship(current_user_uuid)
                     # remote_post_json = Helpers.pull_remote_posts(current_user_uuid)
                     #---------------------------------------
-                    delete_remote_nodes_post()
-                    pull_remote_nodes(current_user_uuid)
-                    Helpers.update_remote_friendship(current_user_uuid,request)
+                    # delete_remote_nodes_post()
+                    pull_remote_nodes(current_user_uuid,request=request)
+                    Helpers.update_remote_friendship(current_user_uuid)
                     #---------------------------------------
 
                 # Helpers.update_remote_friendship(current_user_uuid)
@@ -455,7 +455,7 @@ class MyPostHandler(APIView):
 
 
 def pull_remote_nodes(current_user_uuid,request=None):
-    remote_postid_list = []
+    remote_postid_set = set()
     all_nodes = Node.objects.all()
     for node in all_nodes:
         nodeURL = node.host+"service/author/posts/"
@@ -480,15 +480,15 @@ def pull_remote_nodes(current_user_uuid,request=None):
                     # TODO: if the postid from our db does not exist in response, delete.
 
                     remotePostID = postJson["posts"][i]['id']
-                    remote_postid_list.append(remotePostID)
-                    remotePostPublished = postJson["post"][i]["published"]
+                    remote_postid_set.add(remotePostID)
+                    remotePostPublished = postJson["posts"][i]["published"]
 
                     if Post.objects.filter(Q(postid=remotePostID),Q(published=remotePostPublished)).exists():
                         continue
 
                     # if the post in our db has been changed, delete
-                    elif Post.objects.filter(Q(postid=remotePostID,~Q(published=remotePostPublished))).exist():
-                        Post.objects.filter(Q(postid=remotePostID,~Q(published=remotePostPublished))).delete()
+                    elif Post.objects.filter(Q(postid=remotePostID),~Q(published=remotePostPublished)).exists():
+                        Post.objects.filter(Q(postid=remotePostID),~Q(published=remotePostPublished)).delete()
             
                     else:
                         remoteAuthorJson = postJson["posts"][i]["author"]
@@ -518,9 +518,15 @@ def pull_remote_nodes(current_user_uuid,request=None):
                                         remotePostCommentObj.published = commentPublishedObj
                                         remotePostCommentObj.save()
 
-            # TODO: this part is for filtering the post not in remote posts, which means the post has been deleted in remote server
-            all_remote_post_id = Post.objects.filter(~Q(source__contains=request.get_host()))
-            print(all_remote_post_id)
+    # TODO: this part is for filtering the post not in remote posts, which means the post has been deleted in remote server
+    all_remote_post_id = Post.objects.filter(~Q(source__contains=request.get_host())).values_list("postid",flat=True)
+    if len(all_remote_post_id) != len(remote_postid_set):
+        all_remote_post_id_set = set()
+        for post_id in all_remote_post_id:
+            all_remote_post_id_set.add(str(post_id))
+        deleted_post_id = remote_postid_set-all_remote_post_id_set
+        for post_id in deleted_post_id:
+            Post.objects.filter(postid=post_id).delete()
 
 def delete_remote_nodes_post():
     # https://stackoverflow.com/questions/8949145/filter-django-database-for-field-containing-any-value-in-an-array answered Jan 20 '12 at 23:36 Ismail Badawi
