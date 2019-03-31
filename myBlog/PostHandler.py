@@ -237,6 +237,7 @@ class PostHandler(APIView):
 # https://stackoverflow.com/questions/2658291/get-list-or-404-ordering-in-django answered Apr 17 '10 at 12:21 Ludwik Trammer
 class PostToUserHandlerView(APIView):
     def get(self, request, format=None):
+        start_time = time.time()
         if request.user.is_authenticated:
             current_user_uuid = Helpers.get_current_user_uuid(request)
             if type(current_user_uuid) is UUID:
@@ -244,10 +245,13 @@ class PostToUserHandlerView(APIView):
                 shareImages = True
                 sharePosts = True
                 if isRemote:
+                    print('here')
                     remoteNode = Node.objects.get(nodeUser=request.user)
                     shareImages = remoteNode.shareImages
                     sharePosts = remoteNode.sharePost
                     #delete_remote_nodes_post()
+                    # TODO: only ask this node to update friendship?
+                    Helpers.update_this_friendship(remoteNode,current_user_uuid)
                     if not (Author.objects.filter(id = current_user_uuid).exists()):
                         remote_to_node = RemoteUser.objects.get(node=remoteNode)
                         authorProfileURL = remoteNode.host + "service/author/%s"%str(current_user_uuid)
@@ -263,10 +267,10 @@ class PostToUserHandlerView(APIView):
                     # TODO: No need to store?
                     # if is local user, request remote server to get the post I can see
                     Helpers.update_remote_friendship(current_user_uuid)
-                    remote_post_json = Helpers.pull_remote_posts(current_user_uuid)
+                    # remote_post_json = Helpers.pull_remote_posts(current_user_uuid)
                     #---------------------------------------
-                    # delete_remote_nodes_post()
-                    # pull_remote_nodes(current_user_uuid)
+                    delete_remote_nodes_post()
+                    pull_remote_nodes(current_user_uuid)
                     #---------------------------------------
 
                 # Helpers.update_remote_friendship(current_user_uuid)
@@ -308,7 +312,6 @@ class PostToUserHandlerView(APIView):
                                 foaf_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend_of_this_friend.id),Q(visibility='FOAF'))
 
                 posts_list = my_posts_list+public_posts_list+friend_posts_list+private_posts_list+serveronly_posts_list+foaf_posts_list
-
                 filtered_share_list = []
                 if (not shareImages) and sharePosts:
                     for post in posts_list:
@@ -325,11 +328,12 @@ class PostToUserHandlerView(APIView):
 
                 elif shareImages and sharePosts:
                     filtered_share_list = posts_list
-
                 filtered_share_list.sort(key=lambda x: x.published, reverse=True) # https://stackoverflow.com/questions/403421/how-to-sort-a-list-of-objects-based-on-an-attribute-of-the-objects answered Dec 31 '08 at 16:42 by Triptych
                 paginator = CustomPagination()
                 results = paginator.paginate_queryset(filtered_share_list, request)
                 serializer=PostSerializer(results, many=True)
+                end_time = time.time()
+                print(end_time-start_time)
                 return paginator.get_paginated_response(serializer.data)
 
             else:
