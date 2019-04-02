@@ -164,6 +164,7 @@ def update_remote_friendship(current_user_uuid):
                             last_modified_time = friendship.last_modified_time.replace(tzinfo=None)
                             print(friendship)
                             print(last_modified_time)
+                            print((datetime.datetime.utcnow()-last_modified_time).total_seconds)
                             if ((datetime.datetime.utcnow() - last_modified_time).total_seconds () > 30):
                                 friendship.delete()
 
@@ -172,6 +173,8 @@ def update_remote_friendship(current_user_uuid):
                             last_modified_time = friendship.last_modified_time.replace(tzinfo=None)
                             print(friendship)
                             print(last_modified_time)
+                            print((datetime.datetime.utcnow()-last_modified_time).total_seconds)
+
                             if ((datetime.datetime.utcnow() - last_modified_time).total_seconds () > 30):
                                 friendship.delete()
         except:
