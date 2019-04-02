@@ -151,7 +151,8 @@ def update_remote_friendship(current_user_uuid):
             if len(remoteFriendsURL) != 0:
                 for remoteFriend_uuid in remote_friends_uuid_list:
                     isFollowing = check_author1_follow_author2(current_user_uuid,remoteFriend_uuid)
-                    if isFollowing:
+                    beingFollowed = check_author1_follow_author2(remoteFriend_uuid,current_user_uuid)
+                    if isFollowing or beingFollowed:
                         update_friendship_obj(current_user_uuid, remoteFriend_uuid, 'Accept')
 
             if len(local_friends_list) != 0:
