@@ -397,11 +397,6 @@ class PostToUserIDHandler(APIView):
                         if (Helpers.get_current_user_host(current_user_uuid)==user_host):
                             serveronly_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False),Q(author_id=user_id),Q(visibility='SERVERONLY'))
 
-                    friends_of_this_friend =  Helpers.get_friends(user_id)
-                    for friend_of_this_friend in friends_of_this_friend:
-                        if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend_of_this_friend.id), Q(visibility='FOAF')).exists()):
-                            foaf_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend_of_this_friend.id),Q(visibility='FOAF'))
-
                 posts_list = public_posts_list+friend_posts_list+private_posts_list+serveronly_posts_list+foaf_posts_list
                 posts_list.sort(key=lambda x: x.published, reverse=True)
                 paginator = CustomPagination()
