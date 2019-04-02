@@ -342,22 +342,27 @@ def update_this_friendship(remoteNode,remote_user_uuid,request):
         friendlist = response.json()["authors"]
         my_host = request.get_host()
         print('my host is {}'.format(my_host))
-        for friend_url in friendlist:
-            url_array = friend_url.split('/')
-            if url_array[2] == my_host:
-                friend_id = url_array[-1]
-                print(friend_id)
-                # actually this friendObj is from my server
-                friendObj = Author.objects.get(pk=friend_id)
-                # update friendship database
-                if Friend.objects.filter(Q(author=remote_authorObj),Q(friend=friendObj),(Q(status="Decline")|Q(status="Pending"))).exists():
-                    relationship = Friend.objects.get(Q(author=remote_authorObj),Q(friend=friendObj))
-                    relationship.status = "Accept"
-                    relationship.save()
-                elif Friend.objects.filter(Q(author=friendObj),Q(friend=remote_authorObj),(Q(status="Decline")|Q(status="Pending"))).exists():
-                    relationship = Friend.objects.get(Q(author=friendObj),Q(friend=remote_authorObj))
-                    relationship.status = "Accept"
-                    relationship.save()
+        try:
+            for friend_url in friendlist:
+                url_array = friend_url.split('/')
+                if url_array[2] == my_host:
+                    friend_id = url_array[-1]
+                    print(friend_id)
+                    # actually this friendObj is from my server
+                    friendObj = Author.objects.get(pk=friend_id)
+                    # update friendship database
+                    if Friend.objects.filter(Q(author=remote_authorObj),Q(friend=friendObj),(Q(status="Decline")|Q(status="Pending"))).exists():
+                        relationship = Friend.objects.get(Q(author=remote_authorObj),Q(friend=friendObj))
+                        relationship.status = "Accept"
+                        relationship.save()
+                    elif Friend.objects.filter(Q(author=friendObj),Q(friend=remote_authorObj),(Q(status="Decline")|Q(status="Pending"))).exists():
+                        relationship = Friend.objects.get(Q(author=friendObj),Q(friend=remote_authorObj))
+                        relationship.status = "Accept"
+                        relationship.save()
+
+        except Exception as e:
+            print("an error occured: %s"%e)
+
     else:
         print("Something wrong ",response.status_code)            
 #-----------------------------------------Local endpoints-----------------------------------------#
