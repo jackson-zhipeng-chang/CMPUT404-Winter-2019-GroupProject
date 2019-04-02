@@ -159,14 +159,18 @@ def update_remote_friendship(current_user_uuid):
                 print(remote_friends_uuid_list)
                 for localFriend in local_friends_list:
                     if (localFriend.id not in remote_friends_uuid_list) and (node.host == localFriend.host):
+                        # two condition: 
+                        # 1,A follows B, B accept, but A does not update. As B, I am not friend with A yet.
+                        # 2,A unfriend B, as B, when I want to update, I need to wait 30s.
+                        # TODO: how to distinguish above two conditions.
                         if (Friend.objects.filter(Q(author=localFriend.id), Q(status='Accept')).exists()):
                             friendship = Friend.objects.get(Q(author=localFriend.id), Q(status='Accept'))
                             last_modified_time = friendship.last_modified_time.replace(tzinfo=None)
                             print(friendship)
                             print(last_modified_time)
                             print((datetime.datetime.utcnow()-last_modified_time).total_seconds())
-                            if ((datetime.datetime.utcnow() - last_modified_time).total_seconds () > 30):
-                                friendship.delete()
+                            # if ((datetime.datetime.utcnow() - last_modified_time).total_seconds () > 30):
+                            friendship.delete()
 
                         if (Friend.objects.filter(Q(friend=localFriend.id), Q(status='Accept')).exists()):
                             friendship = Friend.objects.get(Q(friend=localFriend.id), Q(status='Accept'))
@@ -175,8 +179,8 @@ def update_remote_friendship(current_user_uuid):
                             print(last_modified_time)
                             print((datetime.datetime.utcnow()-last_modified_time).total_seconds())
 
-                            if ((datetime.datetime.utcnow() - last_modified_time).total_seconds () > 30):
-                                friendship.delete()
+                            # if ((datetime.datetime.utcnow() - last_modified_time).total_seconds () > 30):
+                            friendship.delete()
         except:
             pass
 

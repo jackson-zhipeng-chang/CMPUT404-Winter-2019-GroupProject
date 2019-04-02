@@ -398,6 +398,18 @@ class PostToUserIDHandler(APIView):
                     public_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=user_id),Q(visibility='PUBLIC'))
 
                 isFriend = Helpers.check_two_users_friends(current_user_uuid, user_id)
+                isFoaf = False
+
+                friends_of_this_author = Helpers.get_friends(user_id)
+                my_friends = Helpers.get_friends(current_user_uuid)
+                for friend_of_this_author in friends_of_this_author:
+                    if friend_of_this_author in my_friends:
+                        isFoaf = True
+                        break
+                
+                if not isFriend and isFoaf and (Post.objects.filter(Q(unlisted=False),Q(author_id=user_id),Q(visibility='FOAF')).exists()):
+                    foaf_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=user_id),Q(visibility='FOAF'))
+
                 if isFriend:
                     if (Post.objects.filter(Q(unlisted=False),Q(author_id=user_id),Q(visibility='FRIENDS')).exists()):
                         friend_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False),Q(author_id=user_id),Q(visibility='FRIENDS'))
@@ -416,10 +428,6 @@ class PostToUserIDHandler(APIView):
                         if (Helpers.get_current_user_host(current_user_uuid)==user_host):
                             serveronly_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False),Q(author_id=user_id),Q(visibility='SERVERONLY'))
 
-                    friends_of_this_friend =  Helpers.get_friends(user_id)
-                    for friend_of_this_friend in friends_of_this_friend:
-                        if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend_of_this_friend.id), Q(visibility='FOAF')).exists()):
-                            foaf_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend_of_this_friend.id),Q(visibility='FOAF'))
 
                 posts_list = public_posts_list+friend_posts_list+private_posts_list+serveronly_posts_list+foaf_posts_list
                 posts_list.sort(key=lambda x: x.published, reverse=True)
