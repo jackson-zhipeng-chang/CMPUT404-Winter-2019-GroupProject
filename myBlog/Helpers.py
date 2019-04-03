@@ -356,10 +356,16 @@ def update_this_friendship(remoteNode,remote_user_uuid,request):
     remote_authorObj = Author.objects.get(pk=remote_user_uuid)
     remote_host = remoteNode.host
     remote_to_node = RemoteUser.objects.get(node=remoteNode)
-    
-    local_friends_obj_list = list(Friend.objects.filter(Q(author=remote_authorObj)|Q(friend=remote_authorObj)))
-    if local_friends_obj_list:
-        local_friend_list_of_remote_user = [str(friend.id) for friend in local_friends_obj_list]
+    local_friend_list_of_remote_user = []
+    # local_friends_obj_list = list(Friend.objects.filter(Q(author=remote_authorObj)|Q(friend=remote_authorObj)))
+    if Friend.objects.filter(author=remote_authorObj).exists():
+        local_friend_list_of_remote_user += [str(friend.friend.id) for friend in list(Friend.objects.filter(author=remote_authorObj))]
+    if Friend.objects.filter(friend=remote_authorObj).exists():
+        local_friend_list_of_remote_user += [str(friend.author.id) for friend in list(Friend.objects.filter(friend=remote_authorObj))]
+
+
+    if local_friend_list_of_remote_user:
+        # local_friend_list_of_remote_user = [str(friend.id) for friend in local_friends_obj_list]
         request_body = {
             "query":"friends",
             "author":remote_host + "service/author/"+str(remote_user_uuid),
