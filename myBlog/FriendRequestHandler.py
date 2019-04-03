@@ -187,6 +187,10 @@ class AcceptFR(APIView):
                         "author":coming_data["friend"],
                         "friend":coming_data["author"]
                     }
+            print("in coming data is: ")
+            print(coming_data)
+            print("data is : ")
+            print(data)
             for node in Node.objects.all():
                 if str(node.host) in str(request_url):
                     is_to_remote = True
