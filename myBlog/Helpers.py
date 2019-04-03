@@ -386,7 +386,7 @@ def update_this_friendship(remoteNode,remote_user_uuid,request):
             try:
                 for friend_url in extra_friend:
                     # TODO: get friend's host in smart way
-                    friend_uuid=friend_url.replace('https://'+my_host+'author/',"")
+                    friend_uuid=friend_url.replace('https://'+my_host+'/author/',"")
                     friend_obj = Author.objects.get(Q(pk=friend_uuid))
                     if Friend.objects.filter(Q(author=friend_obj),Q(status="Accept")).exists():
                         Friend.objects.get(Q(author=friend_obj),Q(status="Accept")).delete()
