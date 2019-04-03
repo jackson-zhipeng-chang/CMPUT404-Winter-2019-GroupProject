@@ -302,6 +302,8 @@ def get_or_create_author_if_not_exist(author_json):
 def verify_remote_author(author_json,request):
     author_hot = author_json["host"]
     host_url = "http://"+request.get_host()+'/'
+    print(str(author_hot))
+    print(str(host_url))
     if author_hot != host_url:
         profile_url = author_hot+"service/author/"+str(author_json["id"])
         try:
