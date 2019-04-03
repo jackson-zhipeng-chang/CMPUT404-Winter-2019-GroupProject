@@ -535,13 +535,19 @@ def pull_remote_nodes(current_user_uuid,request=None):
     
     # all_remote_post_id_set is a set of remote postsid in our server
     # remote_postid_set is the remote postid visible to me from other server
+    print('all_remote_post_id')
+    print(all_remote_post_id)
+    print('remote_postid_set')
+    print(remote_postid_set)
     if len(all_remote_post_id) != len(remote_postid_set):
+        print('in condition!!!')
         all_remote_post_id_set = set()
         for post_id in all_remote_post_id:
             all_remote_post_id_set.add(str(post_id))
         print(all_remote_post_id_set)
         print(remote_postid_set)
         deleted_post_id = all_remote_post_id_set-remote_postid_set
+        print(deleted_post_id)
         for post_id in deleted_post_id:
             Post.objects.filter(postid=post_id).delete()
 
