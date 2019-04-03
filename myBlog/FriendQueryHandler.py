@@ -42,6 +42,7 @@ class FriendQueryHandler(APIView):
             author = Helpers.get_author_or_not_exits(user_id)
             print(author)
             data = request.data
+            print('datatatatatatataatatatat')
             print(data)
             if data['query'] == 'friends':
                 # friends_list = Helpers.get_friends(user_id)
