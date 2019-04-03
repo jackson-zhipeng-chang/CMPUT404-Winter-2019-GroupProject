@@ -52,7 +52,7 @@ class FriendQueryHandler(APIView):
                 query_list.append(data['authors'])
             else:
                 query_list = data['authors']
-            
+            print("query_list is {}:".format(query_list))
             respons_list = []
             for author_url in query_list:
                 for friend_obj in friend_list:
