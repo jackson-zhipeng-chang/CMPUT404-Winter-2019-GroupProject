@@ -269,8 +269,8 @@ class PostToUserHandlerView(APIView):
                     # remote_post_json = Helpers.pull_remote_posts(current_user_uuid)
                     #---------------------------------------
                     # delete_remote_nodes_post()
-                    pull_remote_nodes(current_user_uuid,request=request)
                     Helpers.update_remote_friendship(current_user_uuid)
+                    pull_remote_nodes(current_user_uuid,request=request)
                     #---------------------------------------
 
                 # Helpers.update_remote_friendship(current_user_uuid)
@@ -382,7 +382,7 @@ class PostToUserIDHandler(APIView):
                             remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
                         except:
                             return Response("Author not found", status=404)
-                    # TODO: only ask this node to update friendship?
+                    # TODO: only need this function when this author is exist in our server?
                     Helpers.update_this_friendship(remoteNode,current_user_uuid,request)
                 else:
                     # delete_remote_nodes_post()

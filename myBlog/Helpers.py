@@ -152,6 +152,7 @@ def update_remote_friendship(current_user_uuid):
                 for remoteFriend_uuid in remote_friends_uuid_list:
                     isFollowing = check_author1_follow_author2(current_user_uuid,remoteFriend_uuid)
                     if isFollowing:
+                        print('change statusssssssssssss')
                         update_friendship_obj(current_user_uuid, remoteFriend_uuid, 'Accept')
 
             if len(local_friends_list) != 0:
@@ -163,23 +164,29 @@ def update_remote_friendship(current_user_uuid):
                         # 1,A follows B, B accept, but A does not update. As B, I am not friend with A yet.
                         # 2,A unfriend B, as B, when I want to update, I need to wait 30s.
                         # TODO: how to distinguish above two conditions.
-                        if (Friend.objects.filter(Q(author=localFriend.id), Q(status='Accept')).exists()):
-                            friendship = Friend.objects.get(Q(author=localFriend.id), Q(status='Accept'))
-                            last_modified_time = friendship.last_modified_time.replace(tzinfo=None)
-                            print(friendship)
-                            print(last_modified_time)
-                            print((datetime.datetime.utcnow()-last_modified_time).total_seconds())
-                            # if ((datetime.datetime.utcnow() - last_modified_time).total_seconds () > 30):
+                        # if (Friend.objects.filter(Q(author=localFriend.id), Q(status='Accept')).exists()):
+                        #     friendship = Friend.objects.get(Q(author=localFriend.id), Q(status='Accept'))
+                        #     last_modified_time = friendship.last_modified_time.replace(tzinfo=None)
+                        #     print(friendship)
+                        #     print(last_modified_time)
+                        #     print((datetime.datetime.utcnow()-last_modified_time).total_seconds())
+                        #     # if ((datetime.datetime.utcnow() - last_modified_time).total_seconds () > 30):
+                        #     friendship.delete()
+
+                        # if (Friend.objects.filter(Q(friend=localFriend.id), Q(status='Accept')).exists()):
+                        #     friendship = Friend.objects.get(Q(friend=localFriend.id), Q(status='Accept'))
+                        #     last_modified_time = friendship.last_modified_time.replace(tzinfo=None)
+                        #     print(friendship)
+                        #     print(last_modified_time)
+                        #     print((datetime.datetime.utcnow()-last_modified_time).total_seconds())
+
+                        #     # if ((datetime.datetime.utcnow() - last_modified_time).total_seconds () > 30):
+                        #     friendship.delete()
+                        if Friend.objects.filter(Q(author=localFriend.id),Q(status='Accept')).exists():
+                            friendship = Friend.objects.get(Q(author=localFriend.id),Q(status='Accept'))
                             friendship.delete()
-
-                        if (Friend.objects.filter(Q(friend=localFriend.id), Q(status='Accept')).exists()):
-                            friendship = Friend.objects.get(Q(friend=localFriend.id), Q(status='Accept'))
-                            last_modified_time = friendship.last_modified_time.replace(tzinfo=None)
-                            print(friendship)
-                            print(last_modified_time)
-                            print((datetime.datetime.utcnow()-last_modified_time).total_seconds())
-
-                            # if ((datetime.datetime.utcnow() - last_modified_time).total_seconds () > 30):
+                        elif Friend.objects.filter(Q(friend=localFriend.id),Q(status='Accept')).exists():
+                            friendship = Friend.objects.get(Q(friend=localFriend.id),Q(status='Accept'))
                             friendship.delete()
         except:
             pass
@@ -292,18 +299,23 @@ def get_or_create_author_if_not_exist(author_json):
 
     return AuthorObj
 
-def verify_remote_author(author_json):
+def verify_remote_author(author_json,request):
     author_hot = author_json["host"]
-    profile_url = author_hot+"service/author/"+str(author_json["id"])
-    try:
-        respons = requests.get(profile_url)
-        if respons.status_code == 200:
-            return True
-        else:
+    host_url = "http://"+request.get_host()+'/'
+    if author_hot != host_url:
+        profile_url = author_hot+"service/author/"+str(author_json["id"])
+        try:
+            node = Node.objects.get(host=author_hot)
+            remote_to_node = RemoteUser.objects.get(node)
+            respons = requests.get(profile_url,auth=HTTPBasicAuth(remote_to_node.remoteUsername,remote_to_node.remotePassword))
+            if respons.status_code == 200:
+                return True
+            else:
+                return False
+        except:
             return False
-    except:
-        return False
-
+    else:
+        return True
 def send_FR_to_remote(nodeObj,data):
     URL = nodeObj.host + 'service/friendrequest/'
     header = {"Content-Type": "application/json", 'Accept': 'application/json'}
@@ -312,11 +324,12 @@ def send_FR_to_remote(nodeObj,data):
     response = requests.post(URL, headers=header, data=data,
                              auth=HTTPBasicAuth(remote_server.remoteUsername,
                                                 remote_server.remotePassword))
-    if response.status_code == 200:
+    # if response.status_code == 200:
 
-        return Response("friend request sent", status=status.HTTP_200_OK)
-    else:
-        return Response("Something went wrong", status=response.status_code)
+    #     return Response("friend request sent", status=status.HTTP_200_OK)
+    # else:
+    #     return Response("Something went wrong", status=response.status_code)
+    return response.status_code
 
 def from_my_server(host):
     for node in Node.objects.all():
@@ -348,30 +361,47 @@ def update_this_friendship(remoteNode,remote_user_uuid,request):
     remote_authorObj = Author.objects.get(pk=remote_user_uuid)
     remote_host = remoteNode.host
     remote_to_node = RemoteUser.objects.get(node=remoteNode)
+    
+    local_friends_obj_list = list(Friend.objects.filter(Q(author=remote_authorObj)|Q(friend=remote_authorObj)))
+    local_friend_list_of_remote_user = [str(friend.id) for friend in local_friends_obj_list]
+    request_body = {
+        "query":"friends",
+        "author":remote_host + "service/author/"+str(remote_user_uuid),
+        "authors":local_friend_list_of_remote_user
+    }
     #Get friend list of this author
     request_url = remote_host + "service/author/"+str(remote_user_uuid)+"/friends"
-    response = requests.get(request_url,auth=HTTPBasicAuth(remote_to_node.remoteUsername,remote_to_node.remotePassword))
+    response = requests.post(request_url,auth=HTTPBasicAuth(remote_to_node.remoteUsername,remote_to_node.remotePassword))
     if response.status_code == 200:
-        friendlist = response.json()["authors"]
+        response_friendlist_set = set(response.json()["authors"])
+        local_friend_set = set(local_friend_list_of_remote_user)
+        extra_friend = local_friend_set - response_friendlist_set
         my_host = request.get_host()
         print('my host is {}'.format(my_host))
         try:
-            for friend_url in friendlist:
-                url_array = friend_url.split('/')
-                if url_array[2] == my_host:
-                    friend_id = url_array[-1]
-                    print(friend_id)
-                    # actually this friendObj is from my server
-                    friendObj = Author.objects.get(pk=friend_id)
-                    # update friendship database
-                    if Friend.objects.filter(Q(author=remote_authorObj),Q(friend=friendObj),(Q(status="Decline")|Q(status="Pending"))).exists():
-                        relationship = Friend.objects.get(Q(author=remote_authorObj),Q(friend=friendObj))
-                        relationship.status = "Accept"
-                        relationship.save()
-                    elif Friend.objects.filter(Q(author=friendObj),Q(friend=remote_authorObj),(Q(status="Decline")|Q(status="Pending"))).exists():
-                        relationship = Friend.objects.get(Q(author=friendObj),Q(friend=remote_authorObj))
-                        relationship.status = "Accept"
-                        relationship.save()
+            # for friend_url in friendlist:
+            #     url_array = friend_url.split('/')
+            #     if url_array[2] == my_host:
+            #         friend_id = url_array[-1]
+            #         print(friend_id)
+            #         # actually this friendObj is from my server
+            #         friendObj = Author.objects.get(pk=friend_id)
+            #         # update friendship database
+            #         if Friend.objects.filter(Q(author=remote_authorObj),Q(friend=friendObj),(Q(status="Decline")|Q(status="Pending"))).exists():
+            #             relationship = Friend.objects.get(Q(author=remote_authorObj),Q(friend=friendObj))
+            #             relationship.status = "Accept"
+            #             relationship.save()
+            #         elif Friend.objects.filter(Q(author=friendObj),Q(friend=remote_authorObj),(Q(status="Decline")|Q(status="Pending"))).exists():
+            #             relationship = Friend.objects.get(Q(author=friendObj),Q(friend=remote_authorObj))
+            #             relationship.status = "Accept"
+            #             relationship.save()
+            for friend_url in extra_friend:
+                friend_uuid=friend_url.replace(my_host+'author/',"")
+                friend_obj = Author.objects.get(Q(pk=friend_uuid))
+                if Friend.objects.filter(Q(author=friend_obj),Q(status="Accept")).exists():
+                    Friend.objects.get(Q(author=friend_obj),Q(status="Accept")).delete()
+                if Friend.objects.filter(Q(friend=friend_obj),Q(status="Accept")).exists():
+                    Friend.objects.get(Q(friend=friend_obj),Q(status="Accept")).delete()
 
         except Exception as e:
             print("an error occured: %s"%e)

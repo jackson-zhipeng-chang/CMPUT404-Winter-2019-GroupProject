@@ -80,6 +80,7 @@ class AuthorSerializer(serializers.ModelSerializer):
 
 class FriendSerializer(serializers.ModelSerializer):
     author = AuthorSerializer(read_only=True)
+    friend = AuthorSerializer(read_only=True)
 
     class Meta:
         model = Friend

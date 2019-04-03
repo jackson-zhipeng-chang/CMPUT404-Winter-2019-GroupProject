@@ -55,5 +55,5 @@ urlpatterns = [
     path('authordetails/<uuid:author_id>/',Helpers.author_details,name='authordetails'),
     path('postdetails/<uuid:post_id>/', Helpers.post_details, name='postdetails'),
     path('unfriend/<uuid:friendid>/',FriendRequestHandler.UnFriend.as_view(),name='unfriend'),
-
+    path('acceptFriendRequest/',FriendRequestHandler.AcceptFR.as_view(),name='acceptFriendRequest')
 ]

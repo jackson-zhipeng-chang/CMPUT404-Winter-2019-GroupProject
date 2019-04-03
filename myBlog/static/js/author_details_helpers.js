@@ -86,12 +86,13 @@ function sendUnFriendRequest(author_id){
         }
     }); 
 }
-function sendFollowRequest(author_id,author_host,author_name,author_url,currentUserName){
+function sendFollowRequest(author_id,author_host,author_name,author_url,currentUserName,currentUserID){
     let host = get_host();
+    console.log(host)
     let request_form = {
         "query":"friendrequest",
         "author":{
-            'id':current_user_id,
+            'id':currentUserID,
             'host':host,
             'displayName':currentUserName,
             'url':host+current_user_id,
@@ -239,7 +240,7 @@ function renderpage(data){
                 followBtn.appendChild(followText);
                 btnDiv.appendChild(followBtn);
                 followBtn.addEventListener('click', function () {
-                    sendFollowRequest(author_id, authorHost, authorName, authorUrl, cuurent_user_name);
+                    sendFollowRequest(author_id, authorHost, authorName, authorUrl, cuurent_user_name,current_user_id);
                 });
 
             }

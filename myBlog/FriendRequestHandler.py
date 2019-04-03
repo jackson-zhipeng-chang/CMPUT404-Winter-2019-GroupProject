@@ -32,75 +32,80 @@ class FriendRequestHandler(APIView):
             return Response("Unauthorized", status=401)
 
     def post(self, request, format=None):
-        is_to_remote = False
-        self.node = None
-        self.data = None
-        data = request.data
-        if data['query'] == 'friendrequest':
-            request_url = data['friend']['host']
-            for node in Node.objects.all():
-                if str(node.host) in str(request_url):
-                    is_to_remote = True
-                    self.node = node
-                    self.data = data
-
-            current_user_uuid = Helpers.get_current_user_uuid(request)
-            # author_id = data['author']['id'].split('author/')[1]
-            # friend_id = data['friend']['id'].split('author/')[1]
-            author_id = data['author']['id'].replace(data['author']['host']+'author/', "")
-            friend_id = data['friend']['id'].replace(data['friend']['host']+'author/', "")
-            data['author']['id'] = author_id
-            data['friend']['id'] = friend_id
-            sender_verified = Helpers.verify_remote_author(data['author'])
-            reciver_verified = Helpers.verify_remote_author(data['friend'])
-            if sender_verified and reciver_verified:
-                sender_object = Helpers.get_or_create_author_if_not_exist(data['author'])
-                reciver_object = Helpers.get_or_create_author_if_not_exist(data['friend'])
-            else:
-                return Response("Author not found", status=404) 
-
-            friend_already = Helpers.check_two_users_friends(author_id,friend_id)
-            if (not friend_already):
-                if (Friend.objects.filter(author=sender_object, friend=reciver_object, status="Decline").exists()):
-                    friendrequest = Friend.objects.get(author=sender_object, friend=reciver_object)
-                    friendrequest.status="Pending"
-                    friendrequest.save()
-                    if is_to_remote:
-                        Helpers.send_FR_to_remote(self.node,self.data)
-
-                    return Response("Friend request sent", status=status.HTTP_200_OK) 
-
-                elif (Friend.objects.filter(author=reciver_object, friend=sender_object, status="Decline").exists()):
-                    friendrequest = Friend.objects.get(author=reciver_object, friend=sender_object)
-                    friendrequest.status="Accept"
-                    friendrequest.save()
-                    if is_to_remote:
-                        Helpers.send_FR_to_remote(self.node,self.data)
-                    return Response("You are now friend with %s"%author_id, status=status.HTTP_200_OK)
-
-                elif Friend.objects.filter(author=reciver_object, friend=sender_object, status="Pending").exists():
-                    # if the one who I want to follow has followed me
-                    friendrequest = Friend.objects.get(author=reciver_object, friend=sender_object)
-                    friendrequest.status = 'Accept'
-                    friendrequest.save()
-                    if is_to_remote:
-                        Helpers.send_FR_to_remote(self.node,self.data)
-                    return Response("You are new friend with{}".format(reciver_object.displayName, status=status.HTTP_200_OK))
-
-                elif (Friend.objects.filter(author=sender_object, friend=reciver_object, status="Pending").exists()): 
-                    return Response("Friend request already sent", status=status.HTTP_400_BAD_REQUEST)  
+        if request.user.is_authenticated:
+            is_to_remote = False
+            self.node = None
+            self.data = None
+            data = request.data
+            if data['query'] == 'friendrequest':
+                request_url = data['friend']['host']
+                for node in Node.objects.all():
+                    if str(node.host) in str(request_url):
+                        is_to_remote = True
+                        self.node = node
+                        self.data = data
+                current_user_uuid = Helpers.get_current_user_uuid(request)
+                # author_id = data['author']['id'].split('author/')[1]
+                # friend_id = data['friend']['id'].split('author/')[1]
+                author_id = data['author']['id'].replace(data['author']['host']+'author/', "")
+                friend_id = data['friend']['id'].replace(data['friend']['host']+'author/', "")
+                data['author']['id'] = author_id
+                data['friend']['id'] = friend_id
+                sender_verified = Helpers.verify_remote_author(data['author'],request)
+                reciver_verified = Helpers.verify_remote_author(data['friend'],request)
+                if sender_verified and reciver_verified:
+                    sender_object = Helpers.get_or_create_author_if_not_exist(data['author'])
+                    reciver_object = Helpers.get_or_create_author_if_not_exist(data['friend'])
                 else:
-                    friendrequest = Friend.objects.create(author=sender_object, friend=reciver_object)
-                    friendrequest.save()
-                    if is_to_remote:
-                        Helpers.send_FR_to_remote(self.node,self.data)
-                    return Response("Friend request sent", status=status.HTTP_200_OK)  
+                    return Response("Author not found", status=404) 
+
+                friend_already = Helpers.check_two_users_friends(author_id,friend_id)
+                if (not friend_already):
+                    if (Friend.objects.filter(author=sender_object, friend=reciver_object, status="Decline").exists()):
+                        if is_to_remote:
+                            remote_status = Helpers.send_FR_to_remote(self.node,self.data)
+                        if (is_to_remote and remote_status==200) or not is_to_remote:
+                            friendrequest = Friend.objects.get(author=sender_object, friend=reciver_object)
+                            friendrequest.status="Pending"
+                            friendrequest.save()
+                        else:
+                            return Response("Something wrong with sending FRequest", status=status.HTTP_400_BAD_REQUEST)
+
+                        return Response("Friend request sent", status=status.HTTP_200_OK) 
+
+                    elif (Friend.objects.filter(author=reciver_object, friend=sender_object, status="Decline").exists()):
+                        friendrequest = Friend.objects.get(author=reciver_object, friend=sender_object)
+                        friendrequest.status="Accept"
+                        friendrequest.save()
+                        if is_to_remote:
+                            Helpers.send_FR_to_remote(self.node,self.data)
+                        return Response("You are now friend with %s"%author_id, status=status.HTTP_200_OK)
+
+                    elif Friend.objects.filter(author=reciver_object, friend=sender_object, status="Pending").exists():
+                        # if the one who I want to follow has followed me
+                        friendrequest = Friend.objects.get(author=reciver_object, friend=sender_object)
+                        friendrequest.status = 'Accept'
+                        friendrequest.save()
+                        if is_to_remote:
+                            Helpers.send_FR_to_remote(self.node,self.data)
+                        return Response("You are new friend with{}".format(reciver_object.displayName, status=status.HTTP_200_OK))
+
+                    elif (Friend.objects.filter(author=sender_object, friend=reciver_object, status="Pending").exists()): 
+                        return Response("Friend request already sent", status=status.HTTP_400_BAD_REQUEST)  
+                    else:
+                        friendrequest = Friend.objects.create(author=sender_object, friend=reciver_object)
+                        friendrequest.save()
+                        if is_to_remote:
+                            Helpers.send_FR_to_remote(self.node,self.data)
+                        return Response("Friend request sent", status=status.HTTP_200_OK)  
+                else:
+                    return Response("You are already friends", status=status.HTTP_400_BAD_REQUEST)
+
+
             else:
-                return Response("You are already friends", status=status.HTTP_400_BAD_REQUEST)
-
-
+                return Response("You are not sending the friendrequest with the correct format. Missing 'query': 'friendrequest'",status=status.HTTP_400_BAD_REQUEST)  
         else:
-            return Response("You are not sending the friendrequest with the correct format. Missing 'query': 'friendrequest'",status=status.HTTP_400_BAD_REQUEST)  
+            return Response("Unauthorized", status=401)
 
     def put(self, request, format=None):
         data = request.data
@@ -165,3 +170,97 @@ class UnFriend(APIView):
             return Response("Delete friend request",status=200)
         else:
             return Response("You are not friend yet", status=400)
+
+class AcceptFR(APIView):
+    def post(self,request,format=None):
+        is_to_remote = False
+        self.remote_node = None
+        self.request_data = None
+        data = request.data
+        if data['query'] == 'friendrequest':
+            request_url = data['friend']['host']
+            for node in Node.objects.all():
+                if str(node.host) in str(request_url):
+                    is_to_remote = True
+                    self.remote_node = node
+                    self.request_data = data
+
+            current_user_uuid = Helpers.get_current_user_uuid(request)
+            # author_id = data['author']['id'].split('author/')[1]
+            # friend_id = data['friend']['id'].split('author/')[1]
+            author_id = data['author']['id'].replace(data['author']['host']+'author/', "")
+            friend_id = data['friend']['id'].replace(data['friend']['host']+'author/', "")
+            data['author']['id'] = author_id
+            data['friend']['id'] = friend_id
+            sender_verified = Helpers.verify_remote_author(data['author'])
+            reciver_verified = Helpers.verify_remote_author(data['friend'])
+            print("sender_verified")
+            print(sender_verified)
+            print("reciver_verified")
+            print(reciver_verified)
+            if sender_verified and reciver_verified:
+                sender_object = Helpers.get_or_create_author_if_not_exist(data['author'])
+                reciver_object = Helpers.get_or_create_author_if_not_exist(data['friend'])
+            else:
+                return Response("Author not found", status=404) 
+
+            friend_already = Helpers.check_two_users_friends(author_id,friend_id)
+            if (not friend_already):
+                if (Friend.objects.filter(author=sender_object, friend=reciver_object, status="Decline").exists()):
+                    if is_to_remote:
+                        remote_status = Helpers.send_FR_to_remote(self.remote_node,self.request_data)
+                    if (is_to_remote and remote_status==200) or not is_to_remote:
+                        friendrequest = Friend.objects.get(author=sender_object, friend=reciver_object)
+                        friendrequest.status="Accept"
+                        friendrequest.save()
+                    else:
+                        return Response("Something wrong with sending FRequest", status=status.HTTP_400_BAD_REQUEST)
+
+                    return Response("Friend request sent", status=status.HTTP_200_OK) 
+
+                elif (Friend.objects.filter(author=reciver_object, friend=sender_object, status="Decline").exists()):
+                    if is_to_remote:
+                        remote_status = Helpers.send_FR_to_remote(self.remote_node,self.request_data)
+                    if (is_to_remote and remote_status==200) or not is_to_remote:
+                        friendrequest = Friend.objects.get(author=reciver_object, friend=sender_object)
+                        friendrequest.status="Accept"
+                        friendrequest.save()
+                    else:
+                        return Response("Something wrong with sending FRequest", status=status.HTTP_400_BAD_REQUEST)
+                    
+                    return Response("You are now friend with %s"%author_id, status=status.HTTP_200_OK)
+
+                elif Friend.objects.filter(author=reciver_object, friend=sender_object, status="Pending").exists():
+                    # if the one who I want to follow has followed me
+                    if is_to_remote:
+                        remote_status = Helpers.send_FR_to_remote(self.remote_node,self.request_data)
+                    if (is_to_remote and remote_status==200) or not is_to_remote:
+                        friendrequest = Friend.objects.get(author=reciver_object, friend=sender_object)
+                        friendrequest.status = 'Accept'
+                        friendrequest.save()
+                    else:
+                        return Response("Something wrong with sending FRequest", status=status.HTTP_400_BAD_REQUEST)
+                        
+                    return Response("You are new friend with{}".format(reciver_object.displayName, status=status.HTTP_200_OK))
+
+                # elif (Friend.objects.filter(author=sender_object, friend=reciver_object, status="Pending").exists()): 
+                #     return Response("Friend request already sent", status=status.HTTP_400_BAD_REQUEST)  
+                else:
+                    if is_to_remote:
+                        remote_status = Helpers.send_FR_to_remote(self.remote_node,self.request_data)
+                    if (is_to_remote and remote_status==200) or not is_to_remote:
+                        
+                        friendrequest = Friend.objects.create(author=sender_object, friend=reciver_object)
+                        friendrequest.save()
+                    else:
+                        return Response("Something wrong with sending FRequest", status=status.HTTP_400_BAD_REQUEST)
+                        
+                    return Response("Friend request sent", status=status.HTTP_200_OK)  
+            else:
+                return Response("You are already friends", status=status.HTTP_400_BAD_REQUEST)
+
+
+        else:
+            return Response("You are not sending the friendrequest with the correct format. Missing 'query': 'friendrequest'",status=status.HTTP_400_BAD_REQUEST)  
+
+        return
