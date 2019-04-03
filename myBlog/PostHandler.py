@@ -365,6 +365,7 @@ class PostToUserIDHandler(APIView):
                 sharePosts = True
 
                 if isRemote:
+                    print("remote mode in post to User ID HANDLERRRRRRRRRRR")
                     remoteNode = Node.objects.get(nodeUser=request.user)
                     shareImages = remoteNode.shareImages
                     sharePosts = remoteNode.sharePost

@@ -364,9 +364,10 @@ def update_this_friendship(remoteNode,remote_user_uuid,request):
         "author":remote_host + "service/author/"+str(remote_user_uuid),
         "authors":local_friend_list_of_remote_user
     }
+    print(request_body)
     #Get friend list of this author
     request_url = remote_host + "service/author/"+str(remote_user_uuid)+"/friends/"
-    response = requests.post(request_url,auth=HTTPBasicAuth(remote_to_node.remoteUsername,remote_to_node.remotePassword))
+    response = requests.post(request_url,data=json.dumps(request_body),auth=HTTPBasicAuth(remote_to_node.remoteUsername,remote_to_node.remotePassword))
     if response.status_code == 200:
         response_friendlist_set = set(response.json()["authors"])
         local_friend_set = set(local_friend_list_of_remote_user)
