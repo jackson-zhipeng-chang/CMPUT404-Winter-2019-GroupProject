@@ -182,15 +182,15 @@ class AcceptFR(APIView):
         coming_data = request.data
         if coming_data['query'] == 'friendrequest':
             request_url = coming_data['friend']['host']
-            for node in Node.objects.all():
-                if str(node.host) in str(request_url):
-                    is_to_remote = True
-                    self.remote_node = node
-                    data = {
+            data = {
                         "query":"friendrequest",
                         "author":coming_data["friend"],
                         "friend":coming_data["author"]
                     }
+            for node in Node.objects.all():
+                if str(node.host) in str(request_url):
+                    is_to_remote = True
+                    self.remote_node = node
                     self.request_data = data
 
             current_user_uuid = Helpers.get_current_user_uuid(request)
