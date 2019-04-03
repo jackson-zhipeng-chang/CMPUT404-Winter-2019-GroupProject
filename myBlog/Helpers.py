@@ -358,52 +358,53 @@ def update_this_friendship(remoteNode,remote_user_uuid,request):
     remote_to_node = RemoteUser.objects.get(node=remoteNode)
     
     local_friends_obj_list = list(Friend.objects.filter(Q(author=remote_authorObj)|Q(friend=remote_authorObj)))
-    local_friend_list_of_remote_user = [str(friend.id) for friend in local_friends_obj_list]
-    request_body = {
-        "query":"friends",
-        "author":remote_host + "service/author/"+str(remote_user_uuid),
-        "authors":local_friend_list_of_remote_user
-    }
-    print(request_body)
-    #Get friend list of this author
-    request_url = remote_host + "service/author/"+str(remote_user_uuid)+"/friends/"
-    response = requests.post(request_url,data=json.dumps(request_body),auth=HTTPBasicAuth(remote_to_node.remoteUsername,remote_to_node.remotePassword))
-    if response.status_code == 200:
-        response_friendlist_set = set(response.json()["authors"])
-        local_friend_set = set(local_friend_list_of_remote_user)
-        extra_friend = local_friend_set - response_friendlist_set
-        my_host = request.get_host()
-        print('my host is {}'.format(my_host))
-        try:
-            # for friend_url in friendlist:
-            #     url_array = friend_url.split('/')
-            #     if url_array[2] == my_host:
-            #         friend_id = url_array[-1]
-            #         print(friend_id)
-            #         # actually this friendObj is from my server
-            #         friendObj = Author.objects.get(pk=friend_id)
-            #         # update friendship database
-            #         if Friend.objects.filter(Q(author=remote_authorObj),Q(friend=friendObj),(Q(status="Decline")|Q(status="Pending"))).exists():
-            #             relationship = Friend.objects.get(Q(author=remote_authorObj),Q(friend=friendObj))
-            #             relationship.status = "Accept"
-            #             relationship.save()
-            #         elif Friend.objects.filter(Q(author=friendObj),Q(friend=remote_authorObj),(Q(status="Decline")|Q(status="Pending"))).exists():
-            #             relationship = Friend.objects.get(Q(author=friendObj),Q(friend=remote_authorObj))
-            #             relationship.status = "Accept"
-            #             relationship.save()
-            for friend_url in extra_friend:
-                friend_uuid=friend_url.replace(my_host+'author/',"")
-                friend_obj = Author.objects.get(Q(pk=friend_uuid))
-                if Friend.objects.filter(Q(author=friend_obj),Q(status="Accept")).exists():
-                    Friend.objects.get(Q(author=friend_obj),Q(status="Accept")).delete()
-                if Friend.objects.filter(Q(friend=friend_obj),Q(status="Accept")).exists():
-                    Friend.objects.get(Q(friend=friend_obj),Q(status="Accept")).delete()
+    if local_friends_obj_list:
+        local_friend_list_of_remote_user = [str(friend.id) for friend in local_friends_obj_list]
+        request_body = {
+            "query":"friends",
+            "author":remote_host + "service/author/"+str(remote_user_uuid),
+            "authors":local_friend_list_of_remote_user
+        }
+        print(request_body)
+        #Get friend list of this author
+        request_url = remote_host + "service/author/"+str(remote_user_uuid)+"/friends/"
+        response = requests.post(request_url,data=json.dumps(request_body),auth=HTTPBasicAuth(remote_to_node.remoteUsername,remote_to_node.remotePassword))
+        if response.status_code == 200:
+            response_friendlist_set = set(response.json()["authors"])
+            local_friend_set = set(local_friend_list_of_remote_user)
+            extra_friend = local_friend_set - response_friendlist_set
+            my_host = request.get_host()
+            print('my host is {}'.format(my_host))
+            try:
+                # for friend_url in friendlist:
+                #     url_array = friend_url.split('/')
+                #     if url_array[2] == my_host:
+                #         friend_id = url_array[-1]
+                #         print(friend_id)
+                #         # actually this friendObj is from my server
+                #         friendObj = Author.objects.get(pk=friend_id)
+                #         # update friendship database
+                #         if Friend.objects.filter(Q(author=remote_authorObj),Q(friend=friendObj),(Q(status="Decline")|Q(status="Pending"))).exists():
+                #             relationship = Friend.objects.get(Q(author=remote_authorObj),Q(friend=friendObj))
+                #             relationship.status = "Accept"
+                #             relationship.save()
+                #         elif Friend.objects.filter(Q(author=friendObj),Q(friend=remote_authorObj),(Q(status="Decline")|Q(status="Pending"))).exists():
+                #             relationship = Friend.objects.get(Q(author=friendObj),Q(friend=remote_authorObj))
+                #             relationship.status = "Accept"
+                #             relationship.save()
+                for friend_url in extra_friend:
+                    friend_uuid=friend_url.replace(my_host+'author/',"")
+                    friend_obj = Author.objects.get(Q(pk=friend_uuid))
+                    if Friend.objects.filter(Q(author=friend_obj),Q(status="Accept")).exists():
+                        Friend.objects.get(Q(author=friend_obj),Q(status="Accept")).delete()
+                    if Friend.objects.filter(Q(friend=friend_obj),Q(status="Accept")).exists():
+                        Friend.objects.get(Q(friend=friend_obj),Q(status="Accept")).delete()
 
-        except Exception as e:
-            print("an error occured: %s"%e)
+            except Exception as e:
+                print("an error occured: %s"%e)
 
-    else:
-        print("Something wrong ",response.status_code)            
+        else:
+            print("Something wrong ",response.status_code)            
 #-----------------------------------------Local endpoints-----------------------------------------#
 def new_post(request):
     return render(request, 'newpost.html')
