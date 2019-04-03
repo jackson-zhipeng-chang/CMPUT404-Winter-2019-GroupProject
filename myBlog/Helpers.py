@@ -299,7 +299,7 @@ def get_or_create_author_if_not_exist(author_json):
 
     return AuthorObj
 
-def verify_remote_author(author_json,request):
+def verify_remote_author(author_json):
     author_hot = author_json["host"]
     profile_url = author_hot+"service/author/"+str(author_json["id"])
     try:
