@@ -40,9 +40,12 @@ class FriendQueryHandler(APIView):
     def post(self, request, user_id, format=None):
         try:
             author = Helpers.get_author_or_not_exits(user_id)
+            print(author)
             data = request.data
+            print(data)
             if data['query'] == 'friends':
                 friends_list = Helpers.get_friends(user_id)
+                print(friends_list)
                 # TODO: I changed here
                 if type(data['authors'])!= list:
                     query_list = []
