@@ -44,7 +44,9 @@ class FriendQueryHandler(APIView):
             data = request.data
             print(data)
             if data['query'] == 'friends':
-                friends_list = Helpers.get_friends(user_id)
+                # friends_list = Helpers.get_friends(user_id)
+                # get friendlist locally
+                friend_list = Friend.objects.filter(Q(author=author)|Q(friend=author))
                 print(friends_list)
                 # TODO: I changed here
                 if type(data['authors'])!= list:

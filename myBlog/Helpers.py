@@ -156,14 +156,9 @@ def update_remote_friendship(current_user_uuid):
                         update_friendship_obj(current_user_uuid, remoteFriend_uuid, 'Accept')
 
             if len(local_friends_list) != 0:
-                print(local_friends_list)
-                print(remote_friends_uuid_list)
                 for localFriend in local_friends_list:
                     if (localFriend.id not in remote_friends_uuid_list) and (node.host == localFriend.host):
-                        # two condition: 
-                        # 1,A follows B, B accept, but A does not update. As B, I am not friend with A yet.
-                        # 2,A unfriend B, as B, when I want to update, I need to wait 30s.
-                        # TODO: how to distinguish above two conditions.
+                       
                         # if (Friend.objects.filter(Q(author=localFriend.id), Q(status='Accept')).exists()):
                         #     friendship = Friend.objects.get(Q(author=localFriend.id), Q(status='Accept'))
                         #     last_modified_time = friendship.last_modified_time.replace(tzinfo=None)

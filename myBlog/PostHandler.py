@@ -260,10 +260,8 @@ class PostToUserHandlerView(APIView):
                             remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
                         except:
                             return Response("Author not found", status=404)
-                    # TODO: only ask this node to update friendship?
                     Helpers.update_this_friendship(remoteNode,current_user_uuid,request)
                 else:
-                    # TODO: No need to store?
                     # if is local user, request remote server to get the post I can see
                     # Helpers.update_remote_friendship(current_user_uuid)
                     # remote_post_json = Helpers.pull_remote_posts(current_user_uuid)
@@ -282,7 +280,6 @@ class PostToUserHandlerView(APIView):
                 foaf_posts_list=[]
 
                 if not isRemote:
-                # TODO: remote user don't need to know his posts on my server?
                     if (Post.objects.filter(Q(unlisted=False), Q(author_id=current_user_uuid)).exists()):
                         my_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=current_user_uuid))
                         
@@ -290,7 +287,6 @@ class PostToUserHandlerView(APIView):
                 if (Post.objects.filter(Q(unlisted=False), ~Q(author_id=current_user_uuid), Q(visibility='PUBLIC')).exists()):
                     public_posts_list = get_list_or_404(Post.objects.order_by('-published'), ~Q(author_id=current_user_uuid), Q(unlisted=False), Q(visibility='PUBLIC'))
 
-                # TODO: only get local friend list, since we have already update friendship?
                 friends_list = Helpers.get_local_friends(current_user_uuid)
                 for friend in friends_list:
                     if (Post.objects.filter(Q(unlisted=False),Q(author_id=friend.id),Q(visibility='FRIENDS')).exists()):
@@ -306,12 +302,10 @@ class PostToUserHandlerView(APIView):
                                 private_posts_list.append(post)
 
                     if not isRemote:
-                        # TODO: remote user cannot get server Only Posts?
                         if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend.id), Q(visibility='SERVERONLY')).exists()):
                             if (Helpers.get_current_user_host(current_user_uuid)==friend.host):
                                 serveronly_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend.id),Q(visibility='SERVERONLY'))
                                                        
-                        # TODO: we dont consider FOAF of REMOTE user here?
                         friends_of_this_friend =  Helpers.get_friends(friend.id)
                         for friend_of_this_friend in friends_of_this_friend:
                             if friend_of_this_friend.id != current_user_uuid:
@@ -486,10 +480,10 @@ def pull_remote_nodes(current_user_uuid,request=None):
             if int(postJson["count"]) != 0: 
                 
                 for i in range (0,int(postJson["count"])):
-                    # TODO: if the post is already in our db and published date did not change, do nothing
-                    # TODO: if the postid is not in our db, add
-                    # TODO: if the postid from our db does not exist in response, delete.
-                    # TODO: if the post's published time changed, delete this post locally and add the new one.
+                    #  if the post is already in our db and published date did not change, do nothing
+                    #  if the postid is not in our db, add
+                    #  if the postid from our db does not exist in response, delete.
+                    #  if the post's published time changed, delete this post locally and add the new one.
 
                     remotePostID = postJson["posts"][i]['id']
                     remote_postid_set.add(remotePostID)
@@ -530,25 +524,18 @@ def pull_remote_nodes(current_user_uuid,request=None):
                                     remotePostCommentObj.published = commentPublishedObj
                                     remotePostCommentObj.save()
 
-    # TODO: this part is for filtering the post not in remote posts, which means the post has been deleted in remote server
+    # this part is for filtering the post not in remote posts, which means the post has been deleted in remote server
     if request:
         all_remote_post_id = Post.objects.filter(~Q(source__contains=request.get_host())).values_list("postid",flat=True)
     
     # all_remote_post_id_set is a set of remote postsid in our server
     # remote_postid_set is the remote postid visible to me from other server
-    print('all_remote_post_id')
-    print(all_remote_post_id)
-    print('remote_postid_set')
-    print(remote_postid_set)
+    
     if len(all_remote_post_id) != len(remote_postid_set):
-        print('in condition!!!')
         all_remote_post_id_set = set()
         for post_id in all_remote_post_id:
             all_remote_post_id_set.add(str(post_id))
-        print(all_remote_post_id_set)
-        print(remote_postid_set)
         deleted_post_id = all_remote_post_id_set-remote_postid_set
-        print(deleted_post_id)
         for post_id in deleted_post_id:
             Post.objects.filter(postid=post_id).delete()
 
