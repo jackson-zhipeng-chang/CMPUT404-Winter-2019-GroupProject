@@ -369,7 +369,11 @@ def update_this_friendship(remoteNode,remote_user_uuid,request):
         print(request_body)
         #Get friend list of this author
         request_url = remote_host + "service/author/"+str(remote_user_uuid)+"/friends/"
-        response = requests.post(request_url,data=json.dumps(request_body),auth=HTTPBasicAuth(remote_to_node.remoteUsername,remote_to_node.remotePassword))
+        headers = {"Content-Type": 'application/json', "Accept": 'application/json'}
+        data = json.dumps(request_body)
+        print(type(data))
+        print(data)
+        response = requests.post(request_url,headers=headers,data=data,auth=HTTPBasicAuth(remote_to_node.remoteUsername,remote_to_node.remotePassword))
         print(response.content)
         print(response.status_code)
         if response.status_code == 200:
