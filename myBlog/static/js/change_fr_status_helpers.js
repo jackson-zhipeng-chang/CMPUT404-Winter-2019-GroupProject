@@ -133,11 +133,16 @@ function content_page(data){
             acceptBtn.classList.add('w3-button','w3-theme-d1','w3-margin-bottom');
             acceptBtn.style.marginLeft='40px';
             var acceptText = document.createTextNode("Accept");
-            acceptBtn.addEventListener('click',function(){
-                // sendFRrequest(request_id,sender_dict,receiver_id);
-                acceptFRrequest(sender_dict['id'],sender_dict['host'],sender_dict['displayName'],sender_dict['url'],receiver_dict['displayName'],receiver_dict['id'])
-            });
+            // acceptBtn.addEventListener('click',function(){
+            //     // sendFRrequest(request_id,sender_dict,receiver_id);
+                // acceptFRrequest(sender_dict['id'],sender_dict['host'],sender_dict['displayName'],sender_dict['url'],receiver_dict['displayName'],receiver_dict['id'])
+            // });
+            
             acceptBtn.appendChild(acceptText);
+            acceptBtn.onclick=function(){
+                acceptFRrequest(sender_dict['id'], sender_dict['host'], sender_dict['displayName'], sender_dict['url'], receiver_dict['displayName'], receiver_dict['id'])
+
+            };
             acceptDiv.appendChild(acceptBtn);
 
             var declineBtn = document.createElement('BUTTON');
