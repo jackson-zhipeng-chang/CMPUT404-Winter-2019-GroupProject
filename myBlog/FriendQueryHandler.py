@@ -47,7 +47,6 @@ class FriendQueryHandler(APIView):
             # get friendlist locally
             friend_list = Friend.objects.filter(Q(author=author)|Q(friend=author))
             print("local friendlist is {}:".format(friend_list))
-            # TODO: I changed here
             if type(data['authors'])!= list:
                 query_list = []
                 query_list.append(data['authors'])
@@ -59,6 +58,7 @@ class FriendQueryHandler(APIView):
                 for friend_obj in friend_list:
                     firend_uuid = str(friend_obj.id)
                     if firend_uuid in author_url:
+                        print('inininin')
                         respons_list.append(author_url)
             responsBody={
                 "query": "friends",

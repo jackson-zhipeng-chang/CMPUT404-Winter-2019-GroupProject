@@ -147,6 +147,7 @@ def update_remote_friendship(current_user_uuid):
             data = response.json()
             remoteFriendsURL = data["authors"]
             remote_friends_uuid_list = convert_url_list_to_uuid(remoteFriendsURL)
+            print("remote_friends_uuid_list is {}:".format(remote_friends_uuid_list))
 
             if len(remoteFriendsURL) != 0:
                 for remoteFriend_uuid in remote_friends_uuid_list:
@@ -158,25 +159,6 @@ def update_remote_friendship(current_user_uuid):
             if len(local_friends_list) != 0:
                 for localFriend in local_friends_list:
                     if (localFriend.id not in remote_friends_uuid_list) and (node.host == localFriend.host):
-                       
-                        # if (Friend.objects.filter(Q(author=localFriend.id), Q(status='Accept')).exists()):
-                        #     friendship = Friend.objects.get(Q(author=localFriend.id), Q(status='Accept'))
-                        #     last_modified_time = friendship.last_modified_time.replace(tzinfo=None)
-                        #     print(friendship)
-                        #     print(last_modified_time)
-                        #     print((datetime.datetime.utcnow()-last_modified_time).total_seconds())
-                        #     # if ((datetime.datetime.utcnow() - last_modified_time).total_seconds () > 30):
-                        #     friendship.delete()
-
-                        # if (Friend.objects.filter(Q(friend=localFriend.id), Q(status='Accept')).exists()):
-                        #     friendship = Friend.objects.get(Q(friend=localFriend.id), Q(status='Accept'))
-                        #     last_modified_time = friendship.last_modified_time.replace(tzinfo=None)
-                        #     print(friendship)
-                        #     print(last_modified_time)
-                        #     print((datetime.datetime.utcnow()-last_modified_time).total_seconds())
-
-                        #     # if ((datetime.datetime.utcnow() - last_modified_time).total_seconds () > 30):
-                        #     friendship.delete()
                         if Friend.objects.filter(Q(author=localFriend.id),Q(status='Accept')).exists():
                             friendship = Friend.objects.get(Q(author=localFriend.id),Q(status='Accept'))
                             friendship.delete()
