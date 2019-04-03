@@ -179,16 +179,9 @@ class AcceptFR(APIView):
         is_to_remote = False
         self.remote_node = None
         self.request_data = None
-        coming_data = request.data
-        if coming_data['query'] == 'friendrequest':
-            request_url = coming_data['friend']['host']
-            data = {
-                        "query":"friendrequest",
-                        "author":coming_data["friend"],
-                        "friend":coming_data["author"]
-                    }
-            print("in coming data is: ")
-            print(coming_data)
+        data = request.data
+        if data['query'] == 'friendrequest':
+            request_url = data['friend']['host']
             print("data is : ")
             print(data)
             for node in Node.objects.all():

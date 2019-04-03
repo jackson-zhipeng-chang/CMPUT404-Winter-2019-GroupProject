@@ -95,7 +95,7 @@ function sendFollowRequest(author_id,author_host,author_name,author_url,currentU
             'id':currentUserID,
             'host':host,
             'displayName':currentUserName,
-            'url':host+current_user_id,
+            'url': host + currentUserID,
         },
         "friend":{
             'id':author_id,

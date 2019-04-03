@@ -52,7 +52,7 @@ function acceptFRrequest(author_id, author_host, author_name, author_url, curren
             'id': currentUserID,
             'host': host,
             'displayName': currentUserName,
-            'url': host + current_user_id,
+            'url': host + currentUserID,
         },
         "friend": {
             'id': author_id,
