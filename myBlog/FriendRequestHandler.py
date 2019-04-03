@@ -58,7 +58,7 @@ class FriendRequestHandler(APIView):
                     reciver_object = Helpers.get_or_create_author_if_not_exist(data['friend'])
                 else:
                     return Response("Author not found", status=404) 
-
+                
                 friend_already = Helpers.check_two_users_friends(author_id,friend_id)
                 if (not friend_already):
                     if (Friend.objects.filter(author=sender_object, friend=reciver_object, status="Decline").exists()):

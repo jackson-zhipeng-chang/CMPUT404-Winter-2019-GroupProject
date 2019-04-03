@@ -301,23 +301,18 @@ def get_or_create_author_if_not_exist(author_json):
 
 def verify_remote_author(author_json,request):
     author_hot = author_json["host"]
-    host_url = "http://"+request.get_host()+'/'
-    print(str(author_hot))
-    print(str(host_url))
-    if author_hot != host_url:
-        profile_url = author_hot+"service/author/"+str(author_json["id"])
-        try:
-            node = Node.objects.get(host=author_hot)
-            remote_to_node = RemoteUser.objects.get(node)
-            respons = requests.get(profile_url,auth=HTTPBasicAuth(remote_to_node.remoteUsername,remote_to_node.remotePassword))
-            if respons.status_code == 200:
-                return True
-            else:
-                return False
-        except:
+    profile_url = author_hot+"service/author/"+str(author_json["id"])
+    try:
+        node = Node.objects.get(host=author_hot)
+        remote_to_node = RemoteUser.objects.get(node)
+        respons = requests.get(profile_url,auth=HTTPBasicAuth(remote_to_node.remoteUsername,remote_to_node.remotePassword))
+        if respons.status_code == 200:
+            return True
+        else:
             return False
-    else:
-        return True
+    except:
+        return False
+
 def send_FR_to_remote(nodeObj,data):
     URL = nodeObj.host + 'service/friendrequest/'
     header = {"Content-Type": "application/json", 'Accept': 'application/json'}
