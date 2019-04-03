@@ -384,24 +384,9 @@ def update_this_friendship(remoteNode,remote_user_uuid,request):
             my_host = request.get_host()
             print('my host is {}'.format(my_host))
             try:
-                # for friend_url in friendlist:
-                #     url_array = friend_url.split('/')
-                #     if url_array[2] == my_host:
-                #         friend_id = url_array[-1]
-                #         print(friend_id)
-                #         # actually this friendObj is from my server
-                #         friendObj = Author.objects.get(pk=friend_id)
-                #         # update friendship database
-                #         if Friend.objects.filter(Q(author=remote_authorObj),Q(friend=friendObj),(Q(status="Decline")|Q(status="Pending"))).exists():
-                #             relationship = Friend.objects.get(Q(author=remote_authorObj),Q(friend=friendObj))
-                #             relationship.status = "Accept"
-                #             relationship.save()
-                #         elif Friend.objects.filter(Q(author=friendObj),Q(friend=remote_authorObj),(Q(status="Decline")|Q(status="Pending"))).exists():
-                #             relationship = Friend.objects.get(Q(author=friendObj),Q(friend=remote_authorObj))
-                #             relationship.status = "Accept"
-                #             relationship.save()
                 for friend_url in extra_friend:
-                    friend_uuid=friend_url.replace(my_host+'author/',"")
+                    # TODO: get friend's host in smart way
+                    friend_uuid=friend_url.replace('https://'+my_host+'author/',"")
                     friend_obj = Author.objects.get(Q(pk=friend_uuid))
                     if Friend.objects.filter(Q(author=friend_obj),Q(status="Accept")).exists():
                         Friend.objects.get(Q(author=friend_obj),Q(status="Accept")).delete()
