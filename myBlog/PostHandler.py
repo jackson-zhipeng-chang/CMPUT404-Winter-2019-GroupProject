@@ -523,8 +523,9 @@ def pull_remote_nodes(current_user_uuid,request=None):
 
     # this part is for filtering the post not in remote posts, which means the post has been deleted in remote server
     if request:
-        print("Filtering posts for %s"%request.get_host())
-        all_remote_post_id = Post.objects.filter(~Q(source__contains=request.get_host())).values_list("postid",flat=True)
+        remote_host = Node.objects.get(nodeUser=request.user).host
+        print("Filtering posts for %s"%remote_host)
+        all_remote_post_id = Post.objects.filter(~Q(source__contains=remote_host)).values_list("postid",flat=True)
         print("all_remote_post_id %s"%str(all_remote_post_id))
     # all_remote_post_id_set is a set of remote postsid in our server
     # remote_postid_set is the remote postid visible to me from other server
