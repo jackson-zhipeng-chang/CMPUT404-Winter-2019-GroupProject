@@ -346,9 +346,9 @@ def update_this_friendship(remoteNode,remote_user_uuid,request):
     local_friend_list_of_remote_user = []
     # local_friends_obj_list = list(Friend.objects.filter(Q(author=remote_authorObj)|Q(friend=remote_authorObj)))
     if Friend.objects.filter(author=remote_authorObj).exists():
-        local_friend_list_of_remote_user += [friend.friend.host+"author/"+str(friend.friend.id) for friend in list(Friend.objects.filter(author=remote_authorObj))]
+        local_friend_list_of_remote_user += [friend.friend.host+"service/author/"+str(friend.friend.id) for friend in list(Friend.objects.filter(author=remote_authorObj))]
     if Friend.objects.filter(friend=remote_authorObj).exists():
-        local_friend_list_of_remote_user += [friend.author.host+"author/"+str(friend.author.id) for friend in list(Friend.objects.filter(friend=remote_authorObj))]
+        local_friend_list_of_remote_user += [friend.author.host+"service/author/"+str(friend.author.id) for friend in list(Friend.objects.filter(friend=remote_authorObj))]
 
 
     if local_friend_list_of_remote_user:

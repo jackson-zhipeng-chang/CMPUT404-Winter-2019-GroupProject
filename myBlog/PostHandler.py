@@ -88,19 +88,50 @@ class NewPostHandler(APIView):
 # https://www.django-rest-framework.org/tutorial/1-serialization/
 class PostHandler(APIView):
     def post(self, request, postid, format=None):
+        # {
+        # 	"query":"getPost",
+        # 	"postid":"{POST_ID}",
+        # 	"url":"http://service/posts/{POST_ID}",
+        #  	"author":{ # requestor
+        #  	    # UUID
+        # 		"id":"http://127.0.0.1:5454/author/de305d54-75b4-431b-adb2-eb6b9e546013",
+        # 		"host":"http://127.0.0.1:5454/",
+        # 		"displayName":"Jerry Johnson",
+        # 		# url to the authors information
+        # 		"url":"http://127.0.0.1:5454/author/de305d54-75b4-431b-adb2-eb6b9e546013",
+        # 		# HATEOS
+        # 		"github": "http://github.com/jjohnson"
+        #  	},
+        # 	# friends of author
+        #  	"friends":[
+        # 		"http://127.0.0.1:5454/author/7deee0684811f22b384ccb5991b2ca7e78abacde",
+        # 		"http://127.0.0.1:5454/author/11c3783f15f7ade03430303573098f0d4d20797b",
+        # 	]
+        # }        
         # this api is only for remote user.
+
+        # step 1, POST to "requestor_host/author/requestor_id/friends/" 
+        # to ensure if the friend list is correct.
+        # step 2, based on step 1, query local server to see if the friends in friend list are our friend in our server.
+        # step 3, based on step 2, choose one mutual friend from the list and POST TO "that_friend_host/author/that_friend_id/friends/" 
+        # with requestor_host/author/requestor_id to ensure if that friend is friend of the requestor
+        # step 4, if all of above three steps are true, return POST_ID post.
+
         if request.user.is_authenticated:
             isRemote = Helpers.check_remote_request(request)
             remote_user_uuid = Helpers.get_current_user_uuid(request)
             data = request.data
             if data["query"] == "getPost":
                 sender_friend_list = data["friends"]
-                post_id = data["id"]
+                # In example this is postid
+                post_id = data["postid"]
                 if isRemote:
+                    print("request author id {}".format(data["author"]["id"]))
                     remoteNode = Node.objects.get(nodeUser=request.user)
                     remote_to_node = RemoteUser.objects.get(node=remoteNode)
                     if type(remote_user_uuid) is UUID:
                         sender_url = remoteNode.host + "service/author/"+str(remote_user_uuid)
+                        print('sender_url is {}'.format(sender_url))
                         if not(Author.objects.filter(id=remote_user_uuid).exists()):
                             # create a local copy for the sender
                             response = requests.get(sender_url,auth=HTTPBasicAuth(remote_to_node.remoteUsername,remote_to_node.remotePassword))
@@ -113,11 +144,13 @@ class PostHandler(APIView):
                             "authors":sender_friend_list
                         }
                         request_url = sender_url+'/friends/'
-                        response = requests.post(request_url,data = request_body,auth=HTTPBasicAuth(remote_to_node.remoteUsername,remote_to_node.remotePassword))
-                        remoteFriendListJson = json.loads(response.content.decode('utf8').replace("'",'"'))
-                        if remoteFriendListJson["query"]=="friends":
+                        header = {"Content-Type": "application/json", 'Accept': 'application/json'}
+                        response = requests.post(request_url,headers=header,data = json.dumps(request_body),auth=HTTPBasicAuth(remote_to_node.remoteUsername,remote_to_node.remotePassword))
+                        if response.status_code == 200:
+                            remoteFriendListJson = json.loads(response.content.decode('utf8').replace("'",'"'))
                             remoteFriendList = remoteFriendListJson["authors"]
-                            if remoteFriendList:
+                            # step1 done
+                            if len(remoteFriendList)==len(sender_friend_list):
                                 # check which friends in friendlist are my friend
                                 postObj = Post.objects.get(pk=post_id)
                                 current_author_id = postObj.author.id
@@ -130,12 +163,13 @@ class PostHandler(APIView):
                                         return Response('Wrong author id type, add host in the beginning.',status=status.HTTP_403_FORBIDDEN)
                                     if Helpers.check_two_users_friends(current_author_id,friend_id):
                                         my_friend_list.append(friend)
-
+                                # step2 done
                                 if my_friend_list:
                                     # Then it will go to at least 1 of these friend's servers and verify that they are friends of sender
                                     my_friend = my_friend_list[0]
                                     my_friend_host = my_friend.split('author')[0]
                                     friend2friend_url = my_friend+'/friends/'+sender_url.split('/')[2]+'/author/'+str(remote_user_uuid)
+                                    print("friend2friend_url is {}".format(friend2friend_url))
                                     # check my_friend is from my server or remote
                                     is_local = Helpers.from_my_server(my_friend_host)
                                     if is_local:
@@ -152,17 +186,18 @@ class PostHandler(APIView):
                                         my_friend_node = Node.objects.get(host=my_friend_host)
                                         my_friend_remote_user = RemoteUser.objects.get(node=my_friend_node)
                                         response = requests.get(friend2friend_url,auth=HTTPBasicAuth(my_friend_remote_user.remoteUsername,my_friend_remote_user.remotePassword))
-                                        responseJSON = json.loads(response.content.decode('utf8').replace("'", '"'))
-                                        if responseJSON["friends"]:
-                                            if not Post.objects.filter(Q(pk=postid), Q(visibility='FOAF')).exists():
-                                                return Response("Post couldn't find", status=status.HTTP_404_NOT_FOUND)
+                                        if response.status_code==200:
+                                            responseJSON = json.loads(response.content.decode('utf8').replace("'", '"'))
+                                            if responseJSON["friends"]:
+                                                if not Post.objects.filter(Q(pk=postid), Q(visibility='FOAF')).exists():
+                                                    return Response("Post couldn't find", status=status.HTTP_404_NOT_FOUND)
+                                                else:
+                                                    post = Post.objects.get(pk=postid)
+                                                    serializer = PostSerializer(post)
+                                                    return JsonResponse(serializer.data, status=status.HTTP_200_OK)
                                             else:
-                                                post = Post.objects.get(pk=postid)
-                                                serializer = PostSerializer(post)
-                                                return JsonResponse(serializer.data, status=status.HTTP_200_OK)
-                                        else:
-                                            return Response('No mutal friend',status=status.HTTP_403_FORBIDDEN)
-
+                                                return Response('No mutal friend',status=status.HTTP_403_FORBIDDEN)
+                                        return Reponse('friend2friend api fails',status=response.status_code)
                                 else:
                                     return Response('No mutual friend.',status=status.HTTP_403_FORBIDDEN)
 
@@ -171,9 +206,7 @@ class PostHandler(APIView):
                                 return Response('Wrong Friend List Infomation.',status=status.HTTP_403_FORBIDDEN)
 
                         else:
-                            return Response("Responding query string is wrong.'query':'friends'.",status=status.HTTP_400_BAD_REQUEST)
-
-
+                            return Response("POST to friends endpoint fails",status=status.HTTP_400_BAD_REQUEST)
             else:
                 return Response("You are not sending the request with correct format. Missing 'query':'getPost'",status=status.HTTP_400_BAD_REQUEST)
 
