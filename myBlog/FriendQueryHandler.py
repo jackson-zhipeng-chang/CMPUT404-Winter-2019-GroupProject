@@ -60,7 +60,6 @@ class FriendQueryHandler(APIView):
                     firend_uuid = str(friend_obj.friend.id)
                     author_uuid = str(friend_obj.author.id)
                     if firend_uuid in author_url or author_uuid in author_url:
-                        print('inininin')
                         respons_list.append(author_url)
             responsBody={
                 "query": "friends",
