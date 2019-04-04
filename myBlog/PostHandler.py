@@ -459,7 +459,6 @@ class MyPostHandler(APIView):
 
 
 def pull_remote_nodes(current_user_uuid,request=None):
-    remote_postid_set = set()
     all_nodes = Node.objects.all()
     for node in all_nodes:
         nodeURL = node.host+"service/author/posts/"
@@ -477,6 +476,7 @@ def pull_remote_nodes(current_user_uuid,request=None):
         if response.status_code == 200:
             postJson = response.json()
             if int(postJson["count"]) != 0: 
+                remote_postid_set = set()
                 
                 for i in range (0,int(postJson["count"])):
                     #  if the post is already in our db and published date did not change, do nothing
@@ -521,24 +521,23 @@ def pull_remote_nodes(current_user_uuid,request=None):
                                     remotePostCommentObj.published = commentPublishedObj
                                     remotePostCommentObj.save()
 
-    # this part is for filtering the post not in remote posts, which means the post has been deleted in remote server
-    if request:
-        remote_host = Node.objects.get(nodeUser=request.user).host
-        print("Filtering posts for %s"%remote_host)
-        all_remote_post_id = Post.objects.filter(~Q(source__contains=remote_host)).values_list("postid",flat=True)
-        print("all_remote_post_id %s"%str(all_remote_post_id))
-    # all_remote_post_id_set is a set of remote postsid in our server
-    # remote_postid_set is the remote postid visible to me from other server
-    
-    if len(all_remote_post_id) != len(remote_postid_set):
-        all_remote_post_id_set = set()
-        for post_id in all_remote_post_id:
-            all_remote_post_id_set.add(str(post_id))
-        print("all_remote_post_id_set %s"%str(all_remote_post_id_set))
-        deleted_post_id = all_remote_post_id_set-remote_postid_set
-        print("deleted_post_id %s"%str(deleted_post_id))
-        for post_id in deleted_post_id:
-            Post.objects.filter(postid=post_id).delete()
+                # this part is for filtering the post not in remote posts, which means the post has been deleted in remote server
+                remote_host = node.host
+                print("Filtering posts for %s"%remote_host)
+                all_remote_post_id = Post.objects.filter(~Q(source__contains=remote_host)).values_list("postid",flat=True)
+                print("all_remote_post_id %s"%str(all_remote_post_id))
+                # all_remote_post_id_set is a set of remote postsid in our server
+                # remote_postid_set is the remote postid visible to me from other server
+                
+                if len(all_remote_post_id) != len(remote_postid_set):
+                    all_remote_post_id_set = set()
+                    for post_id in all_remote_post_id:
+                        all_remote_post_id_set.add(str(post_id))
+                    print("all_remote_post_id_set %s"%str(all_remote_post_id_set))
+                    deleted_post_id = all_remote_post_id_set-remote_postid_set
+                    print("deleted_post_id %s"%str(deleted_post_id))
+                    for post_id in deleted_post_id:
+                        Post.objects.filter(postid=post_id).delete()
 
 def delete_remote_nodes_post():
     # https://stackoverflow.com/questions/8949145/filter-django-database-for-field-containing-any-value-in-an-array answered Jan 20 '12 at 23:36 Ismail Badawi
