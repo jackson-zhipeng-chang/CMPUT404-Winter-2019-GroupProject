@@ -88,26 +88,6 @@ class NewPostHandler(APIView):
 # https://www.django-rest-framework.org/tutorial/1-serialization/
 class PostHandler(APIView):
     def post(self, request, postid, format=None):
-        # {
-        # 	"query":"getPost",
-        # 	"postid":"{POST_ID}",
-        # 	"url":"http://service/posts/{POST_ID}",
-        #  	"author":{ # requestor
-        #  	    # UUID
-        # 		"id":"http://127.0.0.1:5454/author/de305d54-75b4-431b-adb2-eb6b9e546013",
-        # 		"host":"http://127.0.0.1:5454/",
-        # 		"displayName":"Jerry Johnson",
-        # 		# url to the authors information
-        # 		"url":"http://127.0.0.1:5454/author/de305d54-75b4-431b-adb2-eb6b9e546013",
-        # 		# HATEOS
-        # 		"github": "http://github.com/jjohnson"
-        #  	},
-        # 	# friends of author
-        #  	"friends":[
-        # 		"http://127.0.0.1:5454/author/7deee0684811f22b384ccb5991b2ca7e78abacde",
-        # 		"http://127.0.0.1:5454/author/11c3783f15f7ade03430303573098f0d4d20797b",
-        # 	]
-        # }        
         # this api is only for remote user.
 
         # step 1, POST to "requestor_host/author/requestor_id/friends/" 
@@ -119,7 +99,7 @@ class PostHandler(APIView):
 
         if request.user.is_authenticated:
             isRemote = Helpers.check_remote_request(request)
-            remote_user_uuid = Helpers.get_current_user_uuid(request)
+            remote_user_uuid = Helpers.e(request)
             data = request.data
             if data["query"] == "getPost":
                 sender_friend_list = data["friends"]
