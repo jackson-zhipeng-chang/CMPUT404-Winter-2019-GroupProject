@@ -336,7 +336,12 @@ class PostToUserHandlerView(APIView):
                     filtered_share_list = []
 
                 elif shareImages and sharePosts:
-                    filtered_share_list = posts_list
+                    if isRemote:
+                        for post in posts_list:
+                            if str(remoteNode.host) not in post.origin:
+                                filtered_share_list.append(post)
+                    elif not isRemote:
+                        filtered_share_list = posts_list
 
                 filtered_share_list.sort(key=lambda x: x.published, reverse=True) # https://stackoverflow.com/questions/403421/how-to-sort-a-list-of-objects-based-on-an-attribute-of-the-objects answered Dec 31 '08 at 16:42 by Triptych
                 paginator = CustomPagination()
