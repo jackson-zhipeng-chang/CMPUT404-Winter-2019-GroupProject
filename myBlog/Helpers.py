@@ -343,7 +343,8 @@ def get_remote_friends_obj_list(remote_host, remote_user_uuid):
     request_url = remote_host + "service/author/"+str(remote_user_uuid)+"/friends/"
     headers = {"Accept": 'application/json'}
     try:
-        remote_to_node = Node.objects.get(host__contains=remote_host)
+        remoteNode = Node.objects.get(host__contains=remote_host)
+        remote_to_node = RemoteUser.objects.get(node=remoteNode)
         response = requests.get(request_url,headers=headers,auth=HTTPBasicAuth(remote_to_node.remoteUsername,remote_to_node.remotePassword))
     except Exception as e:
         print("Something wring when pull remote friend list %s"%e)
