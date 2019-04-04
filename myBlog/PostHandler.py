@@ -186,7 +186,8 @@ class PostHandler(APIView):
                                 return Response('Wrong Friend List Infomation.',status=status.HTTP_403_FORBIDDEN)
 
                         else:
-                            return Response("POST to friends endpoint fails",status=status.HTTP_400_BAD_REQUEST)
+                            return Response("Responding query string is wrong.'query':'friends'.",status=status.HTTP_400_BAD_REQUEST)
+
             else:
                 return Response("You are not sending the request with correct format. Missing 'query':'getPost'",status=status.HTTP_400_BAD_REQUEST)
 
@@ -261,7 +262,6 @@ class PostToUserHandlerView(APIView):
                     remoteNode = Node.objects.get(nodeUser=request.user)
                     shareImages = remoteNode.shareImages
                     sharePosts = remoteNode.sharePost
-                    #delete_remote_nodes_post()
                     if not (Author.objects.filter(id = current_user_uuid).exists()):
                         remote_to_node = RemoteUser.objects.get(node=remoteNode)
                         authorProfileURL = remoteNode.host + "service/author/%s"%str(current_user_uuid)
@@ -296,7 +296,6 @@ class PostToUserHandlerView(APIView):
                     if (Post.objects.filter(Q(unlisted=False), Q(author_id=current_user_uuid)).exists()):
                         my_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=current_user_uuid))
                         
-
                 if (Post.objects.filter(Q(unlisted=False), ~Q(author_id=current_user_uuid), Q(visibility='PUBLIC')).exists()):
                     public_posts_list = get_list_or_404(Post.objects.order_by('-published'), ~Q(author_id=current_user_uuid), Q(unlisted=False), Q(visibility='PUBLIC'))
 
@@ -316,6 +315,10 @@ class PostToUserHandlerView(APIView):
                     # https://stackoverflow.com/questions/22266734/django-excluding-one-queryset-from-another answered Mar 8 '14 at 8:04 Paul Draper
                                                        
                     friends_of_this_friend =  Helpers.get_friends(friend.id)
+                    if request.get_host() not in friend.host:
+                        remote_friends_of_this_friend = Helpers.get_remote_friends_obj_list(friend.host, friend.id)
+                        friends_of_this_friend +=remote_friends_of_this_friend
+                    
                     for friend_of_this_friend in friends_of_this_friend:
                         if friend_of_this_friend.id != current_user_uuid:
                             if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend_of_this_friend.id), Q(visibility='FOAF')).exists()):
@@ -350,12 +353,8 @@ class PostToUserHandlerView(APIView):
 
                 elif shareImages and sharePosts:
                     if isRemote:
-                        print("isRemote %s"%str(isRemote))
                         for post in posts_list:
-                            print("str(remoteNode.host) %s"%str(remoteNode.host))
-                            print("str(post.origin) %s %s"%(str(post.origin), str(post.postid)))
                             if str(remoteNode.host) not in str(post.origin):
-                                print("appending %s"%str(post.postid))
                                 filtered_share_list.append(post)
                     elif not isRemote:
                         filtered_share_list = posts_list
@@ -488,9 +487,10 @@ class MyPostHandler(APIView):
 
 def pull_remote_nodes(current_user_uuid,request=None):
     all_nodes = Node.objects.all()
+    current_user_host = Helpers.get_current_user_host(current_user_uuid)
     for node in all_nodes:
         nodeURL = node.host+"service/author/posts/"
-        headers = {"X-UUID": str(current_user_uuid)}
+        headers = {"X-UUID": str(current_user_uuid), "X-Request-User-ID": str(current_user_host)+"author/"+str(current_user_uuid)}
         # http://docs.python-requests.org/en/master/user/authentication/ ©MMXVIII. A Kenneth Reitz Project.
         remote_to_node = RemoteUser.objects.get(node=node)
 
@@ -503,9 +503,8 @@ def pull_remote_nodes(current_user_uuid,request=None):
 
         if response.status_code == 200:
             postJson = response.json()
-            if int(postJson["count"]) != 0: 
-                remote_postid_set = set()
-                
+            remote_postid_set = set()
+            if int(postJson["count"]) != 0:                 
                 for i in range (0,int(postJson["count"])):
                     #  if the post is already in our db and published date did not change, do nothing
                     #  if the postid is not in our db, add
