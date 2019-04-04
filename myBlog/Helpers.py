@@ -16,6 +16,7 @@ import json
 import re
 import datetime
 import dateutil.parser
+import time
 
 def get_author_or_not_exits(current_user_uuid):
     if type(current_user_uuid) != UUID:
@@ -52,8 +53,12 @@ def get_current_user_uuid(request):
                     return author.id
 
 def get_current_user_host(current_user_uuid):
-    if (not Author.objects.filter(id=current_user_uuid).exists()):
+    # if (not Author.objects.filter(id=current_user_uuid).exists()):
+    #     return Author.objects.get(id=current_user_uuid).host
+    try:
         return Author.objects.get(id=current_user_uuid).host
+    except:
+        return None
 
 def verify_current_user_to_post(post, request):
     post_visibility = post.visibility
@@ -142,27 +147,24 @@ def update_remote_friendship(current_user_uuid):
             data = response.json()
             remoteFriendsURL = data["authors"]
             remote_friends_uuid_list = convert_url_list_to_uuid(remoteFriendsURL)
+            print("remote_friends_uuid_list is {}:".format(remote_friends_uuid_list))
 
             if len(remoteFriendsURL) != 0:
                 for remoteFriend_uuid in remote_friends_uuid_list:
                     isFollowing = check_author1_follow_author2(current_user_uuid,remoteFriend_uuid)
                     if isFollowing:
+                        print('Changing Status to accept for author %s and %s'%(current_user_uuid, remoteFriend_uuid))
                         update_friendship_obj(current_user_uuid, remoteFriend_uuid, 'Accept')
 
             if len(local_friends_list) != 0:
                 for localFriend in local_friends_list:
                     if (localFriend.id not in remote_friends_uuid_list) and (node.host == localFriend.host):
-                        if (Friend.objects.filter(Q(author=localFriend.id), Q(status='Accept')).exists()):
-                            friendship = Friend.objects.get(Q(author=localFriend.id), Q(status='Accept'))
-                            last_modified_time = friendship.last_modified_time.replace(tzinfo=None)
-                            if ((datetime.datetime.utcnow() - last_modified_time).total_seconds () > 30):
-                                friendship.delete()
-
-                        if (Friend.objects.filter(Q(friend=localFriend.id), Q(status='Accept')).exists()):
-                            friendship = Friend.objects.get(Q(friend=localFriend.id), Q(status='Accept'))
-                            last_modified_time = friendship.last_modified_time.replace(tzinfo=None)
-                            if ((datetime.datetime.utcnow() - last_modified_time).total_seconds () > 30):
-                                friendship.delete()
+                        if Friend.objects.filter(Q(author=localFriend.id),Q(status='Accept')).exists():
+                            friendship = Friend.objects.get(Q(author=localFriend.id),Q(status='Accept'))
+                            friendship.delete()
+                        elif Friend.objects.filter(Q(friend=localFriend.id),Q(status='Accept')).exists():
+                            friendship = Friend.objects.get(Q(friend=localFriend.id),Q(status='Accept'))
+                            friendship.delete()
         except:
             pass
 
@@ -294,17 +296,86 @@ def send_FR_to_remote(nodeObj,data):
     response = requests.post(URL, headers=header, data=data,
                              auth=HTTPBasicAuth(remote_server.remoteUsername,
                                                 remote_server.remotePassword))
-    if response.status_code == 200:
+    # if response.status_code == 200:
 
-        return Response("friend request sent", status=status.HTTP_200_OK)
-    else:
-        return Response("Something went wrong", status=response.status_code)
+    #     return Response("friend request sent", status=status.HTTP_200_OK)
+    # else:
+    #     return Response("Something went wrong", status=response.status_code)
+    return response.status_code
 
 def from_my_server(host):
     for node in Node.objects.all():
         if str(node.host) in str(host):
             return False
     return True
+
+def pull_remote_posts(current_user_uuid):
+    remotePostList = []
+    all_nodes = Node.objects.all()
+    for node in all_nodes:
+        nodeURL = node.host+'service/author/posts'
+        headers = {"X-UUID":str(current_user_uuid)}
+        # http://docs.python-requests.org/en/master/user/authentication/ ©MMXVIII. A Kenneth Reitz Project.
+        remote_to_node = RemoteUser.objects.get(node=node)
+        try:
+            response = requests.get(nodeURL,headers=headers,auth=HTTPBasicAuth(remote_to_node.remoteUsername,remote_to_node.remotePassword))
+            print('type of response is {}'.format(type(response)))
+        except Exception as e:
+            print("an error occured when pulling remote posts: %s"%e)
+            continue
+        
+        if response.status_code == 200:
+            postJson = response.json()
+            remotePostList += postJson['posts']
+    return remotePostList
+
+def update_this_friendship(remoteNode,remote_user_uuid,request):
+    remote_authorObj = Author.objects.get(pk=remote_user_uuid)
+    remote_host = remoteNode.host
+    remote_to_node = RemoteUser.objects.get(node=remoteNode)
+    local_friend_list_of_remote_user = []
+    # local_friends_obj_list = list(Friend.objects.filter(Q(author=remote_authorObj)|Q(friend=remote_authorObj)))
+    if Friend.objects.filter(author=remote_authorObj).exists():
+        local_friend_list_of_remote_user += [friend.friend.host+"author/"+str(friend.friend.id) for friend in list(Friend.objects.filter(author=remote_authorObj))]
+    if Friend.objects.filter(friend=remote_authorObj).exists():
+        local_friend_list_of_remote_user += [friend.author.host+"author/"+str(friend.author.id) for friend in list(Friend.objects.filter(friend=remote_authorObj))]
+
+
+    if local_friend_list_of_remote_user:
+        # local_friend_list_of_remote_user = [str(friend.id) for friend in local_friends_obj_list]
+        request_body = {
+            "query":"friends",
+            "author":remote_host + "service/author/"+str(remote_user_uuid),
+            "authors":local_friend_list_of_remote_user
+        }
+        #Get friend list of this author
+        request_url = remote_host + "service/author/"+str(remote_user_uuid)+"/friends/"
+        headers = {"Content-Type": 'application/json', "Accept": 'application/json'}
+        data = json.dumps(request_body)
+        response = requests.post(request_url,headers=headers,data=data,auth=HTTPBasicAuth(remote_to_node.remoteUsername,remote_to_node.remotePassword))
+        print(response.content)
+        if response.status_code == 200:
+            response_friendlist_set = set(response.json()["authors"])
+            local_friend_set = set(local_friend_list_of_remote_user)
+            extra_friend = local_friend_set - response_friendlist_set
+            print('extra_friend {}'.format(extra_friend))
+            my_host = request.get_host()
+            print('my host is {}'.format(my_host))
+            try:
+                for friend_url in extra_friend:
+                    # TODO: get friend's host in smart way
+                    friend_uuid=friend_url.replace('https://'+my_host+'/author/',"")
+                    friend_obj = Author.objects.get(Q(pk=friend_uuid))
+                    if Friend.objects.filter(Q(author=friend_obj),Q(status="Accept")).exists():
+                        Friend.objects.get(Q(author=friend_obj),Q(status="Accept")).delete()
+                    if Friend.objects.filter(Q(friend=friend_obj),Q(status="Accept")).exists():
+                        Friend.objects.get(Q(friend=friend_obj),Q(status="Accept")).delete()
+
+            except Exception as e:
+                print("an error occured: %s"%e)
+
+        else:
+            print("Something wrong ",response.status_code)            
 #-----------------------------------------Local endpoints-----------------------------------------#
 def new_post(request):
     return render(request, 'newpost.html')
@@ -371,8 +442,8 @@ def post_details(request, post_id):
                     except:
                         raise Http404("Author does not exist")
                     # Create the post object for final list
-                    if not Post.objects.filter(postid=postJson["postid"]).exists():
-                        post = Post.objects.create(postid=postJson["id"], title=postJson["title"],source=node.host+"service/posts/"+postJson["postid"], 
+                    if not Post.objects.filter(postid=postJson["id"]).exists():
+                        post = Post.objects.create(postid=postJson["id"], title=postJson["title"],source=node.host+"service/posts/"+postJson["id"], 
                             origin=postJson["origin"], content=postJson["content"],categories=postJson["categories"], 
                             contentType=postJson["contentType"], author=remoteAuthorObj,visibility=postJson["visibility"], 
                             visibleTo=postJson["visibleTo"], description=postJson["description"],
@@ -385,7 +456,7 @@ def post_details(request, post_id):
                             for j in range (0, len(postJson["comments"])):
                                 remotePostCommentAuthorJson = postJson["comments"][j]["author"]
                                 remotePostCommentAuthorObj = get_or_create_author_if_not_exist(remotePostCommentAuthorJson)
-                                remotePostCommentObj = Comment.objects.create(id=postJson["comments"][j]["id"], postid=postJson["comments"][j]["postid"],
+                                remotePostCommentObj = Comment.objects.create(id=postJson["comments"][j]["id"], postid=postJson["comments"][j]["id"],
                                 author = remotePostCommentAuthorObj, comment=postJson["comments"][j]["comment"],contentType=postJson["comments"][j]["contentType"])
                                 commentPublishedObj = dateutil.parser.parse(postJson["comments"][j]["published"])
                             remotePostCommentObj.published = commentPublishedObj

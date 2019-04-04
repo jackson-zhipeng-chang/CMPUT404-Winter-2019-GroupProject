@@ -129,10 +129,10 @@ function get_friends_list(){
 }
 
 // https://stackoverflow.com/questions/6941533/get-protocol-domain-and-port-from-url
-function get_host(){
-    var url = window.location.href;
-    var arr = url.split("/");
-    var result = arr[0] + "//" + arr[2];
-    return result
-}
+// function get_host(){
+//     var url = window.location.href;
+//     var arr = url.split("/");
+//     var result = arr[0] + "//" + arr[2];
+//     return result
+// }
 

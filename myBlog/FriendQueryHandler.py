@@ -38,29 +38,37 @@ class FriendQueryHandler(APIView):
             return Response(responsBody, status=status.HTTP_200_OK)
 
     def post(self, request, user_id, format=None):
-        try:
-            author = Helpers.get_author_or_not_exits(user_id)
-            data = request.data
-            if data['query'] == 'friends':
-                friends_list = Helpers.get_friends(user_id)
-                # TODO: I changed here
+        # try:
+        author = Helpers.get_author_or_not_exits(user_id)
+        data = request.data
+        print("request data is {}: ".format(data))
+        if data['query'] == 'friends':
+            # friends_list = Helpers.get_friends(user_id)
+            # get friendlist locally
+            friend_list = Friend.objects.filter(Q(author=author)|Q(friend=author))
+            print("local friendlist is {}:".format(friend_list))
+            if type(data['authors'])!= list:
                 query_list = []
                 query_list.append(data['authors'])
-                
-                respons_list = []
-                for author_url in query_list:
-                    for friend_obj in friends_list:
-                        firend_uuid = str(friend_obj.id)
-                        if firend_uuid in author_url:
-                            respons_list.append(author_url)
-                responsBody={
-                    "query": "friends",
-                    "author":author.host+"service/author/"+str(author.id),
-                    "authors":respons_list
-                }
-                return Response(responsBody, status=200)
             else:
-                return Response("You are not sending the request with the correct format. Missing 'query': 'friends'",status=status.HTTP_400_BAD_REQUEST)
-        except:
+                query_list = data['authors']
+            print("query_list is {}:".format(query_list))
+            respons_list = []
+            for author_url in query_list:
+                for friend_obj in friend_list:
+                    # can be author or friend in a relationship
+                    firend_uuid = str(friend_obj.friend.id)
+                    author_uuid = str(friend_obj.author.id)
+                    if firend_uuid in author_url or author_uuid in author_url:
+                        respons_list.append(author_url)
+            responsBody={
+                "query": "friends",
+                "author":author.host+"service/author/"+str(author.id),
+                "authors":respons_list
+            }
+            return Response(responsBody, status=200)
+        else:
+            return Response("You are not sending the request with the correct format. Missing 'query': 'friends'",status=status.HTTP_400_BAD_REQUEST)
+        # except:
 
-            return Response("Author couldn't find", status=404)
+            # return Response("Author couldn't find", status=404)

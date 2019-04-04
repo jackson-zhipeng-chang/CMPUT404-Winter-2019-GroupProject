@@ -76,7 +76,8 @@ function put(id){
     .then(response => {
 
         if (response.status === 200)
-        {
+        {   
+            console.log(get_host())
             window.location.replace(get_host()+"service/all/");
         }
         else
