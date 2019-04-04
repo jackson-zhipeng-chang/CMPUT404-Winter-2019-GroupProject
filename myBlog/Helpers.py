@@ -148,7 +148,7 @@ def update_remote_friendship(current_user_uuid):
             remoteFriendsURL = data["authors"]
             remote_friends_uuid_list = convert_url_list_to_uuid(remoteFriendsURL)
             print("remote_friends_uuid_list is {}:".format(remote_friends_uuid_list))
-
+            print("local_friends_list is {}:".format(local_friends_list))
             if len(remoteFriendsURL) != 0:
                 for remoteFriend_uuid in remote_friends_uuid_list:
                     isFollowing = check_author1_follow_author2(current_user_uuid,remoteFriend_uuid)
@@ -157,16 +157,12 @@ def update_remote_friendship(current_user_uuid):
                         update_friendship_obj(current_user_uuid, remoteFriend_uuid, 'Accept')
             if len(local_friends_list) != 0:
                 for localFriend in local_friends_list:
-                    if Friend.objects.filter(Q(author=localFriend.id),Q(status='Accept')).exists():
-                        friendship_of_local_friend = Friend.objects.get(Q(author=localFriend.id),Q(status='Accept'))
-                        remote_friend_of_local_friend = friendship_of_local_friend.friend
-                    elif Friend.objects.filter(Q(friend=localFriend.id),Q(status='Accept')).exists():
-                        friendship_of_local_friend = Friend.objects.get(Q(friend=localFriend.id),Q(status='Accept'))
-                        remote_friend_of_local_friend = friendship_of_local_friend.author
-
-                    if (localFriend.id not in remote_friends_uuid_list) and (node.host == remote_friend_of_local_friend.host):
-                        print("deleting friendship %s"%str(friendship_of_local_friend))
-                        friendship_of_local_friend.delete()
+                    if (localFriend.id not in remote_friends_uuid_list) and (node.host == localFriend.host):
+                        print("Deleting friendship")
+                        if Friend.objects.filter(Q(author=localFriend.id),Q(status='Accept')).exists():
+                            Friend.objects.get(Q(author=localFriend.id),Q(status='Accept')).delete()
+                        elif Friend.objects.filter(Q(friend=localFriend.id),Q(status='Accept')).exists():
+                            Friend.objects.get(Q(friend=localFriend.id),Q(status='Accept')).delete()
                         print("done")
         except:
             pass
