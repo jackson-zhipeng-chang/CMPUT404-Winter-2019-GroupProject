@@ -5,6 +5,10 @@
 | Build Status | Coverage Status | Documentation Status | 
 | ------------ | ----------- | --------------- | 
 |[![Build Status](https://travis-ci.org/Zhipeng-Chang/CMPUT404-Winter-2019-GroupProject.svg?branch=master)](https://travis-ci.org/Zhipeng-Chang/CMPUT404-Winter-2019-GroupProject)|[![Coverage Status](https://coveralls.io/repos/github/Zhipeng-Chang/CMPUT404-Winter-2019-GroupProject/badge.svg?branch=master)](https://coveralls.io/github/Zhipeng-Chang/CMPUT404-Winter-2019-GroupProject?branch=master)|[![Documentation Status](https://img.shields.io/badge/docs-stable-brightgreen.svg)](https://github.com/Zhipeng-Chang/CMPUT404-Winter-2019-GroupProject/blob/master/docs/APIsDoc.pdf)
+
+## Video Demo
+[Demo](https://www.youtube.com/watch?v=EiFpLDXxi-Y)
+
 ## If you want to connect to my server
 please refer to this [page](https://github.com/Zhipeng-Chang/CMPUT404-Winter-2019-GroupProject/wiki/Remote-Connecting-Doc)
 
