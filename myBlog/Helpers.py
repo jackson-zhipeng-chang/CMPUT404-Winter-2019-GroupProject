@@ -272,7 +272,19 @@ def check_remote_request(request):
         return False
 
 def get_or_create_author_if_not_exist(author_json):
-    AuthorObj = get_author_or_not_exits(author_json['id'])
+    if 'author/' in author_json['id']:
+        author_id = author_json['id'].split('author/')[1]
+        try:
+            author_id = UUID(author_id)
+        except:
+            print("Author/Friend id in bad format")
+    else:
+        try:
+            author_id = UUID(author_json['id'])
+        except:
+            print("Author/Friend id in bad format")
+
+    AuthorObj = get_author_or_not_exits(author_id)
     if AuthorObj is False:
         if User.objects.filter(username=author_json["displayName"]).exists():
             userObj = User.objects.get(username=author_json["displayName"])
@@ -280,7 +292,7 @@ def get_or_create_author_if_not_exist(author_json):
             userObj = User.objects.create_user(username=author_json["displayName"],password="password", is_active=False)
         host = author_json["host"]
         host = host.replace("localhost", "127.0.0.1")
-        author = Author.objects.create(id=author_json['id'], displayName=author_json["displayName"],user=userObj, host=host)
+        author = Author.objects.create(id=author_id, displayName=author_json["displayName"],user=userObj, host=host)
         author.save()
         AuthorObj = author
 
@@ -357,8 +369,9 @@ def get_remote_friends_obj_list(remote_host, remote_user_uuid):
         if len(author_list) != 0:
             for author_url in author_list:
                 print("remote friend %s of %s"%(author_url, remote_user_uuid))
-                response = requests.get(author_url,auth=HTTPBasicAuth(remote_to_node.remoteUsername,remote_to_node.remotePassword))
+                response = requests.get(author_url)
                 remoteAuthorJson = response.json()
+                print(remoteAuthorJson)
                 remoteAuthorObj = get_or_create_author_if_not_exist(remoteAuthorJson)
                 remote_friend_obj_list+=remoteAuthorObj
         return remote_friend_obj_list
