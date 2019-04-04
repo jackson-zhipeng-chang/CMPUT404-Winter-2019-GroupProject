@@ -4,12 +4,6 @@
     {% if user.is_authenticated %}
         <div class="w3-container w3-card w3-white w3-round w3-margin">
         <i class="fa fa-user w3-left w3-circle" style="width: 20px; margin: 25px; display: inline-block;"></i>
-        {% if currentAuthorIsOwner %}
-            <a class="fa fa-pencil w3-right w3-margin-right w3-button" style="width: 25px; margin: 25px"
-            href="/service/editpost/{{ postID }}/">
-            </a>
-        {% endif %}
-
         <a href="/service/authordetails/{{author.id}}/" style="font-size: 25px; margin-top: 11px; display: inline-block;">{{author}}</a>
         <hr class="w3-clear">
         <h3 class="w3-row-padding" style="margin: 0px 20px;">{{title}}</h3>
