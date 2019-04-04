@@ -247,7 +247,6 @@ class PostToUserHandlerView(APIView):
                     remoteNode = Node.objects.get(nodeUser=request.user)
                     shareImages = remoteNode.shareImages
                     sharePosts = remoteNode.sharePost
-                    #delete_remote_nodes_post()
                     if not (Author.objects.filter(id = current_user_uuid).exists()):
                         remote_to_node = RemoteUser.objects.get(node=remoteNode)
                         authorProfileURL = remoteNode.host + "service/author/%s"%str(current_user_uuid)
@@ -282,7 +281,6 @@ class PostToUserHandlerView(APIView):
                     if (Post.objects.filter(Q(unlisted=False), Q(author_id=current_user_uuid)).exists()):
                         my_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=current_user_uuid))
                         
-
                 if (Post.objects.filter(Q(unlisted=False), ~Q(author_id=current_user_uuid), Q(visibility='PUBLIC')).exists()):
                     public_posts_list = get_list_or_404(Post.objects.order_by('-published'), ~Q(author_id=current_user_uuid), Q(unlisted=False), Q(visibility='PUBLIC'))
 
