@@ -373,7 +373,7 @@ def get_remote_friends_obj_list(remote_host, remote_user_uuid):
                 remoteAuthorJson = response.json()
                 print(remoteAuthorJson)
                 remoteAuthorObj = get_or_create_author_if_not_exist(remoteAuthorJson)
-                remote_friend_obj_list+=remoteAuthorObj
+                remote_friend_obj_list.append(remoteAuthorObj)
         return remote_friend_obj_list
     else:
         return []
