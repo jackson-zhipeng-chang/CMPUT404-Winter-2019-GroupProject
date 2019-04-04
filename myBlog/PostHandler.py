@@ -304,9 +304,12 @@ class PostToUserHandlerView(APIView):
                     friends_of_this_friend =  Helpers.get_friends(friend.id)
                     print("friends_of_this_friend %s"%str(friends_of_this_friend))
                     for friend_of_this_friend in friends_of_this_friend:
+                        print(friend_of_this_friend.id)
+                        print(current_user_uuid)
                         if friend_of_this_friend.id != current_user_uuid:
                             if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend_of_this_friend.id), Q(visibility='FOAF')).exists()):
                                 foaf_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend_of_this_friend.id),Q(visibility='FOAF'))
+                                print("foaf_posts_list %s"%str(foaf_posts_list))
                    
                     if not isRemote:
                         if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend.id), Q(visibility='SERVERONLY')).exists()):
