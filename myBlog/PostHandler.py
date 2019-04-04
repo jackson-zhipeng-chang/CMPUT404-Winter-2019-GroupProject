@@ -338,7 +338,10 @@ class PostToUserHandlerView(APIView):
                 elif shareImages and sharePosts:
                     if isRemote:
                         for post in posts_list:
-                            if str(remoteNode.host) not in post.origin:
+                            print("str(remoteNode.host) %s"%str(remoteNode.host))
+                            print("str(post.origin) %s %s"%(str(post.origin), str(post.id)))
+                            if str(remoteNode.host) not in str(post.origin):
+                                print("appending %s"%str(post.id))
                                 filtered_share_list.append(post)
                     elif not isRemote:
                         filtered_share_list = posts_list
