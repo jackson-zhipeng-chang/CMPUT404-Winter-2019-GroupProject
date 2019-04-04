@@ -155,9 +155,12 @@ def update_remote_friendship(current_user_uuid):
                     if isFollowing:
                         print('Changing Status to accept for author %s and %s'%(current_user_uuid, remoteFriend_uuid))
                         update_friendship_obj(current_user_uuid, remoteFriend_uuid, 'Accept')
-
+            print("local_friends_list %s"%str(local_friends_list))
             if len(local_friends_list) != 0:
                 for localFriend in local_friends_list:
+                    print("localFriend.id %s"%str(localFriend.id))
+                    print("node.host %s"%str(node.host))
+                    print("localFriend.host %s"%str(localFriend.host))
                     if (localFriend.id not in remote_friends_uuid_list) and (node.host == localFriend.host):
                         if Friend.objects.filter(Q(author=localFriend.id),Q(status='Accept')).exists():
                             friendship = Friend.objects.get(Q(author=localFriend.id),Q(status='Accept'))
