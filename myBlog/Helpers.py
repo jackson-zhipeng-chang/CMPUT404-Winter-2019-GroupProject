@@ -339,6 +339,32 @@ def pull_remote_posts(current_user_uuid):
             remotePostList += postJson['posts']
     return remotePostList
 
+def get_remote_friends_obj_list(remote_host, remote_user_uuid):
+    request_url = remote_host + "service/author/"+str(remote_user_uuid)+"/friends/"
+    headers = {"Accept": 'application/json'}
+    try:
+        remote_to_node = Node.objects.get(host__contains=remote_host)
+        response = requests.get(request_url,headers=headers,auth=HTTPBasicAuth(remote_to_node.remoteUsername,remote_to_node.remotePassword))
+    except Exception as e:
+        print("Something wring when pull remote friend list %s"%e)
+        return []
+
+    if response.status_code == 200:
+        remote_friend_obj_list = []
+        data = response.json()
+        author_list = data["authors"]
+        if len(author_list) != 0:
+            for author_url in author_list:
+                print("remote friend %s of %s"%(author_url, remote_user_uuid))
+                response = requests.get(author_url,auth=HTTPBasicAuth(remote_to_node.remoteUsername,remote_to_node.remotePassword))
+                remoteAuthorJson = response.json()
+                remoteAuthorObj = get_or_create_author_if_not_exist(remoteAuthorJson)
+                remote_friend_obj_list+=remoteAuthorObj
+        return remote_friend_obj_list
+    else:
+        return []
+   
+
 def update_this_friendship(remoteNode,remote_user_uuid,request):
     remote_authorObj = Author.objects.get(pk=remote_user_uuid)
     remote_host = remoteNode.host

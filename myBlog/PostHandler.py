@@ -303,8 +303,10 @@ class PostToUserHandlerView(APIView):
                                                        
                     friends_of_this_friend =  Helpers.get_friends(friend.id)
                     if request.get_host() not in friend.host:
-                        print(request.get_host())
-                        print(friend.host)
+                        remote_friends_of_this_friend = Helpers.get_remote_friends_obj_list(friend.host, friend.id)
+                        print(remote_friends_of_this_friend)
+                        friends_of_this_friend +=remote_friends_of_this_friend
+                    
                     print("friends_of_this_friend %s"%str(friends_of_this_friend))
                     for friend_of_this_friend in friends_of_this_friend:
                         print(friend_of_this_friend.id)
