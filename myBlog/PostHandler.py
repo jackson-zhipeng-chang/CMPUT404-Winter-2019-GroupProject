@@ -304,17 +304,12 @@ class PostToUserHandlerView(APIView):
                     friends_of_this_friend =  Helpers.get_friends(friend.id)
                     if request.get_host() not in friend.host:
                         remote_friends_of_this_friend = Helpers.get_remote_friends_obj_list(friend.host, friend.id)
-                        print(remote_friends_of_this_friend)
                         friends_of_this_friend +=remote_friends_of_this_friend
                     
-                    print("friends_of_this_friend %s"%str(friends_of_this_friend))
                     for friend_of_this_friend in friends_of_this_friend:
-                        print(friend_of_this_friend.id)
-                        print(current_user_uuid)
                         if friend_of_this_friend.id != current_user_uuid:
                             if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend_of_this_friend.id), Q(visibility='FOAF')).exists()):
                                 foaf_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend_of_this_friend.id),Q(visibility='FOAF'))
-                                print("foaf_posts_list %s"%str(foaf_posts_list))
                    
                     if not isRemote:
                         if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend.id), Q(visibility='SERVERONLY')).exists()):
@@ -345,12 +340,8 @@ class PostToUserHandlerView(APIView):
 
                 elif shareImages and sharePosts:
                     if isRemote:
-                        print("isRemote %s"%str(isRemote))
                         for post in posts_list:
-                            print("str(remoteNode.host) %s"%str(remoteNode.host))
-                            print("str(post.origin) %s %s"%(str(post.origin), str(post.postid)))
                             if str(remoteNode.host) not in str(post.origin):
-                                print("appending %s"%str(post.postid))
                                 filtered_share_list.append(post)
                     elif not isRemote:
                         filtered_share_list = posts_list
