@@ -300,41 +300,49 @@ class PostToUserHandlerView(APIView):
                         for post in private_list:
                             if str(current_user_uuid) in post.visibleTo:
                                 private_posts_list.append(post)
-
+                    # https://stackoverflow.com/questions/22266734/django-excluding-one-queryset-from-another answered Mar 8 '14 at 8:04 Paul Draper
+                                                       
+                    friends_of_this_friend =  Helpers.get_friends(friend.id)
+                    for friend_of_this_friend in friends_of_this_friend:
+                        if friend_of_this_friend.id != current_user_uuid:
+                            if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend_of_this_friend.id), Q(visibility='FOAF')).exists()):
+                                foaf_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend_of_this_friend.id),Q(visibility='FOAF'))
+                   
                     if not isRemote:
                         if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend.id), Q(visibility='SERVERONLY')).exists()):
                             if (Helpers.get_current_user_host(current_user_uuid)==friend.host):
-                                serveronly_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend.id),Q(visibility='SERVERONLY'))
-                                                       
-                        friends_of_this_friend =  Helpers.get_friends(friend.id)
-                        for friend_of_this_friend in friends_of_this_friend:
-                            if friend_of_this_friend.id != current_user_uuid:
-                                if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend_of_this_friend.id), Q(visibility='FOAF')).exists()):
-                                    foaf_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend_of_this_friend.id),Q(visibility='FOAF'))
-                 
+                                serveronly_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend.id),Q(visibility='SERVERONLY'))                        
+                
                 posts_list = my_posts_list+public_posts_list+friend_posts_list+private_posts_list+serveronly_posts_list+foaf_posts_list
+                
                 filtered_share_list = []
                 if (not shareImages) and sharePosts:
                     for post in posts_list:
                         if (post.contentType != 'image/png;base64') and (post.contentType != 'image/jpeg;base64'):
-                            filtered_share_list.append(post)
+                            if isRemote and (remoteNode.host not in post.origin):
+                                filtered_share_list.append(post)
+                            else:
+                                filtered_share_list.append(post)
 
                 elif (not sharePosts) and shareImages:
                     for post in posts_list:
                         if (post.contentType != 'text/plain') and (post.contentType != 'text/markdown'):
-                            filtered_share_list.append(post)
+                            if isRemote and (remoteNode.host not in post.origin):
+                                filtered_share_list.append(post)
+                            else:
+                                filtered_share_list.append(post)
 
                 elif (not sharePosts) and (not shareImages):
                     filtered_share_list = []
 
                 elif shareImages and sharePosts:
                     filtered_share_list = posts_list
+
                 filtered_share_list.sort(key=lambda x: x.published, reverse=True) # https://stackoverflow.com/questions/403421/how-to-sort-a-list-of-objects-based-on-an-attribute-of-the-objects answered Dec 31 '08 at 16:42 by Triptych
                 paginator = CustomPagination()
                 results = paginator.paginate_queryset(filtered_share_list, request)
                 serializer=PostSerializer(results, many=True)
-                end_time = time.time()
-                print(end_time-start_time)
+                print("Responsed in %s sec"%str(time.time()-start_time))
                 return paginator.get_paginated_response(serializer.data)
 
             else:
@@ -362,7 +370,6 @@ class PostToUserIDHandler(APIView):
                     remoteNode = Node.objects.get(nodeUser=request.user)
                     shareImages = remoteNode.shareImages
                     sharePosts = remoteNode.sharePost
-                    #delete_remote_nodes_post()
 
                     if not (Author.objects.filter(id = current_user_uuid).exists()):
                         remote_to_node = RemoteUser.objects.get(node=remoteNode)
@@ -379,7 +386,6 @@ class PostToUserIDHandler(APIView):
                     # TODO: only need this function when this author is exist in our server?
                     Helpers.update_this_friendship(remoteNode,current_user_uuid,request)
                 else:
-                    # delete_remote_nodes_post()
                     pull_remote_nodes(current_user_uuid,request=request)
 
 
@@ -538,17 +544,3 @@ def pull_remote_nodes(current_user_uuid,request=None):
                     print("deleted_post_id %s"%str(deleted_post_id))
                     for post_id in deleted_post_id:
                         Post.objects.filter(postid=post_id).delete()
-
-def delete_remote_nodes_post():
-    # https://stackoverflow.com/questions/8949145/filter-django-database-for-field-containing-any-value-in-an-array answered Jan 20 '12 at 23:36 Ismail Badawi
-    for node in Node.objects.all():
-        orginRelatedPosts = Post.objects.filter(origin__contains=node.host)
-        sourceRelatedPosts = Post.objects.filter(source__contains=node.host)
-        #for post in orginRelatedPosts:
-        #    Comment.objects.filter(postid=post.postid).delete()
-
-        #for post in sourceRelatedPosts:
-        #    Comment.objects.filter(postid=post.postid).delete()
-
-        orginRelatedPosts.delete()
-        sourceRelatedPosts.delete()
