@@ -340,9 +340,9 @@ class PostToUserHandlerView(APIView):
                         print("isRemote %s"%str(isRemote))
                         for post in posts_list:
                             print("str(remoteNode.host) %s"%str(remoteNode.host))
-                            print("str(post.origin) %s %s"%(str(post.origin), str(post.id)))
+                            print("str(post.origin) %s %s"%(str(post.origin), str(post.postid)))
                             if str(remoteNode.host) not in str(post.origin):
-                                print("appending %s"%str(post.id))
+                                print("appending %s"%str(post.postid))
                                 filtered_share_list.append(post)
                     elif not isRemote:
                         filtered_share_list = posts_list
