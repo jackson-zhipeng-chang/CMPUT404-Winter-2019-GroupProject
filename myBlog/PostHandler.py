@@ -359,7 +359,6 @@ class PostToUserIDHandler(APIView):
                 sharePosts = True
 
                 if isRemote:
-                    print("remote mode in post to User ID HANDLERRRRRRRRRRR")
                     remoteNode = Node.objects.get(nodeUser=request.user)
                     shareImages = remoteNode.shareImages
                     sharePosts = remoteNode.sharePost
@@ -489,11 +488,9 @@ def pull_remote_nodes(current_user_uuid,request=None):
                     remote_postid_set.add(remotePostID)
                     remotePostPublished = postJson["posts"][i]["published"]
 
-                    if Post.objects.filter(Q(postid=remotePostID),Q(published=remotePostPublished)).exists():
-                        continue
-
                     # if the post in our db has been changed, delete
-                    elif Post.objects.filter(Q(postid=remotePostID),~Q(published=remotePostPublished)).exists():
+                    if Post.objects.filter(Q(postid=remotePostID),~Q(published=remotePostPublished)).exists():
+                        print("Updating posts: %s"%postJson["posts"][i]["title"])
                         Post.objects.filter(Q(postid=remotePostID),~Q(published=remotePostPublished)).delete()
             
                     
@@ -526,8 +523,9 @@ def pull_remote_nodes(current_user_uuid,request=None):
 
     # this part is for filtering the post not in remote posts, which means the post has been deleted in remote server
     if request:
+        print("Filtering posts for %s"%request.get_host())
         all_remote_post_id = Post.objects.filter(~Q(source__contains=request.get_host())).values_list("postid",flat=True)
-    
+        print("all_remote_post_id %s"%str(all_remote_post_id))
     # all_remote_post_id_set is a set of remote postsid in our server
     # remote_postid_set is the remote postid visible to me from other server
     
@@ -535,7 +533,9 @@ def pull_remote_nodes(current_user_uuid,request=None):
         all_remote_post_id_set = set()
         for post_id in all_remote_post_id:
             all_remote_post_id_set.add(str(post_id))
+        print("all_remote_post_id_set %s"%str(all_remote_post_id_set))
         deleted_post_id = all_remote_post_id_set-remote_postid_set
+        print("deleted_post_id %s"%str(deleted_post_id))
         for post_id in deleted_post_id:
             Post.objects.filter(postid=post_id).delete()
 
