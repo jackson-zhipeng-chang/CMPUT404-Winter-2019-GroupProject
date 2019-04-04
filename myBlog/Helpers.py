@@ -167,6 +167,7 @@ def update_remote_friendship(current_user_uuid):
                         print(localFriend.id)
                         print(remote_friends_uuid_list)
                         print(node.host)
+                        print(remote_friend_of_local_friend)
                         print(remote_friend_of_local_friend.host)
 
                     if (localFriend.id not in remote_friends_uuid_list) and (node.host == remote_friend_of_local_friend.host):
