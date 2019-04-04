@@ -337,6 +337,7 @@ class PostToUserHandlerView(APIView):
 
                 elif shareImages and sharePosts:
                     if isRemote:
+                        print("isRemote %s"%str(isRemote))
                         for post in posts_list:
                             print("str(remoteNode.host) %s"%str(remoteNode.host))
                             print("str(post.origin) %s %s"%(str(post.origin), str(post.id)))
