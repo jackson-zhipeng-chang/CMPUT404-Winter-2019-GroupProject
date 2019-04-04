@@ -161,13 +161,18 @@ def update_remote_friendship(current_user_uuid):
                     print("localFriend.id %s"%str(localFriend.id))
                     print("node.host %s"%str(node.host))
                     print("localFriend.host %s"%str(localFriend.host))
-                    if (localFriend.id not in remote_friends_uuid_list) and (node.host == localFriend.host):
-                        if Friend.objects.filter(Q(author=localFriend.id),Q(status='Accept')).exists():
-                            friendship = Friend.objects.get(Q(author=localFriend.id),Q(status='Accept'))
-                            friendship.delete()
-                        elif Friend.objects.filter(Q(friend=localFriend.id),Q(status='Accept')).exists():
-                            friendship = Friend.objects.get(Q(friend=localFriend.id),Q(status='Accept'))
-                            friendship.delete()
+
+                    if Friend.objects.filter(Q(author=localFriend.id),Q(status='Accept')).exists():
+                        friendship_of_local_friend = Friend.objects.get(Q(author=localFriend.id),Q(status='Accept'))
+                        remote_friend_of_local_friend = friendship_of_local_friend.friend
+                    elif Friend.objects.filter(Q(friend=localFriend.id),Q(status='Accept')).exists():
+                        friendship_of_local_friend = Friend.objects.get(Q(friend=localFriend.id),Q(status='Accept'))
+                        remote_friend_of_local_friend = friendship_of_local_friend.author
+                    print("friendship_of_local_friend %s"%str(friendship_of_local_friend))
+                    print("remote_friend_of_local_friend %s"%str(remote_friend_of_local_friend))
+
+                    if (localFriend.id not in remote_friends_uuid_list) and (node.host == remote_friend_of_local_friend.host):
+                            friendship_of_local_friend.delete()
         except:
             pass
 
