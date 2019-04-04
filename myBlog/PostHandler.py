@@ -173,7 +173,6 @@ class PostHandler(APIView):
                         else:
                             return Response("Responding query string is wrong.'query':'friends'.",status=status.HTTP_400_BAD_REQUEST)
 
-
             else:
                 return Response("You are not sending the request with correct format. Missing 'query':'getPost'",status=status.HTTP_400_BAD_REQUEST)
 
@@ -303,6 +302,10 @@ class PostToUserHandlerView(APIView):
                     # https://stackoverflow.com/questions/22266734/django-excluding-one-queryset-from-another answered Mar 8 '14 at 8:04 Paul Draper
                                                        
                     friends_of_this_friend =  Helpers.get_friends(friend.id)
+                    if request.get_host() not in friend.host:
+                        remote_friends_of_this_friend = Helpers.get_remote_friends_obj_list(friend.host, friend.id)
+                        friends_of_this_friend +=remote_friends_of_this_friend
+                    
                     for friend_of_this_friend in friends_of_this_friend:
                         if friend_of_this_friend.id != current_user_uuid:
                             if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend_of_this_friend.id), Q(visibility='FOAF')).exists()):
@@ -337,12 +340,8 @@ class PostToUserHandlerView(APIView):
 
                 elif shareImages and sharePosts:
                     if isRemote:
-                        print("isRemote %s"%str(isRemote))
                         for post in posts_list:
-                            print("str(remoteNode.host) %s"%str(remoteNode.host))
-                            print("str(post.origin) %s %s"%(str(post.origin), str(post.postid)))
                             if str(remoteNode.host) not in str(post.origin):
-                                print("appending %s"%str(post.postid))
                                 filtered_share_list.append(post)
                     elif not isRemote:
                         filtered_share_list = posts_list

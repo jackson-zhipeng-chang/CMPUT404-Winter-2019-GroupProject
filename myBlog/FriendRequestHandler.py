@@ -207,10 +207,6 @@ class AcceptFR(APIView):
             data['friend']['id'] = friend_id
             sender_verified = Helpers.verify_remote_author(data['author'])
             reciver_verified = Helpers.verify_remote_author(data['friend'])
-            print("sender_verified")
-            print(sender_verified)
-            print("reciver_verified")
-            print(reciver_verified)
             if sender_verified and reciver_verified:
                 sender_object = Helpers.get_or_create_author_if_not_exist(data['author'])
                 reciver_object = Helpers.get_or_create_author_if_not_exist(data['friend'])
