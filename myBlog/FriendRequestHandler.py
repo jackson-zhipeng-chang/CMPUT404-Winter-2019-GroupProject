@@ -45,12 +45,16 @@ class FriendRequestHandler(APIView):
                         self.node = node
                         self.data = data
                 current_user_uuid = Helpers.get_current_user_uuid(request)
-                # author_id = data['author']['id'].split('author/')[1]
-                # friend_id = data['friend']['id'].split('author/')[1]
-                author_id = data['author']['id'].replace(data['author']['host']+'author/', "")
-                friend_id = data['friend']['id'].replace(data['friend']['host']+'author/', "")
-                data['author']['id'] = author_id
-                data['friend']['id'] = friend_id
+                if 'author/' in data['author']['id'] and 'author/' in data['friend']['id']:
+                    author_id = data['author']['id'].split('author/')[1]
+                    friend_id = data['friend']['id'].split('author/')[1]
+                else:
+                    try:
+                        author_id = UUID(data['author']['id'])
+                        friend_id = UUID(data['friend']['id'])
+                    except:
+                        return Response("Author id in bad format", status=400) 
+
                 if is_to_remote:
                     sender_verified = Helpers.verify_remote_author(data['author'])
                     reciver_verified = Helpers.verify_remote_author(data['friend'])
@@ -60,8 +64,8 @@ class FriendRequestHandler(APIView):
                     else:
                         return Response("Author not found", status=404) 
                 else:
-                    sender_object = Author.objects.get(pk=data['author']['id'])
-                    reciver_object = Author.objects.get(pk=data['friend']['id'])
+                    sender_object = Author.objects.get(pk=author_id)
+                    reciver_object = Author.objects.get(pk=friend_id)
                 friend_already = Helpers.check_two_users_friends(author_id,friend_id)
                 if (not friend_already):
                     if (Friend.objects.filter(author=sender_object, friend=reciver_object, status="Decline").exists()):
