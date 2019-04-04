@@ -48,12 +48,17 @@ class FriendRequestHandler(APIView):
                 if 'author/' in data['author']['id'] and 'author/' in data['friend']['id']:
                     author_id = data['author']['id'].split('author/')[1]
                     friend_id = data['friend']['id'].split('author/')[1]
+                    try:
+                        author_id = UUID(author_id)
+                        friend_id = UUID(friend_id)
+                    except:
+                        return Response("Author/Friend id in bad format", status=400) 
                 else:
                     try:
                         author_id = UUID(data['author']['id'])
                         friend_id = UUID(data['friend']['id'])
                     except:
-                        return Response("Author id in bad format", status=400) 
+                        return Response("Author/Friend id in bad format", status=400) 
 
                 if is_to_remote:
                     sender_verified = Helpers.verify_remote_author(data['author'])
