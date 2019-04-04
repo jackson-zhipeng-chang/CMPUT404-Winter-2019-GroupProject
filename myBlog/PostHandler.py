@@ -173,7 +173,6 @@ class PostHandler(APIView):
                         else:
                             return Response("Responding query string is wrong.'query':'friends'.",status=status.HTTP_400_BAD_REQUEST)
 
-
             else:
                 return Response("You are not sending the request with correct format. Missing 'query':'getPost'",status=status.HTTP_400_BAD_REQUEST)
 
@@ -303,6 +302,7 @@ class PostToUserHandlerView(APIView):
                     # https://stackoverflow.com/questions/22266734/django-excluding-one-queryset-from-another answered Mar 8 '14 at 8:04 Paul Draper
                                                        
                     friends_of_this_friend =  Helpers.get_friends(friend.id)
+                    print("friends_of_this_friend %s"%str(friends_of_this_friend))
                     for friend_of_this_friend in friends_of_this_friend:
                         if friend_of_this_friend.id != current_user_uuid:
                             if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend_of_this_friend.id), Q(visibility='FOAF')).exists()):
