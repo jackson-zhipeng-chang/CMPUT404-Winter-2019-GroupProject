@@ -416,7 +416,7 @@ def author_details(request,author_id):
         current_user_github = Author.objects.get(pk=current_user_id).github
         update_remote_friendship(current_user_id)
         is_friend = is_my_friend(current_user_id,author_id)
-        print("current_user_id,author_id is friend %s"%(current_user_id,author_id,is_friend))
+        print("current_user_id,author_id is friend %s"%(str(current_user_id),str(author_id),str(is_friend)))
         follow_status = get_follow_status(current_user_id,author_id)
         friend = Author.objects.get(pk=author_id)
         host = friend.host
