@@ -261,18 +261,31 @@ def check_remote_request(request):
         return False
 
 def get_or_create_author_if_not_exist(author_json):
-    if 'author/' in author_json['id']:
-        author_id = author_json['id'].split('author/')[1]
-        try:
-            author_id = UUID(author_id)
-        except:
-            print("Author/Friend id in bad format")
+    if author_json['id']:
+        if 'author/' in author_json['id']:
+            author_id = author_json['id'].split('author/')[1]
+            try:
+                author_id = UUID(author_id)
+            except:
+                print("Author/Friend id in bad format")
+        else:
+            try:
+                author_id = UUID(author_json['id'])
+            except:
+                print("Author/Friend id in bad format")
     else:
-        try:
-            author_id = UUID(author_json['id'])
-        except:
-            print("Author/Friend id in bad format")
-
+        if 'author/' in author_json['url']:
+            author_id = author_json['url'].split('author/')[1]
+            try:
+                author_id = UUID(author_id)
+            except:
+                print("Author/Friend id in bad format")
+        else:
+            try:
+                author_id = UUID(author_json['url'])
+            except:
+                print("Author/Friend id in bad format")
+                
     AuthorObj = get_author_or_not_exits(author_id)
     if AuthorObj is False:
         if User.objects.filter(username=author_json["displayName"]).exists():
