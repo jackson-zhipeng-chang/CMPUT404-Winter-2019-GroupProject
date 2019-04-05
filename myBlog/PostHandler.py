@@ -99,7 +99,7 @@ class PostHandler(APIView):
 
         if request.user.is_authenticated:
             isRemote = Helpers.check_remote_request(request)
-            remote_user_uuid = Helpers.e(request)
+            remote_user_uuid = Helpers.(request)
             data = request.data
             if data["query"] == "getPost":
                 sender_friend_list = data["friends"]
