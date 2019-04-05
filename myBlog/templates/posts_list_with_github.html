@@ -25,10 +25,11 @@
 
         else{
             let loader = document.createElement("div");
-            loader.classList.add("fa", "fa-spinner", "fa-spin");
+            loader.classList.add("loadingIcon", "fa", "fa-spinner", "fa-spin");
             loader.style.fontSize = "5em";
             loader.style.marginLeft = "50%";
             holder.appendChild(loader);
+            loader.style.display = "none";
             for (var i = 0; i < data.posts.length; i++) {
 
                 let post = document.createElement("div");
@@ -166,7 +167,6 @@
                 nextButton.onclick=function(){getAllPosts(data.previous).then(display_posts)} ;
                 holder.appendChild(nextButton);
             }
-        loader.style.display = "none";
         } 
     }
     getAllPosts("{{posts_url}}").then(display_posts);
