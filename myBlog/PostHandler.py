@@ -15,6 +15,7 @@ import requests
 from requests.auth import HTTPBasicAuth
 import json
 import dateutil.parser
+import datetime
 import time
 
 
@@ -62,27 +63,6 @@ class NewPostHandler(APIView):
             return Response(responsBody, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def put(self, request, format=None):
-        current_user_uuid = Helpers.get_current_user_uuid(request)
-        author = Helpers.get_author_or_not_exits(current_user_uuid)
-        origin = Helpers.get_host_from_request(request)
-        data = request.data
-        if (data["contentType"] == "text/markdown"):
-            data["content"] = markdown.markdown(data["content"])
-        post = Post.objects.get(pk=data['id'])
-        serializer = PostSerializer(post, data=data, context={'author': author, 'origin': origin})
-        if serializer.is_valid():
-            serializer.save()
-            responsBody = {
-                "query": "addPost",
-                "success": True,
-                "message": "Post Added"
-            }
-            return Response(responsBody, status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 # https://www.django-rest-framework.org/tutorial/2-requests-and-responses/
 # https://www.django-rest-framework.org/tutorial/1-serialization/
@@ -234,7 +214,9 @@ class PostHandler(APIView):
                 data = request.data
                 serializer = PostSerializer(post, data=data)
                 if serializer.is_valid():
+                    post.published=datetime.datetime.now()
                     serializer.save()
+                    post.save()
                     return JsonResponse(serializer.data)
                 return JsonResponse("Data is not valid", serializer.errors, status=400)
             else:
