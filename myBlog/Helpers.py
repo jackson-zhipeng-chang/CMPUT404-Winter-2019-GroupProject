@@ -261,6 +261,7 @@ def check_remote_request(request):
         return False
 
 def get_or_create_author_if_not_exist(author_json):
+    print(author_json)
     try:
         if 'author/' in author_json['id']:
             author_id = author_json['id'].split('author/')[1]
@@ -293,7 +294,7 @@ def get_or_create_author_if_not_exist(author_json):
         else:
             userObj = User.objects.create_user(username=author_json["displayName"],password="password", is_active=False)
         host = author_json["host"]
-        host = host.replace("localhost", "127.0.0.1")
+        print(host.endswith("/"))
         author = Author.objects.create(id=author_id, displayName=author_json["displayName"],user=userObj, host=host)
         author.save()
         AuthorObj = author
