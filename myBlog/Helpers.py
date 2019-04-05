@@ -164,8 +164,8 @@ def update_remote_friendship(current_user_uuid):
                         elif Friend.objects.filter(Q(friend=localFriend.id),Q(status='Accept')).exists():
                             Friend.objects.get(Q(friend=localFriend.id),Q(status='Accept')).delete()
                         print("done")
-        except:
-            pass
+        except Exception as e:
+            print(e)
 
 def convert_url_list_to_uuid(friends_list):
     new_list = []
