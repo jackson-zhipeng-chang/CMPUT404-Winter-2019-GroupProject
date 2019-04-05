@@ -358,6 +358,7 @@ class PostToUserHandlerView(APIView):
                 results = paginator.paginate_queryset(filtered_share_list, request)
                 serializer=PostSerializer(results, many=True)
                 print("Responsed in %s sec"%str(time.time()-start_time))
+                print('reponse is {}'.format(paginator.get_paginated_response(serializer.data)))
                 return paginator.get_paginated_response(serializer.data)
 
             else:
