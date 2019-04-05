@@ -475,13 +475,17 @@ def pull_remote_nodes(current_user_uuid,request=None):
     current_user_host = Helpers.get_current_user_host(current_user_uuid)
     for node in all_nodes:
         nodeURL = node.host+"service/author/posts/"
-        headers = {"X-UUID": str(current_user_uuid), "X-Request-User-ID": str(current_user_host)+"author/"+str(current_user_uuid)}
+        author_url = str(current_user_host)+"service/author/"+str(current_user_uuid)
+        print(author_url)
+        headers = {"X-UUID": str(current_user_uuid), "X-Request-User-ID": author_url}
         # http://docs.python-requests.org/en/master/user/authentication/ ©MMXVIII. A Kenneth Reitz Project.
         remote_to_node = RemoteUser.objects.get(node=node)
 
         try:
-        # https://stackoverflow.com/questions/12737740/python-requests-and-persistent-sessions answered Oct 5 '12 at 0:24
+            # https://stackoverflow.com/questions/12737740/python-requests-and-persistent-sessions answered Oct 5 '12 at 0:24
+            print("Pulling: %s"%nodeURL)
             response = requests.get(nodeURL,headers=headers, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
+
         except Exception as e:
             print("an error occured when pulling remote posts: %s"%e)
             continue
