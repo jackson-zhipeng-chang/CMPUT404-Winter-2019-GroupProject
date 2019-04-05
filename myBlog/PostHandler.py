@@ -250,6 +250,7 @@ class PostToUserHandlerView(APIView):
                 isRemote = Helpers.check_remote_request(request)
                 shareImages = True
                 sharePosts = True
+                my_host = Helpers.get_host_from_request(request)
                 if isRemote:
                     remoteNode = Node.objects.get(nodeUser=request.user)
                     shareImages = remoteNode.shareImages
@@ -286,9 +287,12 @@ class PostToUserHandlerView(APIView):
                     if (Post.objects.filter(Q(unlisted=False), Q(author_id=current_user_uuid)).exists()):
                         my_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=current_user_uuid))
                         
-                if (Post.objects.filter(Q(unlisted=False), ~Q(author_id=current_user_uuid), Q(visibility='PUBLIC')).exists()):
-                    public_posts_list = get_list_or_404(Post.objects.order_by('-published'), ~Q(author_id=current_user_uuid), Q(unlisted=False), Q(visibility='PUBLIC'))
-
+                    if (Post.objects.filter(Q(unlisted=False), ~Q(author_id=current_user_uuid), Q(visibility='PUBLIC')).exists()):
+                        public_posts_list = get_list_or_404(Post.objects.order_by('-published'), ~Q(author_id=current_user_uuid), Q(unlisted=False), Q(visibility='PUBLIC'))
+                if isRemote:
+                    if Post.objects.filter(Q(unlisted=False),Q(visibility='PUBLIC'),Q(origin__conatins=my_host)).exists():
+                        public_posts_list = get_list_or_404(Post.objects.order_by('-published'),Q(unlisted=False),Q(visibility='PUBLIC'),Q(origin__conatins=my_host))
+                
                 friends_list = Helpers.get_local_friends(current_user_uuid)
                 for friend in friends_list:
                     if (Post.objects.filter(Q(unlisted=False),Q(author_id=friend.id),Q(visibility='FRIENDS')).exists()):
