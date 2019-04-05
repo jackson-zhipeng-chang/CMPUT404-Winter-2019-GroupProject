@@ -24,11 +24,16 @@ class CustomPagination(PageNumberPagination):
         else:
             query = 'comments'
 
+        try:
+            page_size = int(self.request.query_params['size'])
+        except:
+            page_size = self.page_size
+
         if self.get_previous_link() is None and self.get_next_link() is None:
             responsBody = {
             'query': query,
             'count': self.page.paginator.count,
-            "size": self.page_size,
+            "size": page_size,
              query:data,
         }
 
@@ -36,7 +41,7 @@ class CustomPagination(PageNumberPagination):
             responsBody = {
             'query': query,
             'count': self.page.paginator.count,
-            "size": self.page_size,
+            "size": page_size,
             'previous': self.get_previous_link(),
              query:data,
         }
@@ -45,7 +50,7 @@ class CustomPagination(PageNumberPagination):
             responsBody = {
             'query': query,
             'count': self.page.paginator.count,
-            "size": self.page_size,
+            "size": page_size,
             'next': self.get_next_link(),
              query:data,
         }
@@ -54,12 +59,11 @@ class CustomPagination(PageNumberPagination):
             responsBody = {
             'query': query,
             'count': self.page.paginator.count,
-            "size": self.page_size,
+            "size": page_size,
             'next': self.get_next_link(),
             'previous': self.get_previous_link(),
              query:data,
         }
-
         return Response(responsBody)
 
 class AuthorSerializer(serializers.ModelSerializer):
@@ -80,6 +84,7 @@ class AuthorSerializer(serializers.ModelSerializer):
 
 class FriendSerializer(serializers.ModelSerializer):
     author = AuthorSerializer(read_only=True)
+    friend = AuthorSerializer(read_only=True)
 
     class Meta:
         model = Friend

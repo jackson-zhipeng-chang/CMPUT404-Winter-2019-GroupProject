@@ -15,6 +15,8 @@ import requests
 from requests.auth import HTTPBasicAuth
 import json
 import dateutil.parser
+import datetime
+import time
 
 
 class NewPostHandler(APIView):
@@ -62,27 +64,6 @@ class NewPostHandler(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def put(self, request, format=None):
-        current_user_uuid = Helpers.get_current_user_uuid(request)
-        author = Helpers.get_author_or_not_exits(current_user_uuid)
-        origin = Helpers.get_host_from_request(request)
-        data = request.data
-        if (data["contentType"] == "text/markdown"):
-            data["content"] = markdown.markdown(data["content"])
-        post = Post.objects.get(pk=data['id'])
-        serializer = PostSerializer(post, data=data, context={'author': author, 'origin': origin})
-        if serializer.is_valid():
-            serializer.save()
-            responsBody = {
-                "query": "addPost",
-                "success": True,
-                "message": "Post Added"
-            }
-            return Response(responsBody, status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
 # https://www.django-rest-framework.org/tutorial/2-requests-and-responses/
 # https://www.django-rest-framework.org/tutorial/1-serialization/
 class PostHandler(APIView):
@@ -94,7 +75,7 @@ class PostHandler(APIView):
             data = request.data
             if data["query"] == "getPost":
                 sender_friend_list = data["friends"]
-                post_id = data["postid"]
+                post_id = data["id"]
                 if isRemote:
                     remoteNode = Node.objects.get(nodeUser=request.user)
                     remote_to_node = RemoteUser.objects.get(node=remoteNode)
@@ -172,7 +153,6 @@ class PostHandler(APIView):
                         else:
                             return Response("Responding query string is wrong.'query':'friends'.",status=status.HTTP_400_BAD_REQUEST)
 
-
             else:
                 return Response("You are not sending the request with correct format. Missing 'query':'getPost'",status=status.HTTP_400_BAD_REQUEST)
 
@@ -209,7 +189,9 @@ class PostHandler(APIView):
                 data = request.data
                 serializer = PostSerializer(post, data=data)
                 if serializer.is_valid():
+                    post.published=datetime.datetime.now()
                     serializer.save()
+                    post.save()
                     return JsonResponse(serializer.data)
                 return JsonResponse("Data is not valid", serializer.errors, status=400)
             else:
@@ -236,6 +218,7 @@ class PostHandler(APIView):
 # https://stackoverflow.com/questions/2658291/get-list-or-404-ordering-in-django answered Apr 17 '10 at 12:21 Ludwik Trammer
 class PostToUserHandlerView(APIView):
     def get(self, request, format=None):
+        start_time = time.time()
         if request.user.is_authenticated:
             current_user_uuid = Helpers.get_current_user_uuid(request)
             if type(current_user_uuid) is UUID:
@@ -246,7 +229,6 @@ class PostToUserHandlerView(APIView):
                     remoteNode = Node.objects.get(nodeUser=request.user)
                     shareImages = remoteNode.shareImages
                     sharePosts = remoteNode.sharePost
-                    #delete_remote_nodes_post()
                     if not (Author.objects.filter(id = current_user_uuid).exists()):
                         remote_to_node = RemoteUser.objects.get(node=remoteNode)
                         authorProfileURL = remoteNode.host + "service/author/%s"%str(current_user_uuid)
@@ -258,11 +240,16 @@ class PostToUserHandlerView(APIView):
                             remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
                         except:
                             return Response("Author not found", status=404)
+                    Helpers.update_this_friendship(remoteNode,current_user_uuid,request)
                 else:
-                    delete_remote_nodes_post()
-                    pull_remote_nodes(current_user_uuid)
+                    # if is local user, request remote server to get the post I can see
+                    #---------------------------------------
+                    # delete_remote_nodes_post()
+                    Helpers.update_remote_friendship(current_user_uuid)
+                    pull_remote_nodes(current_user_uuid,request=request)
+                    #---------------------------------------
 
-                Helpers.update_remote_friendship(current_user_uuid)
+                # Helpers.update_remote_friendship(current_user_uuid)
                 my_posts_list=[]
                 public_posts_list = []
                 friend_posts_list=[]
@@ -270,13 +257,14 @@ class PostToUserHandlerView(APIView):
                 serveronly_posts_list=[]
                 foaf_posts_list=[]
 
-                if (Post.objects.filter(Q(unlisted=False), Q(author_id=current_user_uuid)).exists()):
-                    my_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=current_user_uuid))
-
+                if not isRemote:
+                    if (Post.objects.filter(Q(unlisted=False), Q(author_id=current_user_uuid)).exists()):
+                        my_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=current_user_uuid))
+                        
                 if (Post.objects.filter(Q(unlisted=False), ~Q(author_id=current_user_uuid), Q(visibility='PUBLIC')).exists()):
                     public_posts_list = get_list_or_404(Post.objects.order_by('-published'), ~Q(author_id=current_user_uuid), Q(unlisted=False), Q(visibility='PUBLIC'))
 
-                friends_list = Helpers.get_friends(current_user_uuid)
+                friends_list = Helpers.get_local_friends(current_user_uuid)
                 for friend in friends_list:
                     if (Post.objects.filter(Q(unlisted=False),Q(author_id=friend.id),Q(visibility='FRIENDS')).exists()):
                         friend_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend.id), Q(visibility='FRIENDS'))
@@ -289,40 +277,58 @@ class PostToUserHandlerView(APIView):
                         for post in private_list:
                             if str(current_user_uuid) in post.visibleTo:
                                 private_posts_list.append(post)
-
-                    if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend.id), Q(visibility='SERVERONLY')).exists()):
-                        if (Helpers.get_current_user_host(current_user_uuid)==friend.host):
-                            serveronly_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend.id),Q(visibility='SERVERONLY'))
-
+                    # https://stackoverflow.com/questions/22266734/django-excluding-one-queryset-from-another answered Mar 8 '14 at 8:04 Paul Draper
+                                                       
                     friends_of_this_friend =  Helpers.get_friends(friend.id)
+                    if request.get_host() not in friend.host:
+                        remote_friends_of_this_friend = Helpers.get_remote_friends_obj_list(friend.host, friend.id)
+                        friends_of_this_friend +=remote_friends_of_this_friend
+                    
                     for friend_of_this_friend in friends_of_this_friend:
                         if friend_of_this_friend.id != current_user_uuid:
                             if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend_of_this_friend.id), Q(visibility='FOAF')).exists()):
                                 foaf_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend_of_this_friend.id),Q(visibility='FOAF'))
-
+                   
+                    if not isRemote:
+                        if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend.id), Q(visibility='SERVERONLY')).exists()):
+                            if (Helpers.get_current_user_host(current_user_uuid)==friend.host):
+                                serveronly_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend.id),Q(visibility='SERVERONLY'))                        
+                
                 posts_list = my_posts_list+public_posts_list+friend_posts_list+private_posts_list+serveronly_posts_list+foaf_posts_list
-
+                
                 filtered_share_list = []
                 if (not shareImages) and sharePosts:
                     for post in posts_list:
                         if (post.contentType != 'image/png;base64') and (post.contentType != 'image/jpeg;base64'):
-                            filtered_share_list.append(post)
+                            if isRemote and (str(remoteNode.host) not in post.origin):
+                                filtered_share_list.append(post)
+                            elif not isRemote:
+                                filtered_share_list.append(post)
 
                 elif (not sharePosts) and shareImages:
                     for post in posts_list:
                         if (post.contentType != 'text/plain') and (post.contentType != 'text/markdown'):
-                            filtered_share_list.append(post)
-
+                            if isRemote and (str(remoteNode.host) not in post.origin):
+                                filtered_share_list.append(post)
+                            elif not isRemote:
+                                filtered_share_list.append(post)
+                                
                 elif (not sharePosts) and (not shareImages):
                     filtered_share_list = []
 
                 elif shareImages and sharePosts:
-                    filtered_share_list = posts_list
+                    if isRemote:
+                        for post in posts_list:
+                            if str(remoteNode.host) not in str(post.origin):
+                                filtered_share_list.append(post)
+                    elif not isRemote:
+                        filtered_share_list = posts_list
 
                 filtered_share_list.sort(key=lambda x: x.published, reverse=True) # https://stackoverflow.com/questions/403421/how-to-sort-a-list-of-objects-based-on-an-attribute-of-the-objects answered Dec 31 '08 at 16:42 by Triptych
                 paginator = CustomPagination()
                 results = paginator.paginate_queryset(filtered_share_list, request)
                 serializer=PostSerializer(results, many=True)
+                print("Responsed in %s sec"%str(time.time()-start_time))
                 return paginator.get_paginated_response(serializer.data)
 
             else:
@@ -341,7 +347,6 @@ class PostToUserIDHandler(APIView):
     def get(self, request, user_id, format=None):
         if request.user.is_authenticated:
             current_user_uuid = Helpers.get_current_user_uuid(request)
-
             if type(current_user_uuid) is UUID:
                 isRemote = Helpers.check_remote_request(request)
                 shareImages = True
@@ -351,7 +356,6 @@ class PostToUserIDHandler(APIView):
                     remoteNode = Node.objects.get(nodeUser=request.user)
                     shareImages = remoteNode.shareImages
                     sharePosts = remoteNode.sharePost
-                    #delete_remote_nodes_post()
 
                     if not (Author.objects.filter(id = current_user_uuid).exists()):
                         remote_to_node = RemoteUser.objects.get(node=remoteNode)
@@ -365,10 +369,11 @@ class PostToUserIDHandler(APIView):
                             remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
                         except:
                             return Response("Author not found", status=404)
-
+                    # TODO: only need this function when this author is exist in our server?
+                    Helpers.update_this_friendship(remoteNode,current_user_uuid,request)
                 else:
-                    delete_remote_nodes_post()
-                    pull_remote_nodes(current_user_uuid)
+                    pull_remote_nodes(current_user_uuid,request=request)
+
 
                 public_posts_list=[]
                 friend_posts_list=[]
@@ -379,6 +384,18 @@ class PostToUserIDHandler(APIView):
                     public_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=user_id),Q(visibility='PUBLIC'))
 
                 isFriend = Helpers.check_two_users_friends(current_user_uuid, user_id)
+                isFoaf = False
+
+                friends_of_this_author = Helpers.get_friends(user_id)
+                my_friends = Helpers.get_friends(current_user_uuid)
+                for friend_of_this_author in friends_of_this_author:
+                    if friend_of_this_author in my_friends:
+                        isFoaf = True
+                        break
+                
+                if not isFriend and isFoaf and (Post.objects.filter(Q(unlisted=False),Q(author_id=user_id),Q(visibility='FOAF')).exists()):
+                    foaf_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=user_id),Q(visibility='FOAF'))
+
                 if isFriend:
                     if (Post.objects.filter(Q(unlisted=False),Q(author_id=user_id),Q(visibility='FRIENDS')).exists()):
                         friend_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False),Q(author_id=user_id),Q(visibility='FRIENDS'))
@@ -397,10 +414,6 @@ class PostToUserIDHandler(APIView):
                         if (Helpers.get_current_user_host(current_user_uuid)==user_host):
                             serveronly_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False),Q(author_id=user_id),Q(visibility='SERVERONLY'))
 
-                    friends_of_this_friend =  Helpers.get_friends(user_id)
-                    for friend_of_this_friend in friends_of_this_friend:
-                        if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend_of_this_friend.id), Q(visibility='FOAF')).exists()):
-                            foaf_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend_of_this_friend.id),Q(visibility='FOAF'))
 
                 posts_list = public_posts_list+friend_posts_list+private_posts_list+serveronly_posts_list+foaf_posts_list
                 posts_list.sort(key=lambda x: x.published, reverse=True)
@@ -437,32 +450,55 @@ class MyPostHandler(APIView):
             return Response("Unauthorized", status=401)
 
 
-def pull_remote_nodes(current_user_uuid):
+def pull_remote_nodes(current_user_uuid,request=None):
     all_nodes = Node.objects.all()
+    current_user_host = Helpers.get_current_user_host(current_user_uuid)
     for node in all_nodes:
-        nodeURL = node.host+"service/author/posts/"
-        print(nodeURL)
-        headers = {"X-UUID": str(current_user_uuid)}
+        nodeURL = node.host+"author/posts/"
+        author_url = str(current_user_host)+"service/author/"+str(current_user_uuid)
+        print(author_url)
+        headers = {"X-UUID": str(current_user_uuid), "X-Request-User-ID": author_url}
         # http://docs.python-requests.org/en/master/user/authentication/ ©MMXVIII. A Kenneth Reitz Project.
         remote_to_node = RemoteUser.objects.get(node=node)
 
         try:
-        # https://stackoverflow.com/questions/12737740/python-requests-and-persistent-sessions answered Oct 5 '12 at 0:24
+            # https://stackoverflow.com/questions/12737740/python-requests-and-persistent-sessions answered Oct 5 '12 at 0:24
+            print("Pulling: %s"%nodeURL)
             response = requests.get(nodeURL,headers=headers, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
             print(response)
+            print(response.status_code)
+            print(response.json())
         except Exception as e:
             print("an error occured when pulling remote posts: %s"%e)
             continue
 
         if response.status_code == 200:
             postJson = response.json()
-            if int(postJson["count"]) != 0: 
+            remote_postid_set = set()
+            if int(postJson["count"]) != 0:                 
                 for i in range (0,int(postJson["count"])):
+                    #  if the post is already in our db and published date did not change, do nothing
+                    #  if the postid is not in our db, add
+                    #  if the postid from our db does not exist in response, delete.
+                    #  if the post's published time changed, delete this post locally and add the new one.
+
+                    remotePostID = postJson["posts"][i]['id']
+                    remote_postid_set.add(remotePostID)
+                    remotePostPublished = postJson["posts"][i]["published"]
+
+                    # if the post in our db has been changed, delete
+                    if Post.objects.filter(Q(postid=remotePostID),~Q(published=remotePostPublished)).exists():
+                        print("Updating posts: %s"%postJson["posts"][i]["title"])
+                        Post.objects.filter(Q(postid=remotePostID),~Q(published=remotePostPublished)).delete()
+            
+                    
                     remoteAuthorJson = postJson["posts"][i]["author"]
                     remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
 
                     if not Post.objects.filter(postid=postJson["posts"][i]["id"]).exists():
                         print("Creating posts: %s"%postJson["posts"][i]["title"])
+                        if (postJson["posts"][i]["contentType"] == "text/markdown"):
+                            postJson["posts"][i]["content"] = markdown.markdown(postJson["posts"][i]["content"])
                         remotePostObj = Post.objects.create(postid=postJson["posts"][i]["id"], title=postJson["posts"][i]["title"],source=node.host+"service/posts/"+postJson["posts"][i]["id"], 
                             origin=postJson["posts"][i]["origin"], content=postJson["posts"][i]["content"],categories=postJson["posts"][i]["categories"], 
                             contentType=postJson["posts"][i]["contentType"], author=remoteAuthorObj,visibility=postJson["posts"][i]["visibility"], 
@@ -485,18 +521,20 @@ def pull_remote_nodes(current_user_uuid):
                                     remotePostCommentObj.published = commentPublishedObj
                                     remotePostCommentObj.save()
 
-
-
-def delete_remote_nodes_post():
-    # https://stackoverflow.com/questions/8949145/filter-django-database-for-field-containing-any-value-in-an-array answered Jan 20 '12 at 23:36 Ismail Badawi
-    for node in Node.objects.all():
-        orginRelatedPosts = Post.objects.filter(origin__contains=node.host)
-        sourceRelatedPosts = Post.objects.filter(source__contains=node.host)
-        #for post in orginRelatedPosts:
-        #    Comment.objects.filter(postid=post.postid).delete()
-
-        #for post in sourceRelatedPosts:
-        #    Comment.objects.filter(postid=post.postid).delete()
-
-        orginRelatedPosts.delete()
-        sourceRelatedPosts.delete()
+                # this part is for filtering the post not in remote posts, which means the post has been deleted in remote server
+                remote_host = node.host
+                print("Filtering posts for %s"%remote_host)
+                all_remote_post_id = Post.objects.filter(Q(source__contains=remote_host)).values_list("postid",flat=True)
+                print("all_remote_post_id %s"%str(all_remote_post_id))
+                # all_remote_post_id_set is a set of remote postsid in our server
+                # remote_postid_set is the remote postid visible to me from other server
+                print("remote_postid_set %s"%str(remote_postid_set))
+                if len(all_remote_post_id) != len(remote_postid_set):
+                    all_remote_post_id_set = set()
+                    for post_id in all_remote_post_id:
+                        all_remote_post_id_set.add(str(post_id))
+                    print("all_remote_post_id_set %s"%str(all_remote_post_id_set))
+                    deleted_post_id = all_remote_post_id_set-remote_postid_set
+                    print("deleted_post_id %s"%str(deleted_post_id))
+                    for post_id in deleted_post_id:
+                        Post.objects.filter(postid=post_id).delete()

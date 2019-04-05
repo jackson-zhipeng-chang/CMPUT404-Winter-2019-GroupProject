@@ -27,6 +27,7 @@ function put(id){
         description:"",
         visibleTo:"",
         unlisted:""
+
     };
     form.title = document.getElementById("post-title").value;
     form.contentType = document.getElementById("post-contenttype").value;
@@ -59,7 +60,7 @@ function put(id){
         }
     }
     let body = JSON.stringify(form);
-    let url =  get_host()+"service/posts/";
+    let url =  get_host()+"service/posts/"+id+"/";
     return fetch(url, {
         method: "PUT",
         mode: "cors",
@@ -76,7 +77,8 @@ function put(id){
     .then(response => {
 
         if (response.status === 200)
-        {
+        {   
+            console.log(get_host())
             window.location.replace(get_host()+"service/all/");
         }
         else
