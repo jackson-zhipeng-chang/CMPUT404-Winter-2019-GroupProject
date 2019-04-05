@@ -276,8 +276,6 @@ class PostToUserHandlerView(APIView):
                     Helpers.update_this_friendship(remoteNode,current_user_uuid,request)
                 else:
                     # if is local user, request remote server to get the post I can see
-                    # Helpers.update_remote_friendship(current_user_uuid)
-                    # remote_post_json = Helpers.pull_remote_posts(current_user_uuid)
                     #---------------------------------------
                     # delete_remote_nodes_post()
                     Helpers.update_remote_friendship(current_user_uuid)
@@ -489,14 +487,20 @@ def pull_remote_nodes(current_user_uuid,request=None):
     all_nodes = Node.objects.all()
     current_user_host = Helpers.get_current_user_host(current_user_uuid)
     for node in all_nodes:
-        nodeURL = node.host+"service/author/posts/"
-        headers = {"X-UUID": str(current_user_uuid), "X-Request-User-ID": str(current_user_host)+"author/"+str(current_user_uuid)}
+        nodeURL = node.host+"author/posts/"
+        author_url = str(current_user_host)+"service/author/"+str(current_user_uuid)
+        print(author_url)
+        headers = {"X-UUID": str(current_user_uuid), "X-Request-User-ID": author_url}
         # http://docs.python-requests.org/en/master/user/authentication/ ©MMXVIII. A Kenneth Reitz Project.
         remote_to_node = RemoteUser.objects.get(node=node)
 
         try:
-        # https://stackoverflow.com/questions/12737740/python-requests-and-persistent-sessions answered Oct 5 '12 at 0:24
+            # https://stackoverflow.com/questions/12737740/python-requests-and-persistent-sessions answered Oct 5 '12 at 0:24
+            print("Pulling: %s"%nodeURL)
             response = requests.get(nodeURL,headers=headers, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
+            print(response)
+            print(response.status_code)
+            print(response.json())
         except Exception as e:
             print("an error occured when pulling remote posts: %s"%e)
             continue
@@ -526,6 +530,8 @@ def pull_remote_nodes(current_user_uuid,request=None):
 
                     if not Post.objects.filter(postid=postJson["posts"][i]["id"]).exists():
                         print("Creating posts: %s"%postJson["posts"][i]["title"])
+                        if (postJson["posts"][i]["contentType"] == "text/markdown"):
+                            postJson["posts"][i]["content"] = markdown.markdown(postJson["posts"][i]["content"])
                         remotePostObj = Post.objects.create(postid=postJson["posts"][i]["id"], title=postJson["posts"][i]["title"],source=node.host+"service/posts/"+postJson["posts"][i]["id"], 
                             origin=postJson["posts"][i]["origin"], content=postJson["posts"][i]["content"],categories=postJson["posts"][i]["categories"], 
                             contentType=postJson["posts"][i]["contentType"], author=remoteAuthorObj,visibility=postJson["posts"][i]["visibility"], 
