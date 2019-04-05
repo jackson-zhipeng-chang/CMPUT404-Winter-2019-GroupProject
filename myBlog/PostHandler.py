@@ -492,10 +492,8 @@ def pull_remote_nodes(current_user_uuid,request=None):
 
         if response.status_code == 200:
             postJson = response.json()
-            if int(postJson["count"]) != 0: 
-                remote_postid_set = set()
-                print(postJson)
-                
+            remote_postid_set = set()
+            if int(postJson["count"]) != 0:                 
                 for i in range (0,int(postJson["count"])):
                     #  if the post is already in our db and published date did not change, do nothing
                     #  if the postid is not in our db, add
