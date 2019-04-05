@@ -65,6 +65,7 @@ urlpatterns = [
     path('author/<uuid:user_id>/posts', PostHandler.PostToUserIDHandler.as_view()),
     path('posts', PostHandler.NewPostHandler.as_view()),
     path('posts/<uuid:postid>', PostHandler.PostHandler.as_view()),
+    path('author/<uuid:user_id>', AuthorProfileHandler.AuthorProfileHandler.as_view()),
 
 
 
