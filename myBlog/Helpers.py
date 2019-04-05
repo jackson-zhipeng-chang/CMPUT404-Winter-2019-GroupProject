@@ -289,12 +289,14 @@ def get_or_create_author_if_not_exist(author_json):
 
     AuthorObj = get_author_or_not_exits(author_id)
     if AuthorObj is False:
+        if author_json["displayName"] is None:
+            author_json["displayName"] = "null"
         if User.objects.filter(username=author_json["displayName"]).exists():
             userObj = User.objects.get(username=author_json["displayName"])
         else:
             userObj = User.objects.create_user(username=author_json["displayName"],password="password", is_active=False)
         host = author_json["host"]
-        print(host.endswith("/"))
+        print("host end %s"%str(host.endswith("/")))
         author = Author.objects.create(id=author_id, displayName=author_json["displayName"],user=userObj, host=host)
         author.save()
         AuthorObj = author
