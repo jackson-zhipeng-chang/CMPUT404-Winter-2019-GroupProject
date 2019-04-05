@@ -261,8 +261,6 @@ class PostToUserHandlerView(APIView):
                     Helpers.update_this_friendship(remoteNode,current_user_uuid,request)
                 else:
                     # if is local user, request remote server to get the post I can see
-                    # Helpers.update_remote_friendship(current_user_uuid)
-                    # remote_post_json = Helpers.pull_remote_posts(current_user_uuid)
                     #---------------------------------------
                     # delete_remote_nodes_post()
                     Helpers.update_remote_friendship(current_user_uuid)
@@ -494,6 +492,7 @@ def pull_remote_nodes(current_user_uuid,request=None):
             postJson = response.json()
             if int(postJson["count"]) != 0: 
                 remote_postid_set = set()
+                print(postJson)
                 
                 for i in range (0,int(postJson["count"])):
                     #  if the post is already in our db and published date did not change, do nothing

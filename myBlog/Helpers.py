@@ -320,35 +320,16 @@ def from_my_server(host):
             return False
     return True
 
-def pull_remote_posts(current_user_uuid):
-    remotePostList = []
-    all_nodes = Node.objects.all()
-    for node in all_nodes:
-        nodeURL = node.host+'service/author/posts'
-        headers = {"X-UUID":str(current_user_uuid)}
-        # http://docs.python-requests.org/en/master/user/authentication/ ©MMXVIII. A Kenneth Reitz Project.
-        remote_to_node = RemoteUser.objects.get(node=node)
-        try:
-            response = requests.get(nodeURL,headers=headers,auth=HTTPBasicAuth(remote_to_node.remoteUsername,remote_to_node.remotePassword))
-            print('type of response is {}'.format(type(response)))
-        except Exception as e:
-            print("an error occured when pulling remote posts: %s"%e)
-            continue
-        
-        if response.status_code == 200:
-            postJson = response.json()
-            remotePostList += postJson['posts']
-    return remotePostList
-
 def get_remote_friends_obj_list(remote_host, remote_user_uuid):
     request_url = remote_host + "service/author/"+str(remote_user_uuid)+"/friends/"
     headers = {"Accept": 'application/json'}
     try:
+        print("remote_host %s"%remote_host)
         remoteNode = Node.objects.get(host__contains=remote_host)
         remote_to_node = RemoteUser.objects.get(node=remoteNode)
         response = requests.get(request_url,headers=headers,auth=HTTPBasicAuth(remote_to_node.remoteUsername,remote_to_node.remotePassword))
     except Exception as e:
-        print("Something wring when pull remote friend list %s"%e)
+        print("Something wrong when pull remote friend list %s"%e)
         return []
 
     if response.status_code == 200:
