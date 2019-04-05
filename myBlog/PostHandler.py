@@ -517,6 +517,8 @@ def pull_remote_nodes(current_user_uuid,request=None):
 
                     if not Post.objects.filter(postid=postJson["posts"][i]["id"]).exists():
                         print("Creating posts: %s"%postJson["posts"][i]["title"])
+                        if (postJson["posts"][i]["contentType"] == "text/markdown"):
+                            postJson["posts"][i]["content"] = markdown.markdown(postJson["posts"][i]["content"])
                         remotePostObj = Post.objects.create(postid=postJson["posts"][i]["id"], title=postJson["posts"][i]["title"],source=node.host+"service/posts/"+postJson["posts"][i]["id"], 
                             origin=postJson["posts"][i]["origin"], content=postJson["posts"][i]["content"],categories=postJson["posts"][i]["categories"], 
                             contentType=postJson["posts"][i]["contentType"], author=remoteAuthorObj,visibility=postJson["posts"][i]["visibility"], 
