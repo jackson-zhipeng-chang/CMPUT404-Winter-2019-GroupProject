@@ -472,8 +472,8 @@ def pull_remote_nodes(current_user_uuid,request=None):
     all_nodes = Node.objects.all()
     current_user_host = Helpers.get_current_user_host(current_user_uuid)
     for node in all_nodes:
-        nodeURL = node.host+"service/author/posts/"
-        author_url = str(current_user_host)+"service/author/"+str(current_user_uuid)
+        nodeURL = node.host+"author/posts/"
+        author_url = str(current_user_host)+"author/"+str(current_user_uuid)
         print(author_url)
         headers = {"X-UUID": str(current_user_uuid), "X-Request-User-ID": author_url}
         # http://docs.python-requests.org/en/master/user/authentication/ ©MMXVIII. A Kenneth Reitz Project.
