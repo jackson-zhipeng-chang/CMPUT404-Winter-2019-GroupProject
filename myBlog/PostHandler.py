@@ -113,14 +113,15 @@ class PostHandler(APIView):
                         postObj = Post.objects.get(pk=post_id)
                         current_author_id = postObj.author.id
                         # if the sender is post author's friend
-                        if str(current_author_id) in sender_friend_list:
-                            if not Post.objects.filter(Q(pk=postid), Q(visibility='FOAF')).exists():
-                                return Response("Post couldn't find", status=status.HTTP_404_NOT_FOUND)
-                            else:
-                                post = Post.objects.get(pk=postid)
-                                serializer = PostSerializer(post)
-                                return JsonResponse(serializer.data, status=status.HTTP_200_OK)
-                                
+                        for friend_url in sender_friend_list:
+                            if str(current_author_id) in friend_url:
+                                if not Post.objects.filter(Q(pk=postid), Q(visibility='FOAF')).exists():
+                                    return Response("Post couldn't find", status=status.HTTP_404_NOT_FOUND)
+                                else:
+                                    post = Post.objects.get(pk=postid)
+                                    serializer = PostSerializer(post)
+                                    return JsonResponse(serializer.data, status=status.HTTP_200_OK)
+
                         sender_url = remoteNode.host + "service/author/"+str(remote_user_uuid)
                         print('sender_url is {}'.format(sender_url))
                         if not(Author.objects.filter(id=remote_user_uuid).exists()):
