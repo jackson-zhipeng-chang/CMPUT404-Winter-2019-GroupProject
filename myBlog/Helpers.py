@@ -436,8 +436,9 @@ def my_profile(request):
     return render(request, 'myprofile.html')
 
 def author_details(request,author_id):
-    get_author_or_not_exits(author_id)
+    author = get_author_or_not_exits(author_id)
     current_user_id = get_current_user_uuid(request)
+
     if type(current_user_id) is UUID:
         current_user_name = Author.objects.get(pk=current_user_id).displayName
         current_user_github = Author.objects.get(pk=current_user_id).github
