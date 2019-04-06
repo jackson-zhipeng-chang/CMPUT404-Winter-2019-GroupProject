@@ -38,9 +38,13 @@ def get_current_user_uuid(request):
         isRemote = check_remote_request(request)
         if isRemote:
             try:
-                return UUID(request.META["HTTP_X_UUID"])
+                if "HTTP_X_UUID" in request.META:
+                    return UUID(request.META["HTTP_X_UUID"])
+                elif 'HTTP_X_REQUEST_USER_ID' in request.META:
+                    return UUID(re.sub('.+/author/','', request.META['HTTP_X_REQUEST_USER_ID']))
             except:
                 return  Response("Author UUID couldn't find", status=404)
+
         else:
             if (not User.objects.filter(pk=request.user.id).exists()):
                 return Response("User coudn't find", status=404)
@@ -354,6 +358,7 @@ def get_remote_friends_obj_list(remote_host, remote_user_uuid):
         data = response.json()
         author_list = data["authors"]
         if len(author_list) != 0:
+            print("THE AUTHOR_LIST IS {}".format(author_list))
             for author_url in author_list:
                 response = requests.get(author_url)
                 remoteAuthorJson = response.json()
@@ -371,9 +376,9 @@ def update_this_friendship(remoteNode,remote_user_uuid,request):
     local_friend_list_of_remote_user = []
     # local_friends_obj_list = list(Friend.objects.filter(Q(author=remote_authorObj)|Q(friend=remote_authorObj)))
     if Friend.objects.filter(author=remote_authorObj).exists():
-        local_friend_list_of_remote_user += [friend.friend.host+"author/"+str(friend.friend.id) for friend in list(Friend.objects.filter(author=remote_authorObj))]
+        local_friend_list_of_remote_user += [friend.friend.host+"service/author/"+str(friend.friend.id) for friend in list(Friend.objects.filter(author=remote_authorObj))]
     if Friend.objects.filter(friend=remote_authorObj).exists():
-        local_friend_list_of_remote_user += [friend.author.host+"author/"+str(friend.author.id) for friend in list(Friend.objects.filter(friend=remote_authorObj))]
+        local_friend_list_of_remote_user += [friend.author.host+"service/author/"+str(friend.author.id) for friend in list(Friend.objects.filter(friend=remote_authorObj))]
 
 
     if local_friend_list_of_remote_user:
@@ -434,8 +439,9 @@ def my_profile(request):
     return render(request, 'myprofile.html')
 
 def author_details(request,author_id):
-    get_author_or_not_exits(author_id)
+    author = get_author_or_not_exits(author_id)
     current_user_id = get_current_user_uuid(request)
+
     if type(current_user_id) is UUID:
         current_user_name = Author.objects.get(pk=current_user_id).displayName
         current_user_github = Author.objects.get(pk=current_user_id).github

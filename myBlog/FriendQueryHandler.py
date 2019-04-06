@@ -66,7 +66,7 @@ class FriendQueryHandler(APIView):
                 "author":author.host+"service/author/"+str(author.id),
                 "authors":respons_list
             }
-            return Response(responsBody, status=200)
+            return Response(responsBody, status=status.HTTP_200_OK)
         else:
             return Response("You are not sending the request with the correct format. Missing 'query': 'friends'",status=status.HTTP_400_BAD_REQUEST)
         # except:
