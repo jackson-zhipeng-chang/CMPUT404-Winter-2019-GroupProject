@@ -359,6 +359,7 @@ def get_remote_friends_obj_list(remote_host, remote_user_uuid):
         data = response.json()
         author_list = data["authors"]
         if len(author_list) != 0:
+            print("THE AUTHOR_LIST IS {}".format(author_list))
             for author_url in author_list:
                 response = requests.get(author_url)
                 remoteAuthorJson = response.json()
