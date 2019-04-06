@@ -247,7 +247,7 @@ class PostToUserHandlerView(APIView):
         start_time = time.time()
         if request.user.is_authenticated:
             current_user_uuid = Helpers.get_current_user_uuid(request)
-            q_objects = Q()
+            optional_Q = Q()
             if type(current_user_uuid) is UUID:
                 isRemote = Helpers.check_remote_request(request)
                 shareImages = True
@@ -257,14 +257,14 @@ class PostToUserHandlerView(APIView):
                     remoteNode = Node.objects.get(nodeUser=request.user)
                     shareImages = remoteNode.shareImages
                     sharePosts = remoteNode.sharePost
-                    q_objects &= ~Q(origin__contains =remoteNode.host)
+                    optional_Q &= ~Q(origin__contains =remoteNode.host)
                     if not shareImages:
-                        q_objects &= ~Q(contentType ='image/png;base64')
-                        q_objects &= ~Q(contentType ='image/jpeg;base64')
+                        optional_Q &= ~Q(contentType ='image/png;base64')
+                        optional_Q &= ~Q(contentType ='image/jpeg;base64')
 
                     if not sharePosts:
-                        q_objects &= ~Q(contentType ='text/plain')
-                        q_objects &= ~Q(contentType ='text/markdown')
+                        optional_Q &= ~Q(contentType ='text/plain')
+                        optional_Q &= ~Q(contentType ='text/markdown')
 
                     if not (Author.objects.filter(id = current_user_uuid).exists()):
                         remote_to_node = RemoteUser.objects.get(node=remoteNode)
@@ -295,22 +295,22 @@ class PostToUserHandlerView(APIView):
                 foaf_posts_list=[]
 
                 if not isRemote:
-                    if (Post.objects.filter(Q(unlisted=False), Q(author_id=current_user_uuid), q_objects).exists()):
-                        my_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=current_user_uuid), q_objects)
+                    if (Post.objects.filter(Q(unlisted=False), Q(author_id=current_user_uuid), optional_Q).exists()):
+                        my_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=current_user_uuid), optional_Q)
                         
-                if (Post.objects.filter(Q(unlisted=False), ~Q(author_id=current_user_uuid), Q(visibility='PUBLIC'), q_objects).exists()):
-                    public_posts_list = get_list_or_404(Post.objects.order_by('-published'), ~Q(author_id=current_user_uuid), Q(unlisted=False), Q(visibility='PUBLIC'), q_objects)
+                if (Post.objects.filter(Q(unlisted=False), ~Q(author_id=current_user_uuid), Q(visibility='PUBLIC'), optional_Q).exists()):
+                    public_posts_list = get_list_or_404(Post.objects.order_by('-published'), ~Q(author_id=current_user_uuid), Q(unlisted=False), Q(visibility='PUBLIC'), optional_Q)
                 
                 friends_list = Helpers.get_local_friends(current_user_uuid)
                 for friend in friends_list:
-                    if (Post.objects.filter(Q(unlisted=False),Q(author_id=friend.id),Q(visibility='FRIENDS'), q_objects).exists()):
-                        friend_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend.id), Q(visibility='FRIENDS'), q_objects)
+                    if (Post.objects.filter(Q(unlisted=False),Q(author_id=friend.id),Q(visibility='FRIENDS'), optional_Q).exists()):
+                        friend_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend.id), Q(visibility='FRIENDS'), optional_Q)
                     # Add FOAF post to friends as well
-                    if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend.id), Q(visibility='FOAF'), q_objects).exists()):
-                        foaf_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend.id),Q(visibility='FOAF'), q_objects)
+                    if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend.id), Q(visibility='FOAF'), optional_Q).exists()):
+                        foaf_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend.id),Q(visibility='FOAF'), optional_Q)
 
-                    if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend.id), Q(visibility='PRIVATE'), q_objects).exists()):
-                        private_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend.id), Q(visibility='PRIVATE'), q_objects)
+                    if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend.id), Q(visibility='PRIVATE'), optional_Q).exists()):
+                        private_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend.id), Q(visibility='PRIVATE'), optional_Q)
                         for post in private_list:
                             if str(current_user_uuid) in post.visibleTo:
                                 private_posts_list.append(post)
@@ -323,13 +323,13 @@ class PostToUserHandlerView(APIView):
                     
                     for friend_of_this_friend in friends_of_this_friend:
                         if friend_of_this_friend.id != current_user_uuid:
-                            if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend_of_this_friend.id), Q(visibility='FOAF'), q_objects).exists()):
-                                foaf_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend_of_this_friend.id),Q(visibility='FOAF'), q_objects)
+                            if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend_of_this_friend.id), Q(visibility='FOAF'), optional_Q).exists()):
+                                foaf_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend_of_this_friend.id),Q(visibility='FOAF'), optional_Q)
                    
                     if not isRemote:
-                        if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend.id), Q(visibility='SERVERONLY'), q_objects).exists()):
+                        if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend.id), Q(visibility='SERVERONLY'), optional_Q).exists()):
                             if (Helpers.get_current_user_host(current_user_uuid)==friend.host):
-                                serveronly_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend.id),Q(visibility='SERVERONLY'), q_objects)                        
+                                serveronly_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend.id),Q(visibility='SERVERONLY'), optional_Q)                        
                 
                 posts_list = my_posts_list+public_posts_list+friend_posts_list+private_posts_list+serveronly_posts_list+foaf_posts_list
         
