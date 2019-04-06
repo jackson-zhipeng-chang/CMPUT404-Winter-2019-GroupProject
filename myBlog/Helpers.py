@@ -38,14 +38,13 @@ def get_current_user_uuid(request):
         isRemote = check_remote_request(request)
         if isRemote:
             try:
-                return UUID(request.META["HTTP_X_UUID"])
-            except:
-                pass
-
-            try:
-                return UUID(re.sub('.+/author/','', request.META['HTTP_X_REQUEST_USER_ID']))
+                if "HTTP_X_UUID" in request.META:
+                    return UUID(request.META["HTTP_X_UUID"])
+                elif 'HTTP_X_REQUEST_USER_ID' in request.META:
+                    return UUID(re.sub('.+/author/','', request.META['HTTP_X_REQUEST_USER_ID']))
             except:
                 return  Response("Author UUID couldn't find", status=404)
+
         else:
             if (not User.objects.filter(pk=request.user.id).exists()):
                 return Response("User coudn't find", status=404)
