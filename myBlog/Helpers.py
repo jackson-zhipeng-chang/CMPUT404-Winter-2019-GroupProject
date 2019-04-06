@@ -151,8 +151,6 @@ def update_remote_friendship(current_user_uuid):
             data = response.json()
             remoteFriendsURL = data["authors"]
             remote_friends_uuid_list = convert_url_list_to_uuid(remoteFriendsURL)
-            print("remote_friends_uuid_list is {}:".format(remote_friends_uuid_list))
-            print("local_friends_list is {}:".format(local_friends_list))
             if len(remoteFriendsURL) != 0:
                 for remoteFriend_uuid in remote_friends_uuid_list:
                     isFollowing = check_author1_follow_author2(current_user_uuid,remoteFriend_uuid)

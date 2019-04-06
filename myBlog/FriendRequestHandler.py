@@ -190,8 +190,7 @@ class AcceptFR(APIView):
         data = request.data
         if data['query'] == 'friendrequest':
             request_url = data['friend']['host']
-            print("data is : ")
-            print(data)
+            print("data is: %s"%str(data))
             for node in Node.objects.all():
                 if str(node.host) in str(request_url):
                     is_to_remote = True

@@ -41,18 +41,15 @@ class FriendQueryHandler(APIView):
         # try:
         author = Helpers.get_author_or_not_exits(user_id)
         data = request.data
-        print("request data is {}: ".format(data))
         if data['query'] == 'friends':
             # friends_list = Helpers.get_friends(user_id)
             # get friendlist locally
             friend_list = Friend.objects.filter(Q(author=author)|Q(friend=author))
-            print("local friendlist is {}:".format(friend_list))
             if type(data['authors'])!= list:
                 query_list = []
                 query_list.append(data['authors'])
             else:
                 query_list = data['authors']
-            print("query_list is {}:".format(query_list))
             respons_list = []
             for author_url in query_list:
                 for friend_obj in friend_list:
