@@ -58,14 +58,14 @@ urlpatterns = [
     path('acceptFriendRequest/',FriendRequestHandler.AcceptFR.as_view(),name='acceptFriendRequest'),
 
     # for connecting andrew's node
-    # path('author/posts',PostHandler.PostToUserHandlerView.as_view()),
-    # path('author/<uuid:user_id>/friends', FriendQueryHandler.FriendQueryHandler.as_view()),
-    # path('posts/<uuid:postid>/comments', CommentHandler.CommentHandler.as_view()),
-    # path('friendrequest', FriendRequestHandler.FriendRequestHandler.as_view()),
-    # path('author/<uuid:user_id>/posts', PostHandler.PostToUserIDHandler.as_view()),
-    # path('posts', PostHandler.NewPostHandler.as_view()),
-    # path('posts/<uuid:postid>', PostHandler.PostHandler.as_view()),
-    # path('author/<uuid:user_id>', AuthorProfileHandler.AuthorProfileHandler.as_view()),
+    path('author/posts',PostHandler.PostToUserHandlerView.as_view()),
+    path('author/<uuid:user_id>/friends', FriendQueryHandler.FriendQueryHandler.as_view()),
+    path('posts/<uuid:postid>/comments', CommentHandler.CommentHandler.as_view()),
+    path('friendrequest', FriendRequestHandler.FriendRequestHandler.as_view()),
+    path('author/<uuid:user_id>/posts', PostHandler.PostToUserIDHandler.as_view()),
+    path('posts', PostHandler.NewPostHandler.as_view()),
+    path('posts/<uuid:postid>', PostHandler.PostHandler.as_view()),
+    path('author/<uuid:user_id>', AuthorProfileHandler.AuthorProfileHandler.as_view()),
 
 
 
