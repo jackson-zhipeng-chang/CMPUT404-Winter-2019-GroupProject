@@ -54,6 +54,7 @@ class CommentHandler(APIView):
                             print("comments data %s"%str(data))
                             data = json.dumps(data)
                             response = requests.post(nodeURL, headers=headers,data = data,auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
+                            print(response)
                             if response.status_code == 200:
                                 responsBody={
                                 "query": "addComment",
