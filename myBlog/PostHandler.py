@@ -367,7 +367,7 @@ class PostToUserIDHandler(APIView):
                 try:
                     remoteNode = Node.objects.get(host__contains=author_obj.host)
                     remote_to_node = RemoteUser.objects.get(node=remoteNode)
-                    remoteNodePostToIdURL  = author_obj.host +'service/author/'+user_id+'/posts/';
+                    remoteNodePostToIdURL = author_obj.host +'service/author/'+str(user_id)+'/posts/';
                     author_url = str(author_obj.host)+"service/author/"+str(current_user_uuid)
                     headers = {"X-UUID": str(current_user_uuid), "X-Request-User-ID": author_url}
                     print("Pulling: %s"%remoteNodePostToIdURL)
