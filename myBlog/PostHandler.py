@@ -370,10 +370,10 @@ class PostToUserIDHandler(APIView):
                     remoteNodePostToIdURL = author_obj.host +'service/author/'+str(user_id)+'/posts/';
                     author_url = str(author_obj.host)+"service/author/"+str(current_user_uuid)
                     headers = {"X-UUID": str(current_user_uuid), "X-Request-User-ID": author_url}
-                    print("Pulling: %s"%remoteNodePostToIdURL)
+                    print("Pulling author %s posts: %s"%(str(user_id), remoteNodePostToIdURL))
                     response = requests.get(remoteNodePostToIdURL,headers=headers, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
                     if response.status_code == 200: 
-                        return response
+                        return Response(response.json(), status=200)
                 except Exception as e:
                     print("an error occured when pulling remote posts: %s"%e)
                     pass
@@ -415,7 +415,6 @@ class PostToUserIDHandler(APIView):
                 else:
                     pull_remote_nodes(current_user_uuid,request=request)
 
-
                 public_posts_list=[]
                 friend_posts_list=[]
                 private_posts_list=[]
@@ -429,8 +428,6 @@ class PostToUserIDHandler(APIView):
 
                 friends_of_this_author = Helpers.get_friends(user_id)
                 my_friends = Helpers.get_friends(current_user_uuid)
-                print("my_friends: %s"%str(my_friends))
-                print("friends_of_this_author: %s"%str(friends_of_this_author))
                 for friend_of_this_author in friends_of_this_author:
                     if friend_of_this_author in my_friends:
                         isFoaf = True
@@ -564,15 +561,12 @@ def pull_remote_nodes(current_user_uuid,request=None):
                 remote_host = node.host
                 print("Filtering posts for %s"%remote_host)
                 all_remote_post_id = Post.objects.filter(Q(source__contains=remote_host)).values_list("postid",flat=True)
-                print("all_remote_post_id %s"%str(all_remote_post_id))
                 # all_remote_post_id_set is a set of remote postsid in our server
                 # remote_postid_set is the remote postid visible to me from other server
-                print("remote_postid_set %s"%str(remote_postid_set))
                 if len(all_remote_post_id) != len(remote_postid_set):
                     all_remote_post_id_set = set()
                     for post_id in all_remote_post_id:
                         all_remote_post_id_set.add(str(post_id))
-                    print("all_remote_post_id_set %s"%str(all_remote_post_id_set))
                     deleted_post_id = all_remote_post_id_set-remote_postid_set
                     print("deleted_post_id %s"%str(deleted_post_id))
                     for post_id in deleted_post_id:

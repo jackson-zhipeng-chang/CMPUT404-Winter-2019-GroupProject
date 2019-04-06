@@ -296,6 +296,7 @@ def get_or_create_author_if_not_exist(author_json):
             author_json["displayName"] = "null"
         if User.objects.filter(username=author_json["displayName"]).exists():
             userObj = User.objects.get(username=author_json["displayName"])
+            Author.objects.get(user=userObj).delete()
         else:
             userObj = User.objects.create_user(username=author_json["displayName"],password="password", is_active=False)
         host = author_json["host"]
@@ -392,14 +393,11 @@ def update_this_friendship(remoteNode,remote_user_uuid,request):
         headers = {"Content-Type": 'application/json', "Accept": 'application/json'}
         data = json.dumps(request_body)
         response = requests.post(request_url,headers=headers,data=data,auth=HTTPBasicAuth(remote_to_node.remoteUsername,remote_to_node.remotePassword))
-        print(response.content)
         if response.status_code == 200:
             response_friendlist_set = set(response.json()["authors"])
             local_friend_set = set(local_friend_list_of_remote_user)
             extra_friend = local_friend_set - response_friendlist_set
-            print('extra_friend {}'.format(extra_friend))
             my_host = request.get_host()
-            print('my host is {}'.format(my_host))
             try:
                 for friend_url in extra_friend:
                     # TODO: get friend's host in smart way
