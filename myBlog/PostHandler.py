@@ -409,6 +409,8 @@ class PostToUserIDHandler(APIView):
 
                 friends_of_this_author = Helpers.get_friends(user_id)
                 my_friends = Helpers.get_friends(current_user_uuid)
+                print("my_friends: %s"%str(my_friends))
+                print("friends_of_this_author: %s"%str(friends_of_this_author))
                 for friend_of_this_author in friends_of_this_author:
                     if friend_of_this_author in my_friends:
                         isFoaf = True
