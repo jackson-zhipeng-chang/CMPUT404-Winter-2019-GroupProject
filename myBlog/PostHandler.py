@@ -241,6 +241,7 @@ class PostHandler(APIView):
 # https://github.com/belatrix/BackendAllStars/blob/master/employees/views.py by Sergio Infante
 # https://github.com/belatrix/BackendAllStars/blob/master/employees/serializers.py by Sergio Infante
 # https://stackoverflow.com/questions/2658291/get-list-or-404-ordering-in-django answered Apr 17 '10 at 12:21 Ludwik Trammer
+# https://stackoverflow.com/questions/13076822/django-dynamically-filtering-with-q-objects answered Oct 25 '12 at 20:40 Riley Watkins
 class PostToUserHandlerView(APIView):
     def get(self, request, format=None):
         start_time = time.time()
