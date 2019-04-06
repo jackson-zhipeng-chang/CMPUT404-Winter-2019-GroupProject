@@ -246,6 +246,18 @@ function renderpage(data){
             }
         }
         // traverse data, render posts
+        if (data['posts'].length == 0){
+            let post = document.createElement("div");
+            post.classList.add("w3-container", "w3-card", "w3-white", "w3-round", "w3-margin");
+            content.appendChild(post);
+            let notFound = document.createElement("h2");
+            notFound.innerHTML = "No posts found for this author";
+            notFound.classList.add("w3-row-padding");
+            notFound.style.margin = "20px";
+            post.appendChild(notFound);
+        }
+
+
         for (let i = 0; i < data['posts'].length; i++) {
             let posts = data['posts'][i];
             let postsDiv = document.createElement('div');
