@@ -358,6 +358,26 @@ class PostToUserIDHandler(APIView):
     def get(self, request, user_id, format=None):
         if request.user.is_authenticated:
             current_user_uuid = Helpers.get_current_user_uuid(request)
+            try:
+                author_obj = Author.objects.get(id=user_id)
+            except:
+                return Response("Bad UUID format", status=400)
+
+            if request.get_host() not in author_obj.host:
+                try:
+                    remoteNode = Node.objects.get(host__contains=author_obj.host)
+                    remote_to_node = RemoteUser.objects.get(node=remoteNode)
+                    remoteNodePostToIdURL  = author_obj.host +'service/author/'+user_id+'/posts/';
+                    author_url = str(author_obj.host)+"service/author/"+str(current_user_uuid)
+                    headers = {"X-UUID": str(current_user_uuid), "X-Request-User-ID": author_url}
+                    print("Pulling: %s"%remoteNodePostToIdURL)
+                    response = requests.get(remoteNodePostToIdURL,headers=headers, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
+                    if response.status_code == 200: 
+                        return response
+                except Exception as e:
+                    print("an error occured when pulling remote posts: %s"%e)
+                    pass
+
             if type(current_user_uuid) is UUID:
                 optional_Q = Q()
                 isRemote = Helpers.check_remote_request(request)
@@ -511,7 +531,6 @@ def pull_remote_nodes(current_user_uuid,request=None):
                         print("Updating posts: %s"%post["title"])
                         Post.objects.filter(Q(postid=remotePostID),~Q(published=remotePostPublished)).delete()
             
-                    
                     remoteAuthorJson = post["author"]
                     remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
 
