@@ -48,7 +48,7 @@ class CommentHandler(APIView):
                         print(node.host)
                         print(postOrigin)
                         if str(node.host) in str(postOrigin):
-                            nodeURL = node.host+"service/posts/"+str(post.postid)+"/comments/";
+                            nodeURL = node.host+"posts/"+str(post.postid)+"/comments/";
                             headers = {"Content-Type": 'application/json', "Accept": 'application/json'}
                             remote_to_node = RemoteUser.objects.get(node=node)
                             print("comments data %s"%str(data))
