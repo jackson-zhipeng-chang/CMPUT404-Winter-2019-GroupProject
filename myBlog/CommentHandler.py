@@ -52,7 +52,8 @@ class CommentHandler(APIView):
                             headers = {"Content-Type": 'application/json', "Accept": 'application/json'}
                             remote_to_node = RemoteUser.objects.get(node=node)
                             if "dispersal" in node.host:
-                                data["comment"]["author"]["url"].replace("/author/", "/service/author/")
+                                author_url = data["comment"]["author"]["url"]
+                                data["comment"]["author"]["url"] = author_url.replace("/author/", "/service/author/")
                             print("comments data %s"%str(data))
                             data = json.dumps(data)
                             response = requests.post(nodeURL, headers=headers,data = data,auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
