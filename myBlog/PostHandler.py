@@ -483,7 +483,6 @@ def pull_remote_nodes(current_user_uuid,request=None):
     for node in all_nodes:
         nodeURL = node.host+"author/posts/"
         author_url = str(current_user_host)+"service/author/"+str(current_user_uuid)
-        print(author_url)
         headers = {"X-UUID": str(current_user_uuid), "X-Request-User-ID": author_url}
         # http://docs.python-requests.org/en/master/user/authentication/ ©MMXVIII. A Kenneth Reitz Project.
         remote_to_node = RemoteUser.objects.get(node=node)
@@ -492,9 +491,7 @@ def pull_remote_nodes(current_user_uuid,request=None):
             # https://stackoverflow.com/questions/12737740/python-requests-and-persistent-sessions answered Oct 5 '12 at 0:24
             print("Pulling: %s"%nodeURL)
             response = requests.get(nodeURL,headers=headers, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
-            print(response)
             print(response.status_code)
-            print(response.json())
         except Exception as e:
             print("an error occured when pulling remote posts: %s"%e)
             continue
@@ -502,49 +499,49 @@ def pull_remote_nodes(current_user_uuid,request=None):
         if response.status_code == 200:
             postJson = response.json()
             remote_postid_set = set()
-            if int(postJson["count"]) != 0:                 
-                for i in range (0,int(postJson["count"])):
+            if int(postJson["count"]) != 0:    
+                for post in postJson["posts"]:              
                     #  if the post is already in our db and published date did not change, do nothing
                     #  if the postid is not in our db, add
                     #  if the postid from our db does not exist in response, delete.
                     #  if the post's published time changed, delete this post locally and add the new one.
 
-                    remotePostID = postJson["posts"][i]['id']
+                    remotePostID = post['id']
                     remote_postid_set.add(remotePostID)
-                    remotePostPublished = postJson["posts"][i]["published"]
+                    remotePostPublished = post["published"]
 
                     # if the post in our db has been changed, delete
                     if Post.objects.filter(Q(postid=remotePostID),~Q(published=remotePostPublished)).exists():
-                        print("Updating posts: %s"%postJson["posts"][i]["title"])
+                        print("Updating posts: %s"%post["title"])
                         Post.objects.filter(Q(postid=remotePostID),~Q(published=remotePostPublished)).delete()
             
                     
-                    remoteAuthorJson = postJson["posts"][i]["author"]
+                    remoteAuthorJson = post["author"]
                     remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
 
-                    if not Post.objects.filter(postid=postJson["posts"][i]["id"]).exists():
-                        print("Creating posts: %s"%postJson["posts"][i]["title"])
-                        if (postJson["posts"][i]["contentType"] == "text/markdown"):
-                            postJson["posts"][i]["content"] = markdown.markdown(postJson["posts"][i]["content"])
-                        remotePostObj = Post.objects.create(postid=postJson["posts"][i]["id"], title=postJson["posts"][i]["title"],source=node.host+"service/posts/"+postJson["posts"][i]["id"], 
-                            origin=postJson["posts"][i]["origin"], content=postJson["posts"][i]["content"],categories=postJson["posts"][i]["categories"], 
-                            contentType=postJson["posts"][i]["contentType"], author=remoteAuthorObj,visibility=postJson["posts"][i]["visibility"], 
-                            visibleTo=postJson["posts"][i]["visibleTo"], description=postJson["posts"][i]["description"],
-                            unlisted=postJson["posts"][i]["unlisted"])
+                    if not Post.objects.filter(postid=post["id"]).exists():
+                        print("Creating posts: %s"%post["title"])
+                        if (post["contentType"] == "text/markdown"):
+                            post["content"] = markdown.markdown(post["content"])
+                        remotePostObj = Post.objects.create(postid=post["id"], title=post["title"],source=node.host+"service/posts/"+post["id"], 
+                            origin=post["origin"], content=post["content"],categories=post["categories"], 
+                            contentType=post["contentType"], author=remoteAuthorObj,visibility=post["visibility"], 
+                            visibleTo=post["visibleTo"], description=post["description"],
+                            unlisted=post["unlisted"])
                         #https://stackoverflow.com/questions/969285/how-do-i-translate-an-iso-8601-datetime-string-into-a-python-datetime-object community wiki 5 revs, 4 users 81% Wes Winham
-                        publishedObj = dateutil.parser.parse(postJson["posts"][i]["published"])
+                        publishedObj = dateutil.parser.parse(post["published"])
                         remotePostObj.published = publishedObj
                         remotePostObj.save()
 
-                    if len(postJson["posts"][i]["comments"]) != 0:
-                        for j in range (0, len(postJson["posts"][i]["comments"])):
-                            remotePostCommentAuthorJson = postJson["posts"][i]["comments"][j]["author"]
+                    if len(post["comments"]) != 0:
+                        for comment in post["comments"]:
+                            remotePostCommentAuthorJson = comment["author"]
                             if len(remotePostCommentAuthorJson) != 0:
                                 remotePostCommentAuthorObj = Helpers.get_or_create_author_if_not_exist(remotePostCommentAuthorJson)
-                                if not Comment.objects.filter(id=postJson["posts"][i]["comments"][j]["id"]).exists():
-                                    remotePostCommentObj = Comment.objects.create(id=postJson["posts"][i]["comments"][j]["id"], postid=postJson["posts"][i]["id"],
-                                    author = remotePostCommentAuthorObj, comment=postJson["posts"][i]["comments"][j]["comment"],contentType='text/plain')
-                                    commentPublishedObj = dateutil.parser.parse(postJson["posts"][i]["comments"][j]["published"])
+                                if not Comment.objects.filter(id=comment["id"]).exists():
+                                    remotePostCommentObj = Comment.objects.create(id=comment["id"], postid=post["id"],
+                                    author = remotePostCommentAuthorObj, comment=comment["comment"],contentType='text/plain')
+                                    commentPublishedObj = dateutil.parser.parse(comment["published"])
                                     remotePostCommentObj.published = commentPublishedObj
                                     remotePostCommentObj.save()
 
