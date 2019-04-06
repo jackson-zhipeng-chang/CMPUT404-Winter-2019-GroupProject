@@ -265,7 +265,6 @@ def check_remote_request(request):
         return False
 
 def get_or_create_author_if_not_exist(author_json):
-    print(author_json)
     try:
         if 'author/' in author_json['id']:
             author_id = author_json['id'].split('author/')[1]
@@ -404,7 +403,20 @@ def update_this_friendship(remoteNode,remote_user_uuid,request):
             try:
                 for friend_url in extra_friend:
                     # TODO: get friend's host in smart way
-                    friend_uuid=friend_url.replace('https://'+my_host+'/author/',"")
+                    try:
+                        if 'author/' in friend_url:
+                            friend_uuid = friend_url.split('author/')[1]
+                            try:
+                                friend_uuid = UUID(friend_uuid)
+                            except:
+                                print("Author/Friend id in bad format")
+                        else:
+                            try:
+                                friend_uuid = UUID(friend_uuid)
+                            except:
+                                print("Author/Friend id in bad format")
+                    except:
+                        print("Author/Friend id in bad format")
                     friend_obj = Author.objects.get(Q(pk=friend_uuid))
                     if Friend.objects.filter(Q(author=friend_obj),Q(status="Accept")).exists():
                         Friend.objects.get(Q(author=friend_obj),Q(status="Accept")).delete()
