@@ -40,7 +40,6 @@ class CommentHandler(APIView):
                 return Response("Post couldn't find", status=404)
             else:
                 data = request.data
-                print(data)
                 if data['query'] == 'addComment':
                     post = Post.objects.get(pk=postid)
                     postOrigin = post.origin
@@ -49,6 +48,8 @@ class CommentHandler(APIView):
                             nodeURL = node.host+"service/posts/"+str(post.postid)+"/comments/";
                             headers = {"Content-Type": 'application/json', "Accept": 'application/json'}
                             remote_to_node = RemoteUser.objects.get(node=node)
+                            if "dispersal" in node.host:
+                                data['id'] = data['url']
                             data = json.dumps(data)
                             response = requests.post(nodeURL, headers=headers,data = data,auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
                             if response.status_code == 200:
