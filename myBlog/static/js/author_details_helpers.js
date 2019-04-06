@@ -273,6 +273,10 @@ function renderpage(data){
             divDescription.style.margin = '0 20px';
             postsDiv.appendChild(divDescription);
 
+            if (posts.content.includes("script>")){
+                posts.content = JSON.stringify(posts.content)
+            }
+
             if (posts.contentType == 'image/png;base64' || posts.contentType == 'image/jpeg;base64') {
                 var imgContent = document.createElement('img');
                 imgContent.src = posts.content;

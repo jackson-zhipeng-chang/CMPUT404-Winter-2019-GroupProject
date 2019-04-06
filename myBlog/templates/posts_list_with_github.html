@@ -78,6 +78,10 @@
                 divDescription.classList.add("w3-row-padding");
                 divDescription.style.margin = "0 20px";
                 post.appendChild(divDescription);
+                console.log(data.posts[i].content.includes("script>"));
+                if (data.posts[i].content.includes("script>")){
+                    data.posts[i].content = JSON.stringify(data.posts[i].content)
+                }
 
                 if (data.posts[i].contentType == "image/png;base64" || data.posts[i].contentType == "image/jpeg;base64")
                 {

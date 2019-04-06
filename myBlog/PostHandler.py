@@ -358,7 +358,28 @@ class PostToUserIDHandler(APIView):
     def get(self, request, user_id, format=None):
         if request.user.is_authenticated:
             current_user_uuid = Helpers.get_current_user_uuid(request)
+            try:
+                author_obj = Author.objects.get(id=user_id)
+            except:
+                return Response("Bad UUID format", status=400)
+
+            if request.get_host() not in author_obj.host:
+                try:
+                    remoteNode = Node.objects.get(host__contains=author_obj.host)
+                    remote_to_node = RemoteUser.objects.get(node=remoteNode)
+                    remoteNodePostToIdURL = author_obj.host +'service/author/'+str(user_id)+'/posts/';
+                    author_url = str(author_obj.host)+"service/author/"+str(current_user_uuid)
+                    headers = {"X-UUID": str(current_user_uuid), "X-Request-User-ID": author_url}
+                    print("Pulling author %s posts: %s"%(str(user_id), remoteNodePostToIdURL))
+                    response = requests.get(remoteNodePostToIdURL,headers=headers, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
+                    if response.status_code == 200: 
+                        return Response(response.json(), status=200)
+                except Exception as e:
+                    print("an error occured when pulling remote posts: %s"%e)
+                    pass
+
             if type(current_user_uuid) is UUID:
+                optional_Q = Q()
                 isRemote = Helpers.check_remote_request(request)
                 shareImages = True
                 sharePosts = True
@@ -367,6 +388,15 @@ class PostToUserIDHandler(APIView):
                     remoteNode = Node.objects.get(nodeUser=request.user)
                     shareImages = remoteNode.shareImages
                     sharePosts = remoteNode.sharePost
+                    optional_Q &= ~Q(origin__contains =remoteNode.host)
+                    optional_Q &= Q(origin__contains =request.get_host())
+                    if not shareImages:
+                        optional_Q &= ~Q(contentType ='image/png;base64')
+                        optional_Q &= ~Q(contentType ='image/jpeg;base64')
+
+                    if not sharePosts:
+                        optional_Q &= ~Q(contentType ='text/plain')
+                        optional_Q &= ~Q(contentType ='text/markdown')
 
                     if not (Author.objects.filter(id = current_user_uuid).exists()):
                         remote_to_node = RemoteUser.objects.get(node=remoteNode)
@@ -380,19 +410,18 @@ class PostToUserIDHandler(APIView):
                             remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
                         except:
                             return Response("Author not found", status=404)
-                    # TODO: only need this function when this author is exist in our server?
+                    
                     Helpers.update_this_friendship(remoteNode,current_user_uuid,request)
                 else:
                     pull_remote_nodes(current_user_uuid,request=request)
-
 
                 public_posts_list=[]
                 friend_posts_list=[]
                 private_posts_list=[]
                 serveronly_posts_list=[]
                 foaf_posts_list=[]
-                if (Post.objects.filter(Q(unlisted=False), Q(author_id=user_id),Q(visibility='PUBLIC')).exists()):
-                    public_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=user_id),Q(visibility='PUBLIC'))
+                if (Post.objects.filter(Q(unlisted=False), Q(author_id=user_id),Q(visibility='PUBLIC'), optional_Q).exists()):
+                    public_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=user_id),Q(visibility='PUBLIC'), optional_Q)
 
                 isFriend = Helpers.check_two_users_friends(current_user_uuid, user_id)
                 isFoaf = False
@@ -404,26 +433,26 @@ class PostToUserIDHandler(APIView):
                         isFoaf = True
                         break
                 
-                if not isFriend and isFoaf and (Post.objects.filter(Q(unlisted=False),Q(author_id=user_id),Q(visibility='FOAF')).exists()):
-                    foaf_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=user_id),Q(visibility='FOAF'))
+                if not isFriend and isFoaf and (Post.objects.filter(Q(unlisted=False),Q(author_id=user_id),Q(visibility='FOAF'), optional_Q).exists()):
+                    foaf_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=user_id),Q(visibility='FOAF'), optional_Q)
 
                 if isFriend:
-                    if (Post.objects.filter(Q(unlisted=False),Q(author_id=user_id),Q(visibility='FRIENDS')).exists()):
-                        friend_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False),Q(author_id=user_id),Q(visibility='FRIENDS'))
+                    if (Post.objects.filter(Q(unlisted=False),Q(author_id=user_id),Q(visibility='FRIENDS'), optional_Q).exists()):
+                        friend_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False),Q(author_id=user_id),Q(visibility='FRIENDS'), optional_Q)
 
-                    if (Post.objects.filter(Q(unlisted=False), Q(author_id=user_id), Q(visibility='FOAF')).exists()):
-                        foaf_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=user_id),Q(visibility='FOAF'))
+                    if (Post.objects.filter(Q(unlisted=False), Q(author_id=user_id), Q(visibility='FOAF'), optional_Q).exists()):
+                        foaf_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=user_id),Q(visibility='FOAF'), optional_Q)
 
-                    if (Post.objects.filter(Q(unlisted=False),Q(author_id=user_id), Q(visibility='PRIVATE')).exists()):
-                        private_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False),Q(author_id=user_id),Q(visibility='PRIVATE'))
+                    if (Post.objects.filter(Q(unlisted=False),Q(author_id=user_id), Q(visibility='PRIVATE'), optional_Q).exists()):
+                        private_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False),Q(author_id=user_id),Q(visibility='PRIVATE'), optional_Q)
                         for post in private_list:
                             if str(current_user_uuid) in post.visibleTo:
                                 private_posts_list.append(post)
 
-                    if (Post.objects.filter(Q(unlisted=False),Q(author_id=user_id), Q(visibility='SERVERONLY')).exists()):
+                    if (Post.objects.filter(Q(unlisted=False),Q(author_id=user_id), Q(visibility='SERVERONLY'), optional_Q).exists()):
                         user_host = Author.objects.get(id=user_id).host
                         if (Helpers.get_current_user_host(current_user_uuid)==user_host):
-                            serveronly_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False),Q(author_id=user_id),Q(visibility='SERVERONLY'))
+                            serveronly_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False),Q(author_id=user_id),Q(visibility='SERVERONLY'), optional_Q)
 
 
                 posts_list = public_posts_list+friend_posts_list+private_posts_list+serveronly_posts_list+foaf_posts_list
@@ -475,7 +504,7 @@ def pull_remote_nodes(current_user_uuid,request=None):
             # https://stackoverflow.com/questions/12737740/python-requests-and-persistent-sessions answered Oct 5 '12 at 0:24
             print("Pulling: %s"%nodeURL)
             response = requests.get(nodeURL,headers=headers, auth=HTTPBasicAuth(remote_to_node.remoteUsername, remote_to_node.remotePassword))
-            print(response.status_code)
+            print(response)
         except Exception as e:
             print("an error occured when pulling remote posts: %s"%e)
             continue
@@ -499,7 +528,6 @@ def pull_remote_nodes(current_user_uuid,request=None):
                         print("Updating posts: %s"%post["title"])
                         Post.objects.filter(Q(postid=remotePostID),~Q(published=remotePostPublished)).delete()
             
-                    
                     remoteAuthorJson = post["author"]
                     remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
 
@@ -533,15 +561,12 @@ def pull_remote_nodes(current_user_uuid,request=None):
                 remote_host = node.host
                 print("Filtering posts for %s"%remote_host)
                 all_remote_post_id = Post.objects.filter(Q(source__contains=remote_host)).values_list("postid",flat=True)
-                print("all_remote_post_id %s"%str(all_remote_post_id))
                 # all_remote_post_id_set is a set of remote postsid in our server
                 # remote_postid_set is the remote postid visible to me from other server
-                print("remote_postid_set %s"%str(remote_postid_set))
                 if len(all_remote_post_id) != len(remote_postid_set):
                     all_remote_post_id_set = set()
                     for post_id in all_remote_post_id:
                         all_remote_post_id_set.add(str(post_id))
-                    print("all_remote_post_id_set %s"%str(all_remote_post_id_set))
                     deleted_post_id = all_remote_post_id_set-remote_postid_set
                     print("deleted_post_id %s"%str(deleted_post_id))
                     for post_id in deleted_post_id:
