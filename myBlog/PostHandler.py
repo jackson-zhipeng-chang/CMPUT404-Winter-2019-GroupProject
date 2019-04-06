@@ -258,6 +258,7 @@ class PostToUserHandlerView(APIView):
                     shareImages = remoteNode.shareImages
                     sharePosts = remoteNode.sharePost
                     optional_Q &= ~Q(origin__contains =remoteNode.host)
+                    optional_Q &= Q(origin__contains =request.get_host())
                     if not shareImages:
                         optional_Q &= ~Q(contentType ='image/png;base64')
                         optional_Q &= ~Q(contentType ='image/jpeg;base64')
