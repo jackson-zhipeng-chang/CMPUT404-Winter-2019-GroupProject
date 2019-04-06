@@ -241,11 +241,13 @@ class PostHandler(APIView):
 # https://github.com/belatrix/BackendAllStars/blob/master/employees/views.py by Sergio Infante
 # https://github.com/belatrix/BackendAllStars/blob/master/employees/serializers.py by Sergio Infante
 # https://stackoverflow.com/questions/2658291/get-list-or-404-ordering-in-django answered Apr 17 '10 at 12:21 Ludwik Trammer
+# https://stackoverflow.com/questions/13076822/django-dynamically-filtering-with-q-objects answered Oct 25 '12 at 20:40 Riley Watkins
 class PostToUserHandlerView(APIView):
     def get(self, request, format=None):
         start_time = time.time()
         if request.user.is_authenticated:
             current_user_uuid = Helpers.get_current_user_uuid(request)
+            optional_Q = Q()
             if type(current_user_uuid) is UUID:
                 isRemote = Helpers.check_remote_request(request)
                 shareImages = True
@@ -255,6 +257,15 @@ class PostToUserHandlerView(APIView):
                     remoteNode = Node.objects.get(nodeUser=request.user)
                     shareImages = remoteNode.shareImages
                     sharePosts = remoteNode.sharePost
+                    optional_Q &= ~Q(origin__contains =remoteNode.host)
+                    if not shareImages:
+                        optional_Q &= ~Q(contentType ='image/png;base64')
+                        optional_Q &= ~Q(contentType ='image/jpeg;base64')
+
+                    if not sharePosts:
+                        optional_Q &= ~Q(contentType ='text/plain')
+                        optional_Q &= ~Q(contentType ='text/markdown')
+
                     if not (Author.objects.filter(id = current_user_uuid).exists()):
                         remote_to_node = RemoteUser.objects.get(node=remoteNode)
                         authorProfileURL = remoteNode.host + "service/author/%s"%str(current_user_uuid)
@@ -284,22 +295,22 @@ class PostToUserHandlerView(APIView):
                 foaf_posts_list=[]
 
                 if not isRemote:
-                    if (Post.objects.filter(Q(unlisted=False), Q(author_id=current_user_uuid)).exists()):
-                        my_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=current_user_uuid))
+                    if (Post.objects.filter(Q(unlisted=False), Q(author_id=current_user_uuid), optional_Q).exists()):
+                        my_posts_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=current_user_uuid), optional_Q)
                         
-                if (Post.objects.filter(Q(unlisted=False), ~Q(author_id=current_user_uuid), Q(visibility='PUBLIC')).exists()):
-                    public_posts_list = get_list_or_404(Post.objects.order_by('-published'), ~Q(author_id=current_user_uuid), Q(unlisted=False), Q(visibility='PUBLIC'))
+                if (Post.objects.filter(Q(unlisted=False), ~Q(author_id=current_user_uuid), Q(visibility='PUBLIC'), optional_Q).exists()):
+                    public_posts_list = get_list_or_404(Post.objects.order_by('-published'), ~Q(author_id=current_user_uuid), Q(unlisted=False), Q(visibility='PUBLIC'), optional_Q)
                 
                 friends_list = Helpers.get_local_friends(current_user_uuid)
                 for friend in friends_list:
-                    if (Post.objects.filter(Q(unlisted=False),Q(author_id=friend.id),Q(visibility='FRIENDS')).exists()):
-                        friend_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend.id), Q(visibility='FRIENDS'))
+                    if (Post.objects.filter(Q(unlisted=False),Q(author_id=friend.id),Q(visibility='FRIENDS'), optional_Q).exists()):
+                        friend_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend.id), Q(visibility='FRIENDS'), optional_Q)
                     # Add FOAF post to friends as well
-                    if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend.id), Q(visibility='FOAF')).exists()):
-                        foaf_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend.id),Q(visibility='FOAF'))
+                    if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend.id), Q(visibility='FOAF'), optional_Q).exists()):
+                        foaf_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend.id),Q(visibility='FOAF'), optional_Q)
 
-                    if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend.id), Q(visibility='PRIVATE')).exists()):
-                        private_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend.id), Q(visibility='PRIVATE'))
+                    if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend.id), Q(visibility='PRIVATE'), optional_Q).exists()):
+                        private_list = get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend.id), Q(visibility='PRIVATE'), optional_Q)
                         for post in private_list:
                             if str(current_user_uuid) in post.visibleTo:
                                 private_posts_list.append(post)
@@ -312,47 +323,19 @@ class PostToUserHandlerView(APIView):
                     
                     for friend_of_this_friend in friends_of_this_friend:
                         if friend_of_this_friend.id != current_user_uuid:
-                            if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend_of_this_friend.id), Q(visibility='FOAF')).exists()):
-                                foaf_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend_of_this_friend.id),Q(visibility='FOAF'))
+                            if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend_of_this_friend.id), Q(visibility='FOAF'), optional_Q).exists()):
+                                foaf_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend_of_this_friend.id),Q(visibility='FOAF'), optional_Q)
                    
                     if not isRemote:
-                        if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend.id), Q(visibility='SERVERONLY')).exists()):
+                        if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend.id), Q(visibility='SERVERONLY'), optional_Q).exists()):
                             if (Helpers.get_current_user_host(current_user_uuid)==friend.host):
-                                serveronly_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend.id),Q(visibility='SERVERONLY'))                        
+                                serveronly_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend.id),Q(visibility='SERVERONLY'), optional_Q)                        
                 
                 posts_list = my_posts_list+public_posts_list+friend_posts_list+private_posts_list+serveronly_posts_list+foaf_posts_list
-                
-                filtered_share_list = []
-                if (not shareImages) and sharePosts:
-                    for post in posts_list:
-                        if (post.contentType != 'image/png;base64') and (post.contentType != 'image/jpeg;base64'):
-                            if isRemote and (str(remoteNode.host) not in post.origin):
-                                filtered_share_list.append(post)
-                            elif not isRemote:
-                                filtered_share_list.append(post)
-
-                elif (not sharePosts) and shareImages:
-                    for post in posts_list:
-                        if (post.contentType != 'text/plain') and (post.contentType != 'text/markdown'):
-                            if isRemote and (str(remoteNode.host) not in post.origin):
-                                filtered_share_list.append(post)
-                            elif not isRemote:
-                                filtered_share_list.append(post)
-                                
-                elif (not sharePosts) and (not shareImages):
-                    filtered_share_list = []
-
-                elif shareImages and sharePosts:
-                    if isRemote:
-                        for post in posts_list:
-                            if str(remoteNode.host) not in str(post.origin):
-                                filtered_share_list.append(post)
-                    elif not isRemote:
-                        filtered_share_list = posts_list
-
-                filtered_share_list.sort(key=lambda x: x.published, reverse=True) # https://stackoverflow.com/questions/403421/how-to-sort-a-list-of-objects-based-on-an-attribute-of-the-objects answered Dec 31 '08 at 16:42 by Triptych
+        
+                posts_list.sort(key=lambda x: x.published, reverse=True) # https://stackoverflow.com/questions/403421/how-to-sort-a-list-of-objects-based-on-an-attribute-of-the-objects answered Dec 31 '08 at 16:42 by Triptych
                 paginator = CustomPagination()
-                results = paginator.paginate_queryset(filtered_share_list, request)
+                results = paginator.paginate_queryset(posts_list, request)
                 serializer=PostSerializer(results, many=True)
                 print("Responsed in %s sec"%str(time.time()-start_time))
                 print('reponse is {}'.format(paginator.get_paginated_response(serializer.data)))
