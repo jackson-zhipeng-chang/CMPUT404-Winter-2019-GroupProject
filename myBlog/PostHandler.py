@@ -318,7 +318,7 @@ class PostToUserHandlerView(APIView):
                     # https://stackoverflow.com/questions/22266734/django-excluding-one-queryset-from-another answered Mar 8 '14 at 8:04 Paul Draper
                                                        
                     # friends_of_this_friend =  set(Helpers.get_friends(friend.id))
-                    riends_of_this_friend = Helpers.get_friends(friend.id)
+                    friends_of_this_friend = Helpers.get_friends(friend.id)
 
                     print("friends of {} is {}".format(friend,friends_of_this_friend))
                     print("friend is {},his host is {}".format(friend,friend.host))
