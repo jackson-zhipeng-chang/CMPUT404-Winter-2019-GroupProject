@@ -3,6 +3,7 @@
 
 function getAllPosts(url) 
 {
+    console.log("Getting all posts...")
     return fetch(url, {
         method: "GET", 
         mode: "cors", 
@@ -12,7 +13,7 @@ function getAllPosts(url)
             "Content-Type": "application/json"
         },
         redirect: "follow", 
-        referrer: "no-referrer", 
+        referrer: "no-referrer",
     })
     .then(response => response.json());
 }
