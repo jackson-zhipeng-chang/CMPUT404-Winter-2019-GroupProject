@@ -76,7 +76,7 @@ class FriendRequestHandler(APIView):
                     if (Friend.objects.filter(author=sender_object, friend=reciver_object, status="Decline").exists()):
                         if is_to_remote:
                             remote_status = Helpers.send_FR_to_remote(self.node,self.data)
-                        if (is_to_remote and remote_status==200) or not is_to_remote:
+                        if (is_to_remote and (remote_status==200 or remote_status==204)) or not is_to_remote:
                             friendrequest = Friend.objects.get(author=sender_object, friend=reciver_object)
                             friendrequest.status="Pending"
                             friendrequest.save()
@@ -218,7 +218,7 @@ class AcceptFR(APIView):
                 if (Friend.objects.filter(author=sender_object, friend=reciver_object, status="Decline").exists()):
                     if is_to_remote:
                         remote_status = Helpers.send_FR_to_remote(self.remote_node,self.request_data)
-                    if (is_to_remote and remote_status==200) or not is_to_remote:
+                    if (is_to_remote and (remote_status==200 or remote_status==204)) or not is_to_remote:
                         friendrequest = Friend.objects.get(author=sender_object, friend=reciver_object)
                         friendrequest.status="Accept"
                         friendrequest.save()
@@ -230,7 +230,7 @@ class AcceptFR(APIView):
                 elif (Friend.objects.filter(author=reciver_object, friend=sender_object, status="Decline").exists()):
                     if is_to_remote:
                         remote_status = Helpers.send_FR_to_remote(self.remote_node,self.request_data)
-                    if (is_to_remote and remote_status==200) or not is_to_remote:
+                    if (is_to_remote and (remote_status==200 or remote_status==204)) or not is_to_remote:
                         friendrequest = Friend.objects.get(author=reciver_object, friend=sender_object)
                         friendrequest.status="Accept"
                         friendrequest.save()
@@ -243,7 +243,7 @@ class AcceptFR(APIView):
                     # if the one who I want to follow has followed me
                     if is_to_remote:
                         remote_status = Helpers.send_FR_to_remote(self.remote_node,self.request_data)
-                    if (is_to_remote and remote_status==200) or not is_to_remote:
+                    if (is_to_remote and (remote_status==200 or remote_status==204)) or not is_to_remote:
                         friendrequest = Friend.objects.get(author=reciver_object, friend=sender_object)
                         friendrequest.status = 'Accept'
                         friendrequest.save()
@@ -257,7 +257,7 @@ class AcceptFR(APIView):
                 else:
                     if is_to_remote:
                         remote_status = Helpers.send_FR_to_remote(self.remote_node,self.request_data)
-                    if (is_to_remote and remote_status==200) or not is_to_remote:
+                    if (is_to_remote and (remote_status==200 or remote_status==204)) or not is_to_remote:
                         
                         friendrequest = Friend.objects.create(author=sender_object, friend=reciver_object)
                         friendrequest.save()

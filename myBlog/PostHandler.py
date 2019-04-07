@@ -380,7 +380,6 @@ class PostToUserIDHandler(APIView):
                             remoteAuthorObj = Helpers.get_or_create_author_if_not_exist(remoteAuthorJson)
                         except:
                             return Response("Author not found", status=404)
-                    # TODO: only need this function when this author is exist in our server?
                     Helpers.update_this_friendship(remoteNode,current_user_uuid,request)
                 else:
                     pull_remote_nodes(current_user_uuid,request=request)
