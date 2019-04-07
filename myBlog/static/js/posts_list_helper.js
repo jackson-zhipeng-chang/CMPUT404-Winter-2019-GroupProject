@@ -3,7 +3,7 @@
 
 function getAllPosts(url) 
 {
-    $('.loadingIcon').show();
+    console.log("Getting all posts...")
     return fetch(url, {
         method: "GET", 
         mode: "cors", 
@@ -15,7 +15,6 @@ function getAllPosts(url)
         redirect: "follow", 
         referrer: "no-referrer",
     })
-    .then($('.loadingIcon').hide())
     .then(response => response.json());
 }
 
