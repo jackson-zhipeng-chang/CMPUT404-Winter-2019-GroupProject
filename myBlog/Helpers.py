@@ -413,10 +413,10 @@ def update_this_friendship(remoteNode,remote_user_uuid,request):
                     except:
                         print("Author/Friend id in bad format")
                     friend_obj = Author.objects.get(Q(pk=friend_uuid))
-                    if Friend.objects.filter(Q(author=friend_obj),Q(status="Accept")).exists():
-                        Friend.objects.get(Q(author=friend_obj),Q(status="Accept")).delete()
-                    if Friend.objects.filter(Q(friend=friend_obj),Q(status="Accept")).exists():
-                        Friend.objects.get(Q(friend=friend_obj),Q(status="Accept")).delete()
+                    if Friend.objects.filter(Q(author=friend_obj), Q(friend=remote_authorObj), Q(status="Accept")).exists():
+                        Friend.objects.get(Q(author=friend_obj), Q(friend=remote_authorObj), Q(status="Accept")).delete()
+                    if Friend.objects.filter(Q(friend=friend_obj), Q(author=remote_authorObj),Q(status="Accept")).exists():
+                        Friend.objects.get(Q(friend=friend_obj), Q(author=remote_authorObj),Q(status="Accept")).delete()
 
             except Exception as e:
                 print("an error occured: %s"%e)
