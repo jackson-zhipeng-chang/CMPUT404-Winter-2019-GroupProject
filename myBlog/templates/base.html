@@ -20,6 +20,7 @@
 <link rel="stylesheet" href="https://www.w3schools.com/lib/w3-theme-blue-grey.css">
 <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Open+Sans'>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
 <!-- https://stackoverflow.com/questions/30190588/html-select-multiple-as-dropdown answered Feb 10 '17 at 19:35 mgroat-->
 <link href="https://cdn.rawgit.com/harvesthq/chosen/gh-pages/chosen.min.css" rel="stylesheet"/>
 <!-- https://stackoverflow.com/questions/30190588/html-select-multiple-as-dropdown answered Feb 10 '17 at 19:35 mgroat-->
@@ -35,7 +36,7 @@
         <a href="/service/all" class="w3-bar-item w3-button w3-padding-large w3-theme-d4"><i class="fa fa-home w3-margin-right">   </i><img src="{% static 'images/lagoon.png' %}" style='height:24px;'></a>
 
         {% if user.is_authenticated %}
-            <a href="/service/newpost" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" title="News"><i class="fa fa-pencil"></i></a>
+            <a href="/service/newpost" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" title="News"><i class="fas fa-pencil-alt"></i></a>
             <div class="w3-dropdown-hover w3-hide-small" id="dropdown-hover">
                 <button class="w3-button w3-padding-large" title="Notifications" onclick="window.location.href ='/service/frlist';">
                     <i class="fa fa-bell"></i>

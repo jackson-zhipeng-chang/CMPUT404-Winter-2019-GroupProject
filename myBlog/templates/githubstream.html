@@ -6,27 +6,35 @@
 </div>
 
 <script>
-   function display(data) {
-      let holder = document.getElementById("github_holder");
-      for (var i = 0; i < data.length; i++) {
-        var block = document.createElement("div"); 
-        holder.appendChild(block);
+  function display(data) {
+    let holder = document.getElementById("github_holder");
+    for (var i = 0; i < data.length; i++) {
+      var block = document.createElement("div"); 
+      holder.appendChild(block);
 
-        var repo = document.createElement("h6");
-        repo.innerHTML = "Repo: "+data[i].repo.name;
-        block.appendChild(repo);
+      var repo = document.createElement("h6");
+      repo.innerHTML = "Repo: "+data[i].repo.name;
+      block.appendChild(repo);
 
-        var type = document.createElement("p")
-        type.innerHTML = "Event: "+data[i].type;
-        block.appendChild(type);
+      var type = document.createElement("p")
+      type.innerHTML = "Event: "+data[i].type;
+      block.appendChild(type);
 
-        var line = document.createElement("hr");
-        line.classList.add("w3-clear");
-        block.appendChild(line);
-      }
-   }
+      var line = document.createElement("hr");
+      line.classList.add("w3-clear");
+      block.appendChild(line);
+    }
+  }
    
-   if ("{{github_url}}" !== "null"){
-      getGithubStream("{{github_url}}").then(display);
-   }
+  if ("{{github_url}}" !== "null"){
+    getGithubStream("{{github_url}}").then(display);
+  }
+  else {
+    let holder = document.getElementById("github_holder");
+    let notFound = document.createElement("h3");
+    notFound.innerHTML = "Edit Github URL to see your stream!";
+    notFound.classList.add("w3-row-padding");
+    notFound.style.margin = "20px";
+    holder.appendChild(notFound);
+  }
 </script>

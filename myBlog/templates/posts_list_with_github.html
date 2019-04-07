@@ -1,6 +1,7 @@
 <div class="w3-container w3-card w3-white w3-round w3-margin">
     <h4>Posts streams</h4>
 </div>
+<!-- <div class="fa fa-spinner fa-spin" style="font-size:5em;margin-left:50%;"></i></div> -->
 <div id="posts_holder">
 
 </div>
@@ -8,6 +9,8 @@
 
     function display_posts(data) {
         let holder = document.getElementById("posts_holder");
+
+
         holder.innerHTML = "";
         if (data.posts.length == 0){
             let post = document.createElement("div");
@@ -57,6 +60,37 @@
                 author.style.display = "inline-block";
                 post.appendChild(author);
 
+                
+                var sourceName = document.createElement('a');
+                sourceName.href = data.posts[i].source;
+                if (window.location.hostname != sourceName.hostname) {
+                    var sourceDiv = document.createElement("div");
+                    var sourceIcon = document.createElement("div");
+                    var sourceText = document.createElement("span");
+                    sourceText.innerText = "Source: " + data.posts[i].source;
+                    sourceText.classList.add("tooltiptext");
+                    sourceIcon.appendChild(sourceText);
+                    sourceIcon.classList.add("fas", "fa-code-branch", "tooltip");
+                    sourceIcon.style.marginRight = "2em";
+                    sourceDiv.appendChild(sourceIcon);
+                    // fas fa-circle-notch
+
+                    var originIcon = document.createElement("div");
+                    var originText = document.createElement("span");
+                    originText.innerText = "Origin: " + data.posts[i].origin;
+                    originText.classList.add("tooltiptext");
+                    originIcon.appendChild(originText);
+                    originIcon.classList.add("fas", "fa-link", "tooltip");
+                    // originIcon.style.marginRight = "2em";
+                    sourceDiv.appendChild(originIcon);
+
+                    sourceDiv.style.display = "inline-block";
+                    sourceDiv.style.float = "right";
+                    sourceDiv.style.fontSize = "1.5em"
+                    sourceDiv.style.margin = "20px";
+                    post.appendChild(sourceDiv);
+                }
+
                 var line = document.createElement("hr");
                 line.classList.add("w3-clear");
                 post.appendChild(line);
@@ -97,17 +131,17 @@
                 }
                 divDescription.appendChild(content);
 
-                var line = document.createElement("hr");
-                line.classList.add("w3-clear");
-                divDescription.appendChild(line);
+                // var line = document.createElement("hr");
+                // line.classList.add("w3-clear");
+                // divDescription.appendChild(line);
 
-                var sourceText = document.createElement("p");
-                sourceText.innerHTML = "Source: "+ data.posts[i].source;
-                divDescription.appendChild(sourceText);
+                // var sourceText = document.createElement("p");
+                // sourceText.innerHTML = "Source: "+ data.posts[i].source;
+                // divDescription.appendChild(sourceText);
 
-                var originText = document.createElement("p");
-                originText.innerHTML = "Origin: "+ data.posts[i].origin;
-                divDescription.appendChild(originText);
+                // var originText = document.createElement("p");
+                // originText.innerHTML = "Origin: "+ data.posts[i].origin;
+                // divDescription.appendChild(originText);
 
                 var line = document.createElement("hr");
                 line.classList.add("w3-clear");
@@ -162,8 +196,68 @@
                 nextButton.onclick=function(){getAllPosts(data.previous).then(display_posts)} ;
                 holder.appendChild(nextButton);
             }
-        }
+        } 
     }
-    getAllPosts("{{posts_url}}").then(display_posts);
+    let holder = document.getElementById("posts_holder");
+    let loader = document.createElement("div");
+    loader.setAttribute("id", "loaderIcon");
+    loader.classList.add("loadingIcon", "fa", "fa-spinner", "fa-spin");
+    loader.style.fontSize = "5em";
+    loader.style.marginLeft = "50%";
+    holder.appendChild(loader);
+    getAllPosts("{{posts_url}}")
+    .then(display_posts)
+    .then(function () {
+        let test = document.getElementById("loaderIcon");
+    });
 
 </script>
+<style>
+/* Tooltip container */
+.tooltip {
+  position: relative;
+  display: inline-block;
+  border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
+}
+
+/* Tooltip text */
+.tooltip .tooltiptext {
+  font-weight: 100;  
+  visibility: hidden;
+  width: auto;
+  background-color: #555;
+  color: #fff;
+  text-align: center;
+  padding: 5px;
+  border-radius: 6px;
+
+  /* Position the tooltip text */
+  position: absolute;
+  z-index: 1;
+  bottom: 145%;
+  left: 50%;
+  margin-left: -210px;
+
+  /* Fade in tooltip */
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+/* Tooltip arrow */
+.tooltip .tooltiptext::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #555 transparent transparent transparent;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
+</style>
