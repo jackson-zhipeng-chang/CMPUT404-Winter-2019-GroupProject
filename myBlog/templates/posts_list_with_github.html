@@ -1,9 +1,6 @@
 <div class="w3-container w3-card w3-white w3-round w3-margin">
     <h4>Posts streams</h4>
 </div>
-<div class="tooltip">Hover over me
-    <span class="tooltiptext">Tooltip text</span>
-</div>
 <!-- <div class="fa fa-spinner fa-spin" style="font-size:5em;margin-left:50%;"></i></div> -->
 <div id="posts_holder">
 
@@ -63,24 +60,25 @@
                 author.style.display = "inline-block";
                 post.appendChild(author);
 
-                var sourceDiv = document.createElement("div");
-                var sourceIcon = document.createElement("div");
-                var sourceText = document.createElement("span");
-                sourceText.innerText = data.posts[i].source;
-                sourceText.classList.add("tooltiptext");
-                sourceIcon.appendChild(sourceText);
-                sourceIcon.classList.add("fab", "fa-stripe-s", "tooltip");
-                sourceIcon.style.marginRight = "5em";
-                sourceDiv.appendChild(sourceIcon);
-
-                var originIcon = document.createElement("div");
-                originIcon.classList.add("fas", "fa-map-marker-alt");
-                sourceDiv.appendChild(originIcon);
-                sourceDiv.style.display = "inline-block";
-                sourceDiv.style.float = "right";
-                sourceDiv.style.fontSize = "1.5em"
-                sourceDiv.style.margin = "20px";
-                post.appendChild(sourceDiv);
+                
+                var sourceName = document.createElement('a');
+                sourceName.href = data.posts[i].source;
+                if (window.location.hostname == sourceName.hostname) {
+                    var sourceDiv = document.createElement("div");
+                    var sourceIcon = document.createElement("div");
+                    var sourceText = document.createElement("span");
+                    sourceText.innerText = "This is a post from an external server!";
+                    sourceText.classList.add("tooltiptext");
+                    sourceIcon.appendChild(sourceText);
+                    sourceIcon.classList.add("fab", "fa-stripe-s", "tooltip");
+                    sourceIcon.style.marginRight = "2em";
+                    sourceDiv.appendChild(sourceIcon);
+                    sourceDiv.style.display = "inline-block";
+                    sourceDiv.style.float = "right";
+                    sourceDiv.style.fontSize = "1.5em"
+                    sourceDiv.style.margin = "20px";
+                    post.appendChild(sourceDiv);
+                }
 
                 var line = document.createElement("hr");
                 line.classList.add("w3-clear");
@@ -95,9 +93,9 @@
                 title.style.margin = "0 20px";
                 post_details_link.appendChild(title);
 
-                var line = document.createElement("hr");
-                line.classList.add("w3-clear");
-                post.appendChild(line);
+                // var line = document.createElement("hr");
+                // line.classList.add("w3-clear");
+                // post.appendChild(line);
 
                 var divDescription = document.createElement("div");
                 divDescription.classList.add("w3-row-padding");
@@ -118,21 +116,21 @@
                 }
                 divDescription.appendChild(content);
 
-                var line = document.createElement("hr");
-                line.classList.add("w3-clear");
-                divDescription.appendChild(line);
+                // var line = document.createElement("hr");
+                // line.classList.add("w3-clear");
+                // divDescription.appendChild(line);
 
-                var sourceText = document.createElement("p");
-                sourceText.innerHTML = "Source: "+ data.posts[i].source;
-                divDescription.appendChild(sourceText);
+                // var sourceText = document.createElement("p");
+                // sourceText.innerHTML = "Source: "+ data.posts[i].source;
+                // divDescription.appendChild(sourceText);
 
-                var originText = document.createElement("p");
-                originText.innerHTML = "Origin: "+ data.posts[i].origin;
-                divDescription.appendChild(originText);
+                // var originText = document.createElement("p");
+                // originText.innerHTML = "Origin: "+ data.posts[i].origin;
+                // divDescription.appendChild(originText);
 
-                var line = document.createElement("hr");
-                line.classList.add("w3-clear");
-                divDescription.appendChild(line);
+                // var line = document.createElement("hr");
+                // line.classList.add("w3-clear");
+                // divDescription.appendChild(line);
 
                 var commentText = document.createElement("h4");
                 commentText.innerHTML = "Comments";
@@ -210,19 +208,19 @@
 /* Tooltip text */
 .tooltip .tooltiptext {
   visibility: hidden;
-  width: 120px;
+  width: 200px;
   background-color: #555;
   color: #fff;
   text-align: center;
-  padding: 5px 0;
+  padding: 5px;
   border-radius: 6px;
 
   /* Position the tooltip text */
   position: absolute;
   z-index: 1;
-  bottom: 125%;
+  bottom: 145%;
   left: 50%;
-  margin-left: -60px;
+  margin-left: -100px;
 
   /* Fade in tooltip */
   opacity: 0;
