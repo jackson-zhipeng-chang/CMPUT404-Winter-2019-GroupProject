@@ -84,9 +84,19 @@ class TestFriendQueryHandler(LiveServerTestCase):
         friendlist_length = len(json.loads(response.content)['authors'])
         self.assertEquals(friendlist_length,2)
 
-    # def test_post_friend_query(self):
-    #     # check which authors in the list are friend of the author.
-    #     url = reverse('friendrequest')
-    #     self.client1.post(url,{
-    #
-    #     })
+    def test_post_friend_query(self):
+        Friend.objects.create(author=self.author1,friend=self.author2,status="Accept")
+        # check which authors in the list are friend of the author.
+        url = reverse('friendquery',args=[self.author2.id])
+        response=self.client1.post(url,{
+            "query":"friends",
+            "author":self.author1.host+'service/author/'+str(self.author1.id),
+            "authors":[
+                self.author2.host+'service/author/'+str(self.author2.id),
+            ]
+        },'application/json')
+
+        self.assertEquals(response.status_code,200)
+        
+        data = json.loads(response.content)
+        self.assertEquals(data['authors'],[self.author2.host+'service/author/'+str(self.author2.id)])

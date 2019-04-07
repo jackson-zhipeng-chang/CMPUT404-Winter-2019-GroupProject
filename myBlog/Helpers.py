@@ -398,7 +398,6 @@ def update_this_friendship(remoteNode,remote_user_uuid,request):
             my_host = request.get_host()
             try:
                 for friend_url in extra_friend:
-                    # TODO: get friend's host in smart way
                     try:
                         if 'author/' in friend_url:
                             friend_uuid = friend_url.split('author/')[1]

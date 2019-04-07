@@ -70,7 +70,6 @@ class Post(models.Model):
     description = models.TextField()
 #https://stackoverflow.com/questions/5190313/django-booleanfield-how-to-set-the-default-value-to-true answered Mar 4 '11 at 6:29 Michael C. O'Connor
     unlisted = models.BooleanField(default=False)
-    # TODO: auto_now_add -> auto_now?
     published = models.DateTimeField(auto_now_add=True, blank=True)
 
     def __str__(self):
