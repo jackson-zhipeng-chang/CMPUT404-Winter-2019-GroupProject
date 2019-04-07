@@ -163,20 +163,18 @@
             }
         } 
     }
+    let holder = document.getElementById("posts_holder");
+    let loader = document.createElement("div");
+    loader.setAttribute("id", "loaderIcon");
+    loader.classList.add("loadingIcon", "fa", "fa-spinner", "fa-spin");
+    loader.style.fontSize = "5em";
+    loader.style.marginLeft = "50%";
+    holder.appendChild(loader);
     getAllPosts("{{posts_url}}")
     .then(display_posts)
     .then(function () {
-        let holder = document.getElementById("posts_holder");
-        let loader = document.createElement("div");
-        loader.setAttribute("id", "loaderIcon");
-        loader.classList.add("loadingIcon", "fa", "fa-spinner", "fa-spin");
-        loader.style.fontSize = "5em";
-        loader.style.marginLeft = "50%";
-        holder.appendChild(loader);
-    })
-    .then(function () {
         let test = document.getElementById("loaderIcon");
-        test.style.display = "none";
+        // test.style.display = "none";
         // $(`#loadingIcon`).context.hidden = true;
         // console.log($(`#loadingIcon`).hide())
         console.log("Hiding loading icon")
