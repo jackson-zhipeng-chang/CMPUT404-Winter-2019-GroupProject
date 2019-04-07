@@ -37,7 +37,7 @@ urlpatterns = [
     path('author/<uuid:user_id>/posts/', PostHandler.PostToUserIDHandler.as_view(), name='posttouserid'),
     path('author/<uuid:user_id>/', AuthorProfileHandler.AuthorProfileHandler.as_view(), name='authorprofile'),
     path('author/<str:authorid1>/friends/<str:service2>/author/<str:authorid2>', Friend2FriendHandler.Friend2FriendHandler.as_view(), name='friend2friend'),
-
+    
     path('', Helpers.home, name='home'),
     path('login/', Accounts.LoginView.as_view(), name='login'),
     path('logout/', Accounts.logout_user, name='logout'),
@@ -55,5 +55,22 @@ urlpatterns = [
     path('authordetails/<uuid:author_id>/',Helpers.author_details,name='authordetails'),
     path('postdetails/<uuid:post_id>/', Helpers.post_details, name='postdetails'),
     path('unfriend/<uuid:friendid>/',FriendRequestHandler.UnFriend.as_view(),name='unfriend'),
-    path('acceptFriendRequest/',FriendRequestHandler.AcceptFR.as_view(),name='acceptFriendRequest')
+    path('acceptFriendRequest/',FriendRequestHandler.AcceptFR.as_view(),name='acceptFriendRequest'),
+
+    # for connecting andrew's node
+    path('author/posts',PostHandler.PostToUserHandlerView.as_view()),
+    path('author/<uuid:user_id>/friends', FriendQueryHandler.FriendQueryHandler.as_view()),
+    path('posts/<uuid:postid>/comments', CommentHandler.CommentHandler.as_view()),
+    path('friendrequest', FriendRequestHandler.FriendRequestHandler.as_view()),
+    path('author/<uuid:user_id>/posts', PostHandler.PostToUserIDHandler.as_view()),
+    path('posts', PostHandler.NewPostHandler.as_view()),
+    path('posts/<uuid:postid>', PostHandler.PostHandler.as_view()),
+    path('author/<uuid:user_id>', AuthorProfileHandler.AuthorProfileHandler.as_view()),
+
+
+
+
+
+
+
 ]
