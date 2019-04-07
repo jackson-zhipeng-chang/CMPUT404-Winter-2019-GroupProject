@@ -168,7 +168,7 @@ class PostHandler(APIView):
                                             else:
                                                 return Response('No mutal friend',status=status.HTTP_403_FORBIDDEN)
                                         else:
-                                            return Response('friend2friend api fails',status=response.status_code)
+                                            return Response('friend2friend api fails',status=status.HTTP_404_NOT_FOUND)
                                 else:
                                     return Response('No mutual friend.',status=status.HTTP_403_FORBIDDEN)
 
