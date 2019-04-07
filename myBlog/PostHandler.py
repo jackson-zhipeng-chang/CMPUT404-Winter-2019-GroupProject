@@ -155,7 +155,10 @@ class PostHandler(APIView):
                                         # the friend is not in my server, go to the friend's server and query
                                         my_friend_node = Node.objects.get(host=my_friend_host)
                                         my_friend_remote_user = RemoteUser.objects.get(node=my_friend_node)
-                                        response = requests.get(friend2friend_url,auth=HTTPBasicAuth(my_friend_remote_user.remoteUsername,my_friend_remote_user.remotePassword))
+                                        try:
+                                            response = requests.get(friend2friend_url,auth=HTTPBasicAuth(my_friend_remote_user.remoteUsername,my_friend_remote_user.remotePassword))
+                                        except:
+                                            return Response('friend 2 friend request fails {}'.format(friend2friend_url), status=status.HTTP_400_BAD_REQUEST)
                                         if response.status_code==200:
                                             responseJSON = json.loads(response.content.decode('utf8').replace("'", '"'))
                                             if responseJSON["friends"]:
