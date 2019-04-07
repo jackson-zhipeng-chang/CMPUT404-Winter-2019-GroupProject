@@ -1,6 +1,9 @@
 <div class="w3-container w3-card w3-white w3-round w3-margin">
     <h4>Posts streams</h4>
 </div>
+<div class="tooltip">Hover over me
+    <span class="tooltiptext">Tooltip text</span>
+</div>
 <!-- <div class="fa fa-spinner fa-spin" style="font-size:5em;margin-left:50%;"></i></div> -->
 <div id="posts_holder">
 
@@ -59,6 +62,25 @@
                 author.style.marginTop = "11px";
                 author.style.display = "inline-block";
                 post.appendChild(author);
+
+                var sourceDiv = document.createElement("div");
+                var sourceIcon = document.createElement("div");
+                var sourceText = document.createElement("span");
+                sourceText.innerText = data.posts[i].source;
+                sourceText.classList.add("tooltiptext");
+                sourceIcon.appendChild(sourceText);
+                sourceIcon.classList.add("fab", "fa-stripe-s", "tooltip");
+                sourceIcon.style.marginRight = "5em";
+                sourceDiv.appendChild(sourceIcon);
+
+                var originIcon = document.createElement("div");
+                originIcon.classList.add("fas", "fa-map-marker-alt");
+                sourceDiv.appendChild(originIcon);
+                sourceDiv.style.display = "inline-block";
+                sourceDiv.style.float = "right";
+                sourceDiv.style.fontSize = "1.5em"
+                sourceDiv.style.margin = "20px";
+                post.appendChild(sourceDiv);
 
                 var line = document.createElement("hr");
                 line.classList.add("w3-clear");
@@ -177,3 +199,51 @@
     });
 
 </script>
+<style>
+/* Tooltip container */
+.tooltip {
+  position: relative;
+  display: inline-block;
+  border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
+}
+
+/* Tooltip text */
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 120px;
+  background-color: #555;
+  color: #fff;
+  text-align: center;
+  padding: 5px 0;
+  border-radius: 6px;
+
+  /* Position the tooltip text */
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  margin-left: -60px;
+
+  /* Fade in tooltip */
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+/* Tooltip arrow */
+.tooltip .tooltiptext::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #555 transparent transparent transparent;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
+</style>
