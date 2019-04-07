@@ -63,24 +63,24 @@
                 
                 var sourceName = document.createElement('a');
                 sourceName.href = data.posts[i].source;
-                if (window.location.hostname != sourceName.hostname) {
+                if (window.location.hostname == sourceName.hostname) {
                     var sourceDiv = document.createElement("div");
                     var sourceIcon = document.createElement("div");
                     var sourceText = document.createElement("span");
-                    sourceText.innerText = data.posts[i].source;
+                    sourceText.innerText = "Source: " + data.posts[i].source;
                     sourceText.classList.add("tooltiptext");
                     sourceIcon.appendChild(sourceText);
-                    sourceIcon.classList.add("fab", "fa-stripe-s", "tooltip");
+                    sourceIcon.classList.add("fas", "fa-code-branch", "tooltip");
                     sourceIcon.style.marginRight = "2em";
                     sourceDiv.appendChild(sourceIcon);
                     // fas fa-circle-notch
 
                     var originIcon = document.createElement("div");
                     var originText = document.createElement("span");
-                    originText.innerText = data.posts[i].origin;
+                    originText.innerText = "Origin: " + data.posts[i].origin;
                     originText.classList.add("tooltiptext");
                     originIcon.appendChild(originText);
-                    originIcon.classList.add("far", "fa-eye", "tooltip");
+                    originIcon.classList.add("fas", "fa-link", "tooltip");
                     // originIcon.style.marginRight = "2em";
                     sourceDiv.appendChild(originIcon);
 
@@ -218,6 +218,7 @@
 
 /* Tooltip text */
 .tooltip .tooltiptext {
+  font-weight: 100;  
   visibility: hidden;
   width: auto;
   background-color: #555;
