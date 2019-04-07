@@ -31,7 +31,7 @@ class TestPostsHandler(LiveServerTestCase):
         self.other_author = Author.objects.create(user=self.other_user,displayName='author2',
                                                     host = self.live_server_url +'/',
                                                   github='https://github.com/terrence85561')
-
+        
         self.new_post_url = reverse('new_post')
         self.post_to_user_url = reverse('posttouser')
 
@@ -562,8 +562,13 @@ class TestPostsHandler(LiveServerTestCase):
         self.assertEquals(response.status_code,200)
         self.assertEquals(json.loads(response.content)['posts'][0]['author']['id'],str(self.author.id))
 
-    
+   
 
+        
+        
+        
+        
+        
 
 
 
