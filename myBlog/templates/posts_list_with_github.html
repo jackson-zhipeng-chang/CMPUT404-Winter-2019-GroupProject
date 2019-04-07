@@ -63,16 +63,27 @@
                 
                 var sourceName = document.createElement('a');
                 sourceName.href = data.posts[i].source;
-                if (window.location.hostname != sourceName.hostname) {
+                if (window.location.hostname == sourceName.hostname) {
                     var sourceDiv = document.createElement("div");
                     var sourceIcon = document.createElement("div");
                     var sourceText = document.createElement("span");
-                    sourceText.innerText = "This is a post from an external server!";
+                    sourceText.innerText = data.posts[i].source;
                     sourceText.classList.add("tooltiptext");
                     sourceIcon.appendChild(sourceText);
                     sourceIcon.classList.add("fab", "fa-stripe-s", "tooltip");
                     sourceIcon.style.marginRight = "2em";
                     sourceDiv.appendChild(sourceIcon);
+                    // fas fa-circle-notch
+
+                    var originIcon = document.createElement("div");
+                    var originText = document.createElement("span");
+                    originText.innerText = data.posts[i].origin;
+                    originText.classList.add("tooltiptext");
+                    originIcon.appendChild(originText);
+                    originIcon.classList.add("far", "fa-eye", "tooltip");
+                    // originIcon.style.marginRight = "2em";
+                    sourceDiv.appendChild(originIcon);
+
                     sourceDiv.style.display = "inline-block";
                     sourceDiv.style.float = "right";
                     sourceDiv.style.fontSize = "1.5em"
@@ -93,9 +104,9 @@
                 title.style.margin = "0 20px";
                 post_details_link.appendChild(title);
 
-                // var line = document.createElement("hr");
-                // line.classList.add("w3-clear");
-                // post.appendChild(line);
+                var line = document.createElement("hr");
+                line.classList.add("w3-clear");
+                post.appendChild(line);
 
                 var divDescription = document.createElement("div");
                 divDescription.classList.add("w3-row-padding");
@@ -128,9 +139,9 @@
                 // originText.innerHTML = "Origin: "+ data.posts[i].origin;
                 // divDescription.appendChild(originText);
 
-                // var line = document.createElement("hr");
-                // line.classList.add("w3-clear");
-                // divDescription.appendChild(line);
+                var line = document.createElement("hr");
+                line.classList.add("w3-clear");
+                divDescription.appendChild(line);
 
                 var commentText = document.createElement("h4");
                 commentText.innerHTML = "Comments";
@@ -208,7 +219,7 @@
 /* Tooltip text */
 .tooltip .tooltiptext {
   visibility: hidden;
-  width: 200px;
+  width: auto;
   background-color: #555;
   color: #fff;
   text-align: center;
@@ -220,7 +231,7 @@
   z-index: 1;
   bottom: 145%;
   left: 50%;
-  margin-left: -100px;
+  margin-left: -210px;
 
   /* Fade in tooltip */
   opacity: 0;
