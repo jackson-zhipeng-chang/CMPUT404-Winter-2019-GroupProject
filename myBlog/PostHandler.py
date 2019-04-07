@@ -138,6 +138,15 @@ class PostHandler(APIView):
                                     # Then it will go to at least 1 of these friend's servers and verify that they are friends of sender
                                     my_friend = my_friend_list[0]
                                     my_friend_host = my_friend.split('author')[0]
+                                    try:
+                                        if 'service' in my_friend:
+                                            my_friend_host = my_friend.split('service')[0]
+                                        elif 'author' in my_friend and 'service' not in my_friend:
+                                            my_friend_host = my_friend.split('author')[0]
+                                        else:
+                                            return Response("Friends list in bad format", status=400)
+                                    except:
+                                        return Response("Friends list in bad format", status=400)
                                     friend2friend_url = my_friend+'/friends/'+sender_url.split('/')[2]+'/author/'+str(remote_user_uuid)
                                     print("friend2friend_url is {}".format(friend2friend_url))
                                     # check my_friend is from my server or remote
