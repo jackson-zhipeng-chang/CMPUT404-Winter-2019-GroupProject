@@ -339,33 +339,30 @@ def from_my_server(host):
             return False
     return True
 
-def get_remote_friends_obj_list(remote_host, remote_user_uuid,request):
-    if request.get_host() not in remote_host:
-        request_url = remote_host + "service/author/"+str(remote_user_uuid)+"/friends/"
-        headers = {"Accept": 'application/json'}
-        try:
-            print("remote_host %s"%remote_host)
-            remoteNode = Node.objects.get(host__contains=remote_host)
-            remote_to_node = RemoteUser.objects.get(node=remoteNode)
-            response = requests.get(request_url,headers=headers,auth=HTTPBasicAuth(remote_to_node.remoteUsername,remote_to_node.remotePassword))
-        except Exception as e:
-            print("Something wrong when pull remote friend list %s"%e)
-            return []
+def get_remote_friends_obj_list(remote_host, remote_user_uuid):
+    request_url = remote_host + "service/author/"+str(remote_user_uuid)+"/friends/"
+    headers = {"Accept": 'application/json'}
+    try:
+        print("remote_host %s"%remote_host)
+        remoteNode = Node.objects.get(host__contains=remote_host)
+        remote_to_node = RemoteUser.objects.get(node=remoteNode)
+        response = requests.get(request_url,headers=headers,auth=HTTPBasicAuth(remote_to_node.remoteUsername,remote_to_node.remotePassword))
+    except Exception as e:
+        print("Something wrong when pull remote friend list %s"%e)
+        return []
 
-        if response.status_code == 200:
-            remote_friend_obj_list = []
-            data = response.json()
-            author_list = data["authors"]
-            if len(author_list) != 0:
-                print("THE AUTHOR_LIST IS {}".format(author_list))
-                for author_url in author_list:
-                    response = requests.get(author_url)
-                    remoteAuthorJson = response.json()
-                    remoteAuthorObj = get_or_create_author_if_not_exist(remoteAuthorJson)
-                    remote_friend_obj_list.append(remoteAuthorObj)
-            return remote_friend_obj_list
-        else:
-            return []
+    if response.status_code == 200:
+        remote_friend_obj_list = []
+        data = response.json()
+        author_list = data["authors"]
+        if len(author_list) != 0:
+            print("THE AUTHOR_LIST IS {}".format(author_list))
+            for author_url in author_list:
+                response = requests.get(author_url)
+                remoteAuthorJson = response.json()
+                remoteAuthorObj = get_or_create_author_if_not_exist(remoteAuthorJson)
+                remote_friend_obj_list.append(remoteAuthorObj)
+        return remote_friend_obj_list
     else:
         return []
    
