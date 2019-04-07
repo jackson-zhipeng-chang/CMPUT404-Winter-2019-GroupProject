@@ -63,7 +63,7 @@
                 
                 var sourceName = document.createElement('a');
                 sourceName.href = data.posts[i].source;
-                if (window.location.hostname == sourceName.hostname) {
+                if (window.location.hostname != sourceName.hostname) {
                     var sourceDiv = document.createElement("div");
                     var sourceIcon = document.createElement("div");
                     var sourceText = document.createElement("span");
