@@ -329,7 +329,7 @@ class PostToUserHandlerView(APIView):
 
                         # friends_of_this_friend |= remote_friends_of_this_friend
                         friends_of_this_friend += remote_friends_of_this_friend
-                    remote_friends_of_this_friend = list(set(remote_friends_of_this_friend))
+                    friends_of_this_friend = list(set(friends_of_this_friend))
                     print('friends_of_this_friend is {}'.format(friends_of_this_friend))
                     for friend_of_this_friend in friends_of_this_friend:
                         if friend_of_this_friend.id != current_user_uuid:
