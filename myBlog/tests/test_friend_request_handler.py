@@ -112,3 +112,25 @@ class TestFriendRequestHandler(LiveServerTestCase):
         has_friend = Friend.objects.filter(author=author,friend=friend).exists()
         self.assertFalse(has_friend)
 
+    def test_accept_friendrequest(self):
+        url = reverse("acceptFriendRequest")
+        Friend.objects.create(author=self.author2,friend=self.author1,status="Pending")
+        request_body = {
+            "query":"friendrequest",
+            "author":{
+                "id":str(self.author1.id),
+                "host":self.author1.host,
+                "displayName":self.author1.displayName,
+                "url":self.author1.host+str(self.author1.id)
+            },
+            "friend":{
+                "id":str(self.author2.id),
+                "host":self.author2.host,
+                "displayName":self.author2.displayName,
+                "url":self.author2.host+str(self.author2.id)
+            }
+        }
+        response = self.client1.post(url,request_body,"application/json")
+        self.assertEquals(response.status_code,200)
+        self.assertTrue(Friend.objects.filter(author=self.author2,friend=self.author1,status="Accept").exists())
+

@@ -562,6 +562,8 @@ class TestPostsHandler(LiveServerTestCase):
         self.assertEquals(response.status_code,200)
         self.assertEquals(json.loads(response.content)['posts'][0]['author']['id'],str(self.author.id))
 
+    
+
 
 
 
