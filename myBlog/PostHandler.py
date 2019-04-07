@@ -167,7 +167,8 @@ class PostHandler(APIView):
                                                     return JsonResponse(serializer.data, status=status.HTTP_200_OK)
                                             else:
                                                 return Response('No mutal friend',status=status.HTTP_403_FORBIDDEN)
-                                        return Reponse('friend2friend api fails',status=response.status_code)
+                                        else:
+                                            return Response('friend2friend api fails',status=response.status_code)
                                 else:
                                     return Response('No mutual friend.',status=status.HTTP_403_FORBIDDEN)
 
