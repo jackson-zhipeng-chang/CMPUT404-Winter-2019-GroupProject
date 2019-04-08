@@ -86,7 +86,6 @@ class PostHandler(APIView):
                 # In example this is postid
                 post_id = data["postid"]
                 if isRemote:                   
-                    print("request author id {}".format(data["author"]["id"]))
                     remoteNode = Node.objects.get(nodeUser=request.user)
                     remote_to_node = RemoteUser.objects.get(node=remoteNode)
                     if type(remote_user_uuid) is UUID:
@@ -103,7 +102,6 @@ class PostHandler(APIView):
                                     return JsonResponse(serializer.data, status=status.HTTP_200_OK)
 
                         sender_url = remoteNode.host + "service/author/"+str(remote_user_uuid)
-                        print('sender_url is {}'.format(sender_url))
                         if not(Author.objects.filter(id=remote_user_uuid).exists()):
                             # create a local copy for the sender
                             response = requests.get(sender_url,auth=HTTPBasicAuth(remote_to_node.remoteUsername,remote_to_node.remotePassword))
