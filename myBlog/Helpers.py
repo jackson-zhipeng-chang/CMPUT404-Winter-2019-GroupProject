@@ -398,6 +398,8 @@ def update_this_friendship(remoteNode,remote_user_uuid,request):
             response_friendlist_set=set([re.sub('.+/author/', '', friend) for friend in response_friendlist])
             # response_friendlist_set = set(response.json()["authors"])
             local_friend_set = set([re.sub('.+/author/','',friend)for friend in local_friend_list_of_remote_user])
+            print("local_friend_set is {}".format(local_friend_set))
+            print("response_friendlist_set is {}".format(response_friendlist_set))
             extra_friend = local_friend_set - response_friendlist_set
             print('extra_friend is {}'.format(extra_friend))
             my_host = request.get_host()
