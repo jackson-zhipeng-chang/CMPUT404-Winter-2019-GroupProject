@@ -399,6 +399,7 @@ def update_this_friendship(remoteNode,remote_user_uuid,request):
             # response_friendlist_set = set(response.json()["authors"])
             local_friend_set = set([re.sub('.+/author/','',friend)for friend in local_friend_list_of_remote_user])
             extra_friend = local_friend_set - response_friendlist_set
+            print('extra_friend is {}'.format(extra_friend))
             my_host = request.get_host()
             try:
                 for friend_url in extra_friend:
@@ -413,6 +414,7 @@ def update_this_friendship(remoteNode,remote_user_uuid,request):
                         else:
                             try:
                                 print('comming as uuid')
+                                print(friend_url)
                                 friend_uuid = UUID(friend_url)
                             except:
                                 print("Author/Friend id in bad format")
