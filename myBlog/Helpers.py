@@ -397,6 +397,9 @@ def update_this_friendship(remoteNode,remote_user_uuid,request):
             local_friend_set = set([re.sub('.+/author/','',friend)for friend in local_friend_list_of_remote_user])
             extra_friend = local_friend_set - response_friendlist_set
             my_host = request.get_host()
+            print("local_friend_set %s"%str(local_friend_set))
+            print("response_friendlist_set %s"%str(response_friendlist_set))
+            print("extra_friend %s"%str(extra_friend))
             try:
                 for friend_url in extra_friend:
                     try:
