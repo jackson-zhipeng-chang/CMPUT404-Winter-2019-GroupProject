@@ -413,7 +413,7 @@ def update_this_friendship(remoteNode,remote_user_uuid,request):
                         else:
                             try:
                                 print('comming as uuid')
-                                friend_uuid = UUID(friend_uuid)
+                                friend_uuid = UUID(friend_url)
                             except:
                                 print("Author/Friend id in bad format")
                     except:
