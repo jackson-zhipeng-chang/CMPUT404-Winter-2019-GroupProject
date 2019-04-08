@@ -372,7 +372,6 @@ def update_this_friendship(remoteNode,remote_user_uuid,request):
     remote_host = remoteNode.host
     remote_to_node = RemoteUser.objects.get(node=remoteNode)
     local_friend_list_of_remote_user = []
-    # local_friends_obj_list = list(Friend.objects.filter(Q(author=remote_authorObj)|Q(friend=remote_authorObj)))
     if Friend.objects.filter(author=remote_authorObj).exists():
         local_friend_list_of_remote_user += [friend.friend.host+"service/author/"+str(friend.friend.id) 
         for friend in list(Friend.objects.filter(author=remote_authorObj))]
@@ -382,7 +381,6 @@ def update_this_friendship(remoteNode,remote_user_uuid,request):
 
 
     if local_friend_list_of_remote_user:
-        # local_friend_list_of_remote_user = [str(friend.id) for friend in local_friends_obj_list]
         request_body = {
             "query":"friends",
             "author":remote_host + "service/author/"+str(remote_user_uuid),
@@ -396,7 +394,6 @@ def update_this_friendship(remoteNode,remote_user_uuid,request):
         if response.status_code == 200:
             response_friendlist = response.json()["authors"]
             response_friendlist_set=set([re.sub('.+/author/', '', friend) for friend in response_friendlist])
-            # response_friendlist_set = set(response.json()["authors"])
             local_friend_set = set([re.sub('.+/author/','',friend)for friend in local_friend_list_of_remote_user])
             print("local_friend_set is {}".format(local_friend_set))
             print("response_friendlist_set is {}".format(response_friendlist_set))
@@ -416,7 +413,6 @@ def update_this_friendship(remoteNode,remote_user_uuid,request):
                         else:
                             try:
                                 print('comming as uuid')
-                                print(friend_url)
                                 friend_uuid = UUID(friend_url)
                             except:
                                 print("Author/Friend id in bad format")
@@ -424,11 +420,8 @@ def update_this_friendship(remoteNode,remote_user_uuid,request):
                         print("Author/Friend id in bad format")
                     friend_obj = Author.objects.get(Q(pk=friend_uuid))
                     if Friend.objects.filter(Q(author=friend_obj), Q(friend=remote_authorObj), Q(status="Accept")).exists():
-                        print('deleing 1')
                         Friend.objects.get(Q(author=friend_obj), Q(friend=remote_authorObj), Q(status="Accept")).delete()
                     if Friend.objects.filter(Q(friend=friend_obj), Q(author=remote_authorObj),Q(status="Accept")).exists():
-                        print('deleing 2')
-
                         Friend.objects.get(Q(friend=friend_obj), Q(author=remote_authorObj),Q(status="Accept")).delete()
 
             except Exception as e:
