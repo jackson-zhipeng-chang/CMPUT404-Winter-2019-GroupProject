@@ -346,13 +346,7 @@ class PostToUserHandlerView(APIView):
                         if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend.id), Q(visibility='SERVERONLY'), optional_Q).exists()):
                             if (Helpers.get_current_user_host(current_user_uuid)==friend.host):
                                 serveronly_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend.id),Q(visibility='SERVERONLY'), optional_Q)                        
-                
-                print('my_post_list is {}'.format(my_posts_list))
-                print('public_posts_list is {}'.format(public_posts_list))
-                print("friend_posts_list is {}".format(friend_posts_list))
-                print('private_posts_list is {}'.format(private_posts_list))
-                print('serveronly_posts_list is {}'.format(serveronly_posts_list))
-                print('foaf_posts_list is {}'.format(foaf_posts_list))
+
                 posts_list = my_posts_list+public_posts_list+friend_posts_list + \
                     private_posts_list+serveronly_posts_list+foaf_posts_list
         
