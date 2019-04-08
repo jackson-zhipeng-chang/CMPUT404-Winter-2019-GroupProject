@@ -390,7 +390,10 @@ def update_this_friendship(remoteNode,remote_user_uuid,request):
         request_url = remote_host + "service/author/"+str(remote_user_uuid)+"/friends/"
         headers = {"Content-Type": 'application/json', "Accept": 'application/json'}
         data = json.dumps(request_body)
-        response = requests.post(request_url,headers=headers,data=data,auth=HTTPBasicAuth(remote_to_node.remoteUsername,remote_to_node.remotePassword))
+        if "wave" in remote_host:
+            response = requests.get(request_url,headers=headers,auth=HTTPBasicAuth(remote_to_node.remoteUsername,remote_to_node.remotePassword))
+        else:
+            response = requests.post(request_url,headers=headers,data=data,auth=HTTPBasicAuth(remote_to_node.remoteUsername,remote_to_node.remotePassword))
         if response.status_code == 200:
             print("response.json() %s"%str(response.json()))
             response_friendlist = response.json()["authors"]
