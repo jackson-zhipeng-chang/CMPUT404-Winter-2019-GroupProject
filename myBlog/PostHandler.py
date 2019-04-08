@@ -86,7 +86,6 @@ class PostHandler(APIView):
                 # In example this is postid
                 post_id = data["postid"]
                 if isRemote:                   
-                    print("request author id {}".format(data["author"]["id"]))
                     remoteNode = Node.objects.get(nodeUser=request.user)
                     remote_to_node = RemoteUser.objects.get(node=remoteNode)
                     if type(remote_user_uuid) is UUID:
@@ -103,7 +102,6 @@ class PostHandler(APIView):
                                     return JsonResponse(serializer.data, status=status.HTTP_200_OK)
 
                         sender_url = remoteNode.host + "service/author/"+str(remote_user_uuid)
-                        print('sender_url is {}'.format(sender_url))
                         if not(Author.objects.filter(id=remote_user_uuid).exists()):
                             # create a local copy for the sender
                             response = requests.get(sender_url,auth=HTTPBasicAuth(remote_to_node.remoteUsername,remote_to_node.remotePassword))
@@ -138,6 +136,15 @@ class PostHandler(APIView):
                                     # Then it will go to at least 1 of these friend's servers and verify that they are friends of sender
                                     my_friend = my_friend_list[0]
                                     my_friend_host = my_friend.split('author')[0]
+                                    try:
+                                        if 'service' in my_friend:
+                                            my_friend_host = my_friend.split('service')[0]
+                                        elif 'author' in my_friend and 'service' not in my_friend:
+                                            my_friend_host = my_friend.split('author')[0]
+                                        else:
+                                            return Response("Friends list in bad format", status=400)
+                                    except:
+                                        return Response("Friends list in bad format", status=400)
                                     friend2friend_url = my_friend+'/friends/'+sender_url.split('/')[2]+'/author/'+str(remote_user_uuid)
                                     print("friend2friend_url is {}".format(friend2friend_url))
                                     # check my_friend is from my server or remote
@@ -155,7 +162,10 @@ class PostHandler(APIView):
                                         # the friend is not in my server, go to the friend's server and query
                                         my_friend_node = Node.objects.get(host=my_friend_host)
                                         my_friend_remote_user = RemoteUser.objects.get(node=my_friend_node)
-                                        response = requests.get(friend2friend_url,auth=HTTPBasicAuth(my_friend_remote_user.remoteUsername,my_friend_remote_user.remotePassword))
+                                        try:
+                                            response = requests.get(friend2friend_url,auth=HTTPBasicAuth(my_friend_remote_user.remoteUsername,my_friend_remote_user.remotePassword))
+                                        except:
+                                            return Response('friend 2 friend request fails {}'.format(friend2friend_url), status=status.HTTP_400_BAD_REQUEST)
                                         if response.status_code==200:
                                             responseJSON = json.loads(response.content.decode('utf8').replace("'", '"'))
                                             if responseJSON["friends"]:
@@ -167,7 +177,8 @@ class PostHandler(APIView):
                                                     return JsonResponse(serializer.data, status=status.HTTP_200_OK)
                                             else:
                                                 return Response('No mutal friend',status=status.HTTP_403_FORBIDDEN)
-                                        return Reponse('friend2friend api fails',status=response.status_code)
+                                        else:
+                                            return Response('friend2friend api fails',status=status.HTTP_404_NOT_FOUND)
                                 else:
                                     return Response('No mutual friend.',status=status.HTTP_403_FORBIDDEN)
 
@@ -317,8 +328,11 @@ class PostToUserHandlerView(APIView):
                                 private_posts_list.append(post)
                     # https://stackoverflow.com/questions/22266734/django-excluding-one-queryset-from-another answered Mar 8 '14 at 8:04 Paul Draper
                                                        
-                    friends_of_this_friend =  Helpers.get_friends(friend.id)
+                    # friends_of_this_friend =  set(Helpers.get_friends(friend.id))
+                    friends_of_this_friend = Helpers.get_friends(friend.id)
+
                     if request.get_host() not in friend.host:
+                        # remote_friends_of_this_friend = set(Helpers.get_remote_friends_obj_list(friend.host, friend.id))
                         remote_friends_of_this_friend = Helpers.get_remote_friends_obj_list(friend.host, friend.id)
                         friends_of_this_friend +=remote_friends_of_this_friend
                         
@@ -332,15 +346,16 @@ class PostToUserHandlerView(APIView):
                         if (Post.objects.filter(Q(unlisted=False), Q(author_id=friend.id), Q(visibility='SERVERONLY'), optional_Q).exists()):
                             if (Helpers.get_current_user_host(current_user_uuid)==friend.host):
                                 serveronly_posts_list += get_list_or_404(Post.objects.order_by('-published'), Q(unlisted=False), Q(author_id=friend.id),Q(visibility='SERVERONLY'), optional_Q)                        
-                
-                posts_list = my_posts_list+public_posts_list+friend_posts_list+private_posts_list+serveronly_posts_list+foaf_posts_list
+
+                posts_list = my_posts_list+public_posts_list+friend_posts_list + \
+                    private_posts_list+serveronly_posts_list+foaf_posts_list
         
                 posts_list.sort(key=lambda x: x.published, reverse=True) # https://stackoverflow.com/questions/403421/how-to-sort-a-list-of-objects-based-on-an-attribute-of-the-objects answered Dec 31 '08 at 16:42 by Triptych
                 paginator = CustomPagination()
                 results = paginator.paginate_queryset(posts_list, request)
                 serializer=PostSerializer(results, many=True)
                 print("Responsed in %s sec"%str(time.time()-start_time))
-                print('reponse is {}'.format(paginator.get_paginated_response(serializer.data)))
+                # print('reponse is {}'.format(serializer.data))
                 return paginator.get_paginated_response(serializer.data)
 
             else:
