@@ -290,7 +290,7 @@ def get_or_create_author_if_not_exist(author_json):
 
     AuthorObj = get_author_or_not_exits(author_id)
     if AuthorObj is False:
-        if author_json["displayName"] is None:
+        if (author_json["displayName"] is None) or (author_json["displayName"] ==""):
             author_json["displayName"] = "null"
         if User.objects.filter(username=author_json["displayName"]).exists():
             userObj = User.objects.get(username=author_json["displayName"])
