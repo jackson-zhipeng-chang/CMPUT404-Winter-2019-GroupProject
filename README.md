@@ -9,7 +9,7 @@
 ## Video Demo
 [Demo](https://www.youtube.com/watch?v=EiFpLDXxi-Y)
 
-## If you want to connect to my server
+## How to connect to our server
 please refer to this [page](https://github.com/Zhipeng-Chang/CMPUT404-Winter-2019-GroupProject/wiki/Remote-Connecting-Doc)
 
 ## To run the project locally:
