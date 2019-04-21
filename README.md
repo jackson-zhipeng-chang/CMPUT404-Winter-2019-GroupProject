@@ -34,6 +34,12 @@ On your terminal:
 # Run the server locally (by defult it's on http://127.0.0.1:8000/)
 6. python3 manage.py runserver
 ```
+## Technologies
+
+Here is a list of all the big technologies we use:
+
+- [**Django REST framework**](https://www.django-rest-framework.org/): REST API server
+- [**Postgres**](https://www.postgresql.org/): Data storage
 
 ## Codebase overview
 
